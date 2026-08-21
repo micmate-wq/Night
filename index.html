@@ -13,30 +13,30 @@
    AETHER DESIGN SYSTEM & THEMES
    ========================================================================== */
 :root {
-  --bg-main: #EFECE6;
-  --bg-card: #E5E1D8;
-  --bg-canvas: #E8E5DD;
-  --border-accent: #C8382A;
-  --border-light: rgba(200, 56, 42, 0.22);
-  --border-subtle: rgba(0, 0, 0, 0.08);
-  --text-main: #2C2825;
-  --text-accent: #C8382A;
-  --text-muted: #7A746E;
-  --accent-primary: #C8382A;
-  --accent-hover: #AA2B1E;
-  --accent-soft: rgba(200, 56, 42, 0.12);
-  --canvas-grid: rgba(200, 56, 42, 0.15);
-  --canvas-axis: rgba(200, 56, 42, 0.65);
+  --bg-main: #FFFFFF;
+  --bg-card: #F4F4F4;
+  --bg-canvas: #FAFAFA;
+  --border-accent: #000000;
+  --border-light: #CCCCCC;
+  --border-subtle: #E5E5E5;
+  --text-main: #000000;
+  --text-accent: #000000;
+  --text-muted: #666666;
+  --accent-primary: #000000;
+  --accent-hover: #333333;
+  --accent-soft: rgba(0, 0, 0, 0.08);
+  --canvas-grid: rgba(0, 0, 0, 0.12);
+  --canvas-axis: #000000;
   
-  --track-1: #C8382A;
-  --track-2: #2B6CB0;
-  --track-3: #2F855A;
-  --track-4: #D69E2E;
+  --track-1: #FC4037; /* Poppy Coral */
+  --track-2: #FFEA00; /* Canary Yellow */
+  --track-3: #8B68B9; /* Slate Lavender */
+  --track-4: #00D600; /* Signal Green */
 
-  --knob-bg: #DCD7CD;
-  --knob-track: rgba(200, 56, 42, 0.2);
-  --knob-arc: #C8382A;
-  --knob-pointer: #2C2825;
+  --knob-bg: #FFFFFF;
+  --knob-track: #DDDDDD;
+  --knob-arc: #000000;
+  --knob-pointer: #000000;
 
   --font-heading: 'Space Grotesk', -apple-system, sans-serif;
   --font-body: 'Inter', -apple-system, sans-serif;
@@ -46,29 +46,29 @@
 }
 
 body.theme-dark {
-  --bg-main: #111317;
-  --bg-card: #191C22;
-  --bg-canvas: #15171D;
-  --border-accent: #E54838;
-  --border-light: rgba(229, 72, 56, 0.25);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --text-main: #ECEFF4;
-  --text-accent: #FF5A47;
-  --text-muted: #8A92A0;
-  --accent-primary: #E54838;
-  --accent-hover: #FF614F;
-  --accent-soft: rgba(229, 72, 56, 0.18);
-  --canvas-grid: rgba(229, 72, 56, 0.18);
-  --canvas-axis: rgba(229, 72, 56, 0.7);
+  --bg-main: #0A0A0A;
+  --bg-card: #141414;
+  --bg-canvas: #000000;
+  --border-accent: #FFFFFF;
+  --border-light: #333333;
+  --border-subtle: #222222;
+  --text-main: #FFFFFF;
+  --text-accent: #FFFFFF;
+  --text-muted: #888888;
+  --accent-primary: #FFFFFF;
+  --accent-hover: #EEEEEE;
+  --accent-soft: rgba(255, 255, 255, 0.12);
+  --canvas-grid: rgba(255, 255, 255, 0.15);
+  --canvas-axis: #FFFFFF;
 
-  --track-1: #FF5242;
-  --track-2: #3E8EFF;
-  --track-3: #38C172;
-  --track-4: #F6AD55;
+  --track-1: #FC4037; /* Poppy Coral */
+  --track-2: #FFEA00; /* Canary Yellow */
+  --track-3: #8B68B9; /* Slate Lavender */
+  --track-4: #00D600; /* Signal Green */
 
-  --knob-bg: #222630;
-  --knob-track: rgba(255, 255, 255, 0.12);
-  --knob-arc: #FF5A47;
+  --knob-bg: #1A1A1A;
+  --knob-track: #333333;
+  --knob-arc: #FFFFFF;
   --knob-pointer: #FFFFFF;
 }
 
@@ -159,13 +159,13 @@ body {
   background: var(--accent-soft);
 }
 .btn-rec-master.recording {
-  background: var(--accent-primary);
-  color: #FFF;
+  background: var(--text-main);
+  color: var(--bg-main);
   animation: pulse-rec-border 1.2s infinite alternate;
 }
 @keyframes pulse-rec-border {
-  0% { box-shadow: 0 0 0 0 rgba(229, 72, 56, 0.4); }
-  100% { box-shadow: 0 0 10px 3px rgba(229, 72, 56, 0.7); }
+  0% { box-shadow: 0 0 0 0 rgba(128, 128, 128, 0.4); }
+  100% { box-shadow: 0 0 10px 3px rgba(128, 128, 128, 0.7); }
 }
 
 .app-title-group {
@@ -254,7 +254,7 @@ body {
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: var(--accent-primary);
+  background: var(--text-main);
   cursor: pointer;
 }
 
@@ -429,6 +429,7 @@ body {
 .channel-strip {
   background: var(--bg-main);
   border: 1.5px solid var(--border-accent);
+  border-top: 3px solid var(--strip-color, var(--border-accent));
   border-radius: var(--radius-sm);
   padding: 12px;
   display: flex;
@@ -437,6 +438,11 @@ body {
   min-width: 0; /* CRITICAL: Prevent grid child overflow */
   overflow: hidden;
 }
+
+#channel-0 { --strip-color: var(--track-1); }
+#channel-1 { --strip-color: var(--track-2); }
+#channel-2 { --strip-color: var(--track-3); }
+#channel-3 { --strip-color: var(--track-4); }
 
 .channel-header {
   display: flex;
@@ -450,7 +456,6 @@ body {
   width: 28px;
   height: 28px;
   border-radius: 4px;
-  color: #FFF;
   font-family: var(--font-heading);
   font-size: 0.75rem;
   font-weight: 700;
@@ -459,10 +464,10 @@ body {
   justify-content: center;
   flex-shrink: 0;
 }
-.badge-t1 { background: var(--track-1); }
-.badge-t2 { background: var(--track-2); }
-.badge-t3 { background: var(--track-3); }
-.badge-t4 { background: var(--track-4); }
+.badge-t1 { background: var(--track-1); color: #FFF; }
+.badge-t2 { background: var(--track-2); color: #000; }
+.badge-t3 { background: var(--track-3); color: #FFF; }
+.badge-t4 { background: var(--track-4); color: #000; }
 
 .track-info {
   flex: 1 1 0%;
@@ -504,9 +509,9 @@ body {
 }
 .btn-src:hover { background: var(--accent-soft); }
 .btn-src.active {
-  background: var(--accent-primary);
+  background: var(--strip-color, var(--accent-primary));
   color: #FFF;
-  border-color: var(--accent-primary);
+  border-color: var(--strip-color, var(--accent-primary));
 }
 
 .channel-controls {
@@ -542,9 +547,9 @@ body {
 }
 .btn-playlist:hover { background: var(--accent-soft); }
 .btn-playlist.btn-shuf.active {
-  background: var(--accent-primary);
+  background: var(--strip-color, var(--accent-primary));
   color: #FFF;
-  border-color: var(--accent-primary);
+  border-color: var(--strip-color, var(--accent-primary));
 }
 .playlist-counter {
   font-family: var(--font-mono);
@@ -574,8 +579,9 @@ body {
 }
 .btn-toggle:hover { background: var(--accent-soft); }
 .btn-toggle.active {
-  background: var(--accent-primary);
+  background: var(--strip-color, var(--accent-primary));
   color: #FFF;
+  border-color: var(--strip-color, var(--accent-primary));
 }
 
 .gauges-row {
@@ -625,14 +631,16 @@ body {
 }
 .btn-motion:hover { background: var(--accent-soft); }
 .rec-btn.recording {
-  background: var(--accent-primary);
+  background: var(--strip-color, var(--accent-primary));
   color: #FFF;
+  border-color: var(--strip-color, var(--accent-primary));
   animation: pulse-rec 1s infinite alternate;
 }
 @keyframes pulse-rec { 0% { opacity: 0.8; } 100% { opacity: 1; } }
 .play-motion-btn.active {
-  background: var(--accent-primary);
+  background: var(--strip-color, var(--accent-primary));
   color: #FFF;
+  border-color: var(--strip-color, var(--accent-primary));
 }
 .motion-speed-row {
   display: flex;
@@ -658,9 +666,29 @@ body {
 }
 .btn-speed:hover { color: var(--text-accent); border-color: var(--border-accent); }
 .btn-speed.active {
-  background: var(--accent-primary);
+  background: var(--strip-color, var(--accent-primary));
   color: #FFF;
-  border-color: var(--accent-primary);
+  border-color: var(--strip-color, var(--accent-primary));
+}
+
+/* High contrast text on yellow (T2) and green (T4) active buttons */
+#channel-1 .btn-src.active,
+#channel-1 .btn-playlist.btn-shuf.active,
+#channel-1 .btn-toggle.active,
+#channel-1 .rec-btn.recording,
+#channel-1 .play-motion-btn.active,
+#channel-1 .btn-speed.active,
+#channel-3 .btn-src.active,
+#channel-3 .btn-playlist.btn-shuf.active,
+#channel-3 .btn-toggle.active,
+#channel-3 .rec-btn.recording,
+#channel-3 .play-motion-btn.active,
+#channel-3 .btn-speed.active {
+  color: #000000;
+}
+
+.channel-strip .knob-arc-active {
+  stroke: var(--strip-color, var(--accent-primary));
 }
 
 /* ==========================================================================
@@ -2079,7 +2107,7 @@ class SpatialStudio {
     // Theme state
     this.isDark = (localStorage.getItem('aether_theme') || localStorage.getItem('tetrasphere_theme')) === 'dark';
 
-    const trackColors = ['#C8382A', '#2B6CB0', '#2F855A', '#D69E2E'];
+    const trackColors = ['#FC4037', '#FFEA00', '#8B68B9', '#00D600'];
     const trackNames = ['Bass Stem', 'Rhythm Beat', 'Synth Pad', 'Melody Lead'];
     this.tracks = trackColors.map((color, idx) => new AudioTrack(idx, trackNames[idx], color, this));
 
@@ -2724,7 +2752,7 @@ class SpatialStudio {
       const nodeRadius = 24;
 
       // Projection lines to axes
-      this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(200, 56, 42, 0.22)';
+      this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
       this.ctx.lineWidth = 1.5;
       this.ctx.setLineDash([3, 3]);
 
@@ -2746,7 +2774,7 @@ class SpatialStudio {
 
       this.ctx.beginPath();
       this.ctx.arc(pxX, pxY, ringRadius, 0, 2 * Math.PI);
-      this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(200, 56, 42, 0.18)';
+      this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
       this.ctx.lineWidth = 4;
       this.ctx.stroke();
 
@@ -2771,14 +2799,14 @@ class SpatialStudio {
       this.ctx.shadowBlur = 0;
 
       // Track Label
-      this.ctx.fillStyle = '#FFFFFF';
+      this.ctx.fillStyle = (i === 1 || i === 3) ? '#000000' : '#FFFFFF';
       this.ctx.font = 'bold 11px "Space Grotesk", sans-serif';
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
       this.ctx.fillText(`T${i + 1}`, pxX, pxY);
 
       // Coordinate telemetry text
-      this.ctx.fillStyle = this.isDark ? '#ECEFF4' : '#C8382A';
+      this.ctx.fillStyle = this.isDark ? '#FFFFFF' : '#000000';
       this.ctx.font = 'bold 9px monospace';
       const volPct = Math.round(t.y * 100);
       const panPct = Math.round((t.x - 0.5) * 200);
