@@ -1,0 +1,16 @@
+{
+  "name": "Aether Controller",
+  "short_name": "Aether",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#1a1a1a",
+  "description": "Mobile control surface for Aether Audio Engine",
+  "icons": [
+    {
+      "src": "../app-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ]
+}

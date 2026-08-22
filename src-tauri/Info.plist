@@ -4,5 +4,20 @@
 <dict>
     <key>NSMicrophoneUsageDescription</key>
     <string>Aether requires audio input access for live tracking and recording.</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+        <key>NSExceptionDomains</key>
+        <dict>
+            <key>localhost</key>
+            <dict>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <true/>
+                <key>NSIncludesSubdomains</key>
+                <false/>
+            </dict>
+        </dict>
+    </dict>
 </dict>
 </plist>

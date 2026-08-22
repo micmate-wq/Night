@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aether Control</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a1a">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Aether</h1>
+            <div class="ip-row">
+                <input id="ip-input" type="text" placeholder="192.168.0.20" autocomplete="off" inputmode="decimal">
+                <button id="btn-connect">Connect</button>
+            </div>
+            <div id="status" class="status disconnected">Disconnected</div>
+        </header>
+
+        <main>
+            <div class="control-section">
+                <h2>Voice Command</h2>
+                <p class="subtitle">Hold to speak commands (e.g. "Pan track 1 left")</p>
+                <button id="btn-command" class="ptt-btn command-btn">
+                    <span class="icon">🎤</span>
+                    <span class="label">Hold for Command</span>
+                </button>
+                <div id="transcript" class="transcript-box"></div>
+            </div>
+
+            <div class="control-section">
+                <h2>Voice Note (Audio)</h2>
+                <p class="subtitle">Hold to record and send an audio sample</p>
+                <button id="btn-audio" class="ptt-btn audio-btn">
+                    <span class="icon">🎙️</span>
+                    <span class="label">Hold to Record</span>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -2116,6 +2116,7 @@ class SpatialStudio {
     this.initDOM();
     this.initCanvas();
     this.applyTheme();
+    this.initWebSocket();
   }
 
   initDOM() {
@@ -2279,6 +2280,171 @@ class SpatialStudio {
     this.masterRecorderNode.connect(this.audioCtx.destination);
 
     this.tracks.forEach(track => track.setupWebAudioNodes(this.audioCtx));
+  }
+
+  initWebSocket() {
+    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) return;
+    try {
+      const wsHost = window.location.hostname || 'localhost';
+      const ws = new WebSocket(`ws://${wsHost}:8765`);
+      ws.binaryType = 'arraybuffer';
+
+      ws.onopen = () => {
+        console.log('✅ Connected to Aether Telegram Bot Server');
+      };
+
+      ws.onmessage = async (event) => {
+        // 1. Handle JSON Control Messages
+        if (typeof event.data === 'string') {
+          try {
+            const command = JSON.parse(event.data);
+            console.log('🎛️ Command Received:', command);
+            this.applyWebSocketCommand(command);
+          } catch (e) {
+            console.error('Failed to parse command:', e);
+          }
+        } 
+        // 2. Handle Binary Voice Note Buffers
+        else if (event.data instanceof ArrayBuffer) {
+          console.log('🎙️ Voice Note Received! Decoding ArrayBuffer...');
+          this.setupAudioContext();
+          try {
+            const audioBuffer = await this.audioCtx.decodeAudioData(event.data);
+            this.playVoiceNote(audioBuffer);
+            if (typeof playQuantizedVoiceNote === 'function') {
+              playQuantizedVoiceNote(audioBuffer);
+            }
+          } catch (decodeErr) {
+            console.error('Failed to decode incoming voice note ArrayBuffer:', decodeErr);
+          }
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('🔌 WebSocket disconnected. Retrying in 3s...');
+        setTimeout(() => this.initWebSocket(), 3000);
+      };
+
+      this.ws = ws;
+    } catch (e) {
+      console.warn('WebSocket init warning:', e);
+    }
+  }
+
+  playVoiceNote(audioBuffer) {
+    this.setupAudioContext();
+    if (!this.audioCtx || !audioBuffer) return;
+
+    try {
+      const sourceNode = this.audioCtx.createBufferSource();
+      sourceNode.buffer = audioBuffer;
+
+      const voiceGain = this.audioCtx.createGain();
+      voiceGain.gain.setValueAtTime(1.0, this.audioCtx.currentTime);
+
+      sourceNode.connect(voiceGain);
+      voiceGain.connect(this.masterLimiter || this.audioCtx.destination);
+
+      sourceNode.start(this.audioCtx.currentTime);
+      console.log('🎙️ Voice note playback initiated via Web Audio API.');
+    } catch (err) {
+      console.error('Failed to play decoded voice note:', err);
+    }
+  }
+
+  applyWebSocketCommand(command) {
+    if (!command || !command.action) return;
+    this.setupAudioContext();
+
+    const action = String(command.action).toLowerCase();
+    const rawTarget = String(command.target || '').toLowerCase().trim();
+
+    // Resolve target track or master
+    let targetTrack = null;
+    let isMaster = false;
+
+    if (!rawTarget || rawTarget === 'master' || rawTarget === 'main' || rawTarget === 'background' || rawTarget === 'all') {
+      isMaster = true;
+    } else if (rawTarget === 'track1' || rawTarget === 't1' || rawTarget === 'track 1' || rawTarget === '0' || rawTarget.includes('bass')) {
+      targetTrack = this.tracks[0];
+    } else if (rawTarget === 'track2' || rawTarget === 't2' || rawTarget === 'track 2' || rawTarget === '1' || rawTarget.includes('rhythm') || rawTarget.includes('beat') || rawTarget.includes('drum')) {
+      targetTrack = this.tracks[1];
+    } else if (rawTarget === 'track3' || rawTarget === 't3' || rawTarget === 'track 3' || rawTarget === '2' || rawTarget.includes('synth') || rawTarget.includes('pad')) {
+      targetTrack = this.tracks[2];
+    } else if (rawTarget === 'track4' || rawTarget === 't4' || rawTarget === 'track 4' || rawTarget === '3' || rawTarget.includes('melody') || rawTarget.includes('lead')) {
+      targetTrack = this.tracks[3];
+    }
+
+    const now = this.audioCtx ? this.audioCtx.currentTime : 0;
+
+    if (action === 'set_gain') {
+      let val = parseFloat(command.value);
+      if (isNaN(val)) return;
+      if (val > 1.0) val = val / 100.0;
+      val = Math.max(0.0, Math.min(1.0, val));
+
+      if (isMaster) {
+        if (this.masterGain) {
+          this.masterGain.gain.setTargetAtTime(val, now, 0.1);
+        }
+        if (this.masterVolumeSlider) {
+          this.masterVolumeSlider.value = val;
+          this.masterVolVal.textContent = `${Math.round(val * 100)}%`;
+        }
+      } else if (targetTrack) {
+        targetTrack.y = val;
+        if (targetTrack.gainNode && !targetTrack.isMuted) {
+          targetTrack.gainNode.gain.setTargetAtTime(Math.pow(val, 1.5), now, 0.1);
+        }
+        targetTrack.volTxt.textContent = `${Math.round(val * 100)}%`;
+        this.renderCanvas();
+      }
+    } else if (action === 'mute' || action === 'unmute') {
+      const mute = (action === 'mute');
+      if (isMaster) {
+        if (this.masterGain) {
+          this.masterGain.gain.value = mute ? 0 : parseFloat(this.masterVolumeSlider.value);
+        }
+      } else if (targetTrack) {
+        targetTrack.isMuted = mute;
+        targetTrack.muteBtn.classList.toggle('active', targetTrack.isMuted);
+        if (targetTrack.gainNode) {
+          targetTrack.gainNode.gain.value = targetTrack.isMuted ? 0 : Math.pow(targetTrack.y, 1.5);
+        }
+        this.renderCanvas();
+      }
+    } else if (action === 'set_pan') {
+      let val = parseFloat(command.value);
+      if (isNaN(val)) return;
+      val = Math.max(-1.0, Math.min(1.0, val));
+      // Bot sends -1..1; track.x is 0..1 (0.5 = center)
+      const newX = (val + 1) / 2;
+      if (targetTrack) {
+        targetTrack.x = newX;
+        targetTrack.updateAudioParamsFromPosition();
+        this.renderCanvas();
+      }
+    } else if (action === 'mute_all') {
+      this.tracks.forEach(t => {
+        t.isMuted = true;
+        t.muteBtn.classList.add('active');
+        if (t.gainNode) t.gainNode.gain.value = 0;
+      });
+      if (this.masterGain) this.masterGain.gain.value = 0;
+      this.renderCanvas();
+    } else if (action === 'trigger_sample' || action === 'play') {
+      if (targetTrack) {
+        targetTrack.play();
+      } else {
+        this.playAll();
+      }
+    } else if (action === 'stop') {
+      if (targetTrack) {
+        targetTrack.stop();
+      } else {
+        this.stopAll();
+      }
+    }
   }
 
   // --- LIVE INPUT MODAL ---
