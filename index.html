@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AETHER — Standalone 4-Track Spatial Audio Studio</title>
-  <meta name="description" content="Standalone 4-track spatial audio player & live performance workstation with 2D spatial canvas, motion automation recording, Ableton-style bipolar EQ, live microphone/DAW input, master WAV recording, and session export.">
+  <title>AETHER 3D — Standalone 4-Track Spatial Audio Studio</title>
+  <meta name="description" content="Standalone 4-track 3D spatial audio player & live performance workstation with HRTF 3D spatial canvas, trackpad depth pinch, motion automation, Ableton-style bipolar EQ, live input, and master WAV recording.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -873,8 +873,8 @@ body {
           </button>
         </div>
         <div class="app-title-group">
-          <h1 class="app-title">AETHER <span class="version-tag">v3.0</span></h1>
-          <span class="app-subtitle">4-Track Spatial Audio Studio &amp; Motion Automation</span>
+          <h1 class="app-title">AETHER 3D <span class="version-tag">v3.0 3D</span></h1>
+          <span class="app-subtitle">4-Track 3D Spatial Audio Studio &amp; Motion Automation</span>
         </div>
       </div>
 
@@ -910,10 +910,10 @@ body {
     <section class="spatial-workspace-section">
       <div class="workspace-header">
         <div class="workspace-title">
-          <span class="dot-indicator"></span> 2D SPATIAL CANVAS &amp; MOTION AUTOMATION
+          <span class="dot-indicator"></span> 3D SPATIAL CANVAS &amp; MOTION AUTOMATION
         </div>
         <div class="workspace-instructions">
-          Drag nodes for <strong>Vol / Pan</strong> • Ableton-style 12 o'clock EQ (Shift for fine drag) • Live In / Mic support • Rec Master to WAV
+          Drag nodes for <strong>X/Y</strong> • <strong>Ctrl + Two-Finger Scroll / Pinch</strong> for <strong>Z Depth (Air Absorption)</strong> • Ableton EQ • Live In • Rec Master
         </div>
       </div>
       <div class="canvas-arena-container" id="arena-container">
@@ -1446,6 +1446,8 @@ class AudioTrack {
     ];
     this.x = defaultPositions[index].x;
     this.y = defaultPositions[index].y;
+    this.z = 0; // Depth / Distance (0 = close, 50 = far)
+    this.baseRadius = 24;
 
     this.motionPath = [];
     this.isRecordingMotion = false;
@@ -1458,6 +1460,14 @@ class AudioTrack {
     this.eqLowNode = null;
     this.eqMidNode = null;
     this.eqHighNode = null;
+    this.depthFilterNode = null;
+    this.reverbSendFilterNode = null;
+    this.reverbSendGain = null;
+    this.reverbConvolver = null;
+    this.reverbDampingFilter = null;
+    this.trackSumNode = null;
+    this.stereoPanNode = null;
+    this.reverbPanNode = null;
     this.gainNode = null;
     this.pannerNode = null;
 
@@ -1566,19 +1576,68 @@ class AudioTrack {
     this.eqHighNode.frequency.value = 6000;
     this.eqHighNode.gain.value = this.eqValues.high;
 
-    this.gainNode = audioCtx.createGain();
-    this.pannerNode = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+    // Air Absorption / Distance Low-Pass Filter
+    this.depthFilterNode = audioCtx.createBiquadFilter();
+    this.depthFilterNode.type = 'lowpass';
+    this.depthFilterNode.frequency.value = 20000;
+    this.depthFilterNode.Q.value = 0.707;
 
+    // Dynamic Reverb Damping Low-Pass Filter
+    this.reverbSendFilterNode = audioCtx.createBiquadFilter();
+    this.reverbSendFilterNode.type = 'lowpass';
+    this.reverbSendFilterNode.frequency.value = 8000;
+
+    // Localized Spatial Reverb Chain for this Track
+    this.reverbSendGain = audioCtx.createGain();
+    this.reverbSendGain.gain.value = 0.0;
+
+    this.reverbConvolver = audioCtx.createConvolver();
+    if (this.studio.reverbBuffer) {
+      this.reverbConvolver.buffer = this.studio.reverbBuffer;
+    }
+
+    this.reverbDampingFilter = audioCtx.createBiquadFilter();
+    this.reverbDampingFilter.type = 'lowpass';
+    this.reverbDampingFilter.frequency.value = 3500;
+
+    // Dedicated Reverb Pan Node (locks reverb tail to track's stereo position)
+    this.reverbPanNode = audioCtx.createStereoPanner();
+
+    // Direct / Dry Gain Node
+    this.gainNode = audioCtx.createGain();
+
+    // Track Summing Bus (Dry + Localized Reverb)
+    this.trackSumNode = audioCtx.createGain();
+
+    // Dedicated Track Stereo Pan Node (guarantees direct pan positioning for dry + all effects)
+    this.stereoPanNode = audioCtx.createStereoPanner();
+
+    // 3D Spatial Panner Node (HRTF)
+    this.pannerNode = audioCtx.createPanner();
+    this.pannerNode.panningModel = 'HRTF';
+    this.pannerNode.distanceModel = 'none';
+
+    // EQ Chain
     this.eqLowNode.connect(this.eqMidNode);
     this.eqMidNode.connect(this.eqHighNode);
-    this.eqHighNode.connect(this.gainNode);
+    this.eqHighNode.connect(this.depthFilterNode);
 
-    if (this.pannerNode) {
-      this.gainNode.connect(this.pannerNode);
-      this.pannerNode.connect(this.studio.masterGain);
-    } else {
-      this.gainNode.connect(this.studio.masterGain);
-    }
+    // 1. Dry Path -> Track Sum
+    this.depthFilterNode.connect(this.gainNode);
+    this.gainNode.connect(this.trackSumNode);
+
+    // 2. Localized Reverb Path -> Convolver -> Damping -> Reverb Pan -> Track Sum
+    this.depthFilterNode.connect(this.reverbSendFilterNode);
+    this.reverbSendFilterNode.connect(this.reverbSendGain);
+    this.reverbSendGain.connect(this.reverbConvolver);
+    this.reverbConvolver.connect(this.reverbDampingFilter);
+    this.reverbDampingFilter.connect(this.reverbPanNode);
+    this.reverbPanNode.connect(this.trackSumNode);
+
+    // 3. Track Sum -> Track Stereo Panner -> HRTF 3D Panner -> Master Gain
+    this.trackSumNode.connect(this.stereoPanNode);
+    this.stereoPanNode.connect(this.pannerNode);
+    this.pannerNode.connect(this.studio.masterGain);
 
     this.updateAudioParamsFromPosition();
   }
@@ -1914,27 +1973,89 @@ class AudioTrack {
     this.stopNodeOnly();
   }
 
-  setPosition(x, y) {
-    this.x = Math.max(0, Math.min(1, x));
-    this.y = Math.max(0, Math.min(1, y));
+  setPosition(x, y, z = undefined) {
+    this.x = Math.max(0.02, Math.min(0.98, x));
+    this.y = Math.max(0.02, Math.min(0.98, y));
+    if (z !== undefined) {
+      this.z = Math.max(0, Math.min(50, z));
+    }
 
     if (this.isRecordingMotion) {
       const elapsed = (performance.now() - this.recordStartTime) / 1000;
-      this.motionPath.push({ t: elapsed, x: this.x, y: this.y });
+      this.motionPath.push({ t: elapsed, x: this.x, y: this.y, z: this.z });
     }
 
     this.updateAudioParamsFromPosition();
   }
 
+  getVisualRadius() {
+    return Math.max(this.baseRadius - (this.z * 0.32), 10);
+  }
+
   updateAudioParamsFromPosition() {
-    const panVal = (this.x - 0.5) * 2;
-    const volVal = Math.pow(this.y, 1.5);
+    const now = this.studio.audioCtx ? this.studio.audioCtx.currentTime : 0;
+    const t = Math.max(0, Math.min(1, this.z / 50)); // Normalized distance (0 = close, 1 = max distance)
+    const panVal = Math.max(-1.0, Math.min(1.0, (this.x - 0.5) * 2.0)); // -1 (Hard L) to +1 (Hard R)
+
+    // Smooth de-zippering time constants (eliminates clicks/artifacts during rapid wheel scroll & dragging)
+    const posTimeConst = 0.06;
+    const filterTimeConst = 0.08;
+    const gainTimeConst = 0.05;
+
+    // 1. Spherical Azimuth Mapping for HRTF 3D Panner (prevents depth from collapsing stereo angle)
+    const azimuth = panVal * (Math.PI * 0.46);          // -83° to +83° stereo spread
+    const distanceMeters = 2.0 + (t * 6.0);             // 2.0m (adjacent) to 8.0m (far)
+    const elevation = (this.y - 0.5) * 0.4;             // Subtle height offset
+
+    const audioX = Math.sin(azimuth) * distanceMeters;
+    const audioY = elevation * distanceMeters;
+    const audioZ = -Math.cos(azimuth) * distanceMeters;
 
     if (this.pannerNode) {
-      this.pannerNode.pan.setTargetAtTime(panVal, this.studio.audioCtx ? this.studio.audioCtx.currentTime : 0, 0.02);
+      if (this.pannerNode.positionX) {
+        this.pannerNode.positionX.setTargetAtTime(audioX, now, posTimeConst);
+        this.pannerNode.positionY.setTargetAtTime(audioY, now, posTimeConst);
+        this.pannerNode.positionZ.setTargetAtTime(audioZ, now, posTimeConst);
+      } else {
+        this.pannerNode.setPosition(audioX, audioY, audioZ);
+      }
     }
-    if (this.gainNode && !this.isMuted) {
-      this.gainNode.gain.setTargetAtTime(volVal, this.studio.audioCtx ? this.studio.audioCtx.currentTime : 0, 0.02);
+
+    // 2. Direct Stereo Pan Locks (ensures dry sound, filtering, and reverb tail strictly follow pan)
+    if (this.stereoPanNode && this.stereoPanNode.pan) {
+      this.stereoPanNode.pan.setTargetAtTime(panVal, now, gainTimeConst);
+    }
+    if (this.reverbPanNode && this.reverbPanNode.pan) {
+      // Reverb tail follows the node's position with a natural spatialized width
+      this.reverbPanNode.pan.setTargetAtTime(panVal * 0.85, now, gainTimeConst);
+    }
+
+    // 3. Progressive Air Absorption Low-Pass Filter: sweeps from 20kHz (fully open at front) down to 800Hz (muffled in the distance)
+    if (this.depthFilterNode) {
+      const cutoff = Math.max(800, 20000 * Math.pow(800 / 20000, t));
+      this.depthFilterNode.frequency.setTargetAtTime(cutoff, now, filterTimeConst);
+    }
+
+    // 4. Dynamic Reverb Damping Low-Pass Filter: sweeps from 8000Hz (near) down to 1200Hz (far)
+    if (this.reverbSendFilterNode) {
+      const reverbCutoff = Math.max(1200, 8000 * Math.pow(1200 / 8000, t));
+      this.reverbSendFilterNode.frequency.setTargetAtTime(reverbCutoff, now, filterTimeConst);
+    }
+
+    // 5. Direct-to-Reverberant Equal-Power Mix
+    const dryGainFactor = Math.sqrt(Math.max(0.2, 1.0 - (0.45 * t)));
+    const baseVol = Math.pow(this.y, 1.5);
+    const dryVol = baseVol * dryGainFactor;
+    const reverbGain = (0.42 * Math.pow(t, 1.3)) * Math.pow(this.y, 1.2);
+
+    const hasSolo = this.studio.tracks.some(tr => tr.isSoloed);
+    const isSilenced = this.isMuted || (hasSolo && !this.isSoloed);
+
+    if (this.gainNode) {
+      this.gainNode.gain.setTargetAtTime(isSilenced ? 0 : dryVol, now, gainTimeConst);
+    }
+    if (this.reverbSendGain) {
+      this.reverbSendGain.gain.setTargetAtTime(isSilenced ? 0 : reverbGain, now, gainTimeConst);
     }
 
     this.volTxt.textContent = `${Math.round(this.y * 100)}%`;
@@ -1946,9 +2067,7 @@ class AudioTrack {
   toggleMute() {
     this.isMuted = !this.isMuted;
     this.muteBtn.classList.toggle('active', this.isMuted);
-    if (this.gainNode) {
-      this.gainNode.gain.value = this.isMuted ? 0 : Math.pow(this.y, 1.5);
-    }
+    this.updateAudioParamsFromPosition();
   }
 
   toggleSolo() {
@@ -1976,7 +2095,7 @@ class AudioTrack {
       this.recBtn.classList.add('recording');
       this.recBtn.textContent = '■ REC...';
       this.playMotionBtn.classList.remove('active');
-      this.motionPath.push({ t: 0, x: this.x, y: this.y });
+      this.motionPath.push({ t: 0, x: this.x, y: this.y, z: this.z });
     }
   }
 
@@ -2023,9 +2142,13 @@ class AudioTrack {
     const factor = dt > 0 ? (elapsedScaled - p1.t) / dt : 0;
     const interpX = p1.x + (p2.x - p1.x) * factor;
     const interpY = p1.y + (p2.y - p1.y) * factor;
+    const p1Z = p1.z !== undefined ? p1.z : 0;
+    const p2Z = p2.z !== undefined ? p2.z : 0;
+    const interpZ = p1Z + (p2Z - p1Z) * factor;
 
     this.x = Math.max(0, Math.min(1, interpX));
     this.y = Math.max(0, Math.min(1, interpY));
+    this.z = Math.max(0, Math.min(50, interpZ));
     this.updateAudioParamsFromPosition();
   }
 
@@ -2256,11 +2379,14 @@ class SpatialStudio {
     this.masterLimiter.attack.value = 0.003;
     this.masterLimiter.release.value = 0.1;
 
+    // Shared Room Impulse Response Buffer (1.2s natural room response)
+    this.reverbBuffer = this.createReverbBuffer(this.audioCtx, 1.2, 1.2);
+
     // Master Gain
     this.masterGain = this.audioCtx.createGain();
     this.masterGain.gain.value = parseFloat(this.masterVolumeSlider.value);
 
-    // Audio Graph: Tracks -> MasterGain -> MasterLimiter -> Destination
+    // Audio Graph: MasterGain -> MasterLimiter -> Destination
     this.masterGain.connect(this.masterLimiter);
     this.masterLimiter.connect(this.audioCtx.destination);
 
@@ -2356,7 +2482,10 @@ class SpatialStudio {
     if (!command || !command.action) return;
     this.setupAudioContext();
 
-    const action = String(command.action).toLowerCase();
+    // Normalize action aliases (Gemini may return 'pan' instead of 'set_pan', etc.)
+    let action = String(command.action).toLowerCase();
+    if (action === 'pan' || action === 'set_pan' || action === 'panning') action = 'set_pan';
+    if (action === 'gain' || action === 'volume' || action === 'set_volume' || action === 'set_gain') action = 'set_gain';
     const rawTarget = String(command.target || '').toLowerCase().trim();
 
     // Resolve target track or master
@@ -2416,6 +2545,8 @@ class SpatialStudio {
     } else if (action === 'set_pan') {
       let val = parseFloat(command.value);
       if (isNaN(val)) return;
+      // Normalize: Gemini may return percentage (-100..100) instead of -1..1
+      if (val > 1.0 || val < -1.0) val = val / 100.0;
       val = Math.max(-1.0, Math.min(1.0, val));
       // Bot sends -1..1; track.x is 0..1 (0.5 = center)
       const newX = (val + 1) / 2;
@@ -2573,6 +2704,7 @@ class SpatialStudio {
         name: t.name,
         x: t.x,
         y: t.y,
+        z: t.z,
         isMuted: t.isMuted,
         isSoloed: t.isSoloed,
         motionSpeed: t.motionSpeed,
@@ -2611,7 +2743,7 @@ class SpatialStudio {
         session.tracks.forEach((saved, idx) => {
           if (this.tracks[idx]) {
             const t = this.tracks[idx];
-            t.setPosition(saved.x || 0.5, saved.y || 0.5);
+            t.setPosition(saved.x || 0.5, saved.y || 0.5, saved.z || 0);
             if (saved.eq) {
               if (t.knobLow) t.knobLow.setValue(saved.eq.low || 0);
               if (t.knobMid) t.knobMid.setValue(saved.eq.mid || 0);
@@ -2697,16 +2829,24 @@ class SpatialStudio {
     return this.audioCtx ? this.audioCtx.currentTime : 0;
   }
 
+  createReverbBuffer(audioCtx, duration = 1.2, decay = 1.2) {
+    const sampleRate = audioCtx.sampleRate;
+    const length = Math.floor(sampleRate * duration);
+    const impulse = audioCtx.createBuffer(2, length, sampleRate);
+    const left = impulse.getChannelData(0);
+    const right = impulse.getChannelData(1);
+
+    for (let i = 0; i < length; i++) {
+      const t = i / sampleRate;
+      const env = Math.exp(-t * (5.0 / decay));
+      left[i] = (Math.random() * 2 - 1) * env;
+      right[i] = (Math.random() * 2 - 1) * env;
+    }
+    return impulse;
+  }
+
   updateSoloState() {
-    const hasSolo = this.tracks.some(t => t.isSoloed);
-    this.tracks.forEach(t => {
-      if (!t.gainNode) return;
-      if (hasSolo) {
-        t.gainNode.gain.value = t.isSoloed ? Math.pow(t.y, 1.5) : 0;
-      } else {
-        t.gainNode.gain.value = t.isMuted ? 0 : Math.pow(t.y, 1.5);
-      }
-    });
+    this.tracks.forEach(t => t.updateAudioParamsFromPosition());
   }
 
   resetAll() {
@@ -2794,13 +2934,20 @@ class SpatialStudio {
     };
 
     const findHoverNodeIndex = (pxX, pxY) => {
-      const nodeRadius = 32;
       return this.tracks.findIndex(t => {
         const nodePxX = t.x * this.width;
         const nodePxY = (1.0 - t.y) * this.height;
-        return Math.hypot(nodePxX - pxX, nodePxY - pxY) <= nodeRadius;
+        const r = t.getVisualRadius() + 4; // strictly within the circle bounds
+        return Math.hypot(nodePxX - pxX, nodePxY - pxY) <= r;
       });
     };
+
+    this.canvas.addEventListener('mousemove', (e) => {
+      if (isDragging) return;
+      const coords = getCanvasCoords(e);
+      const hitIdx = findHoverNodeIndex(coords.pxX, coords.pxY);
+      this.canvas.style.cursor = hitIdx !== -1 ? 'grab' : 'crosshair';
+    });
 
     this.canvas.addEventListener('mousedown', (e) => {
       const coords = getCanvasCoords(e);
@@ -2808,6 +2955,7 @@ class SpatialStudio {
       if (hitIdx !== -1) {
         isDragging = true;
         this.activeDragNodeIndex = hitIdx;
+        this.canvas.style.cursor = 'grabbing';
         const track = this.tracks[hitIdx];
         if (track.isRecordingMotion) {
           track.motionPath = [];
@@ -2831,7 +2979,25 @@ class SpatialStudio {
       }
       isDragging = false;
       this.activeDragNodeIndex = -1;
+      this.canvas.style.cursor = 'crosshair';
     });
+
+    // Trackpad gesture (Two-Finger Drag / Pinch) to manipulate Z-Axis only within a node's circle
+    this.canvas.addEventListener('wheel', (e) => {
+      const coords = getCanvasCoords(e);
+      let targetIdx = this.activeDragNodeIndex;
+      if (targetIdx === -1) {
+        targetIdx = findHoverNodeIndex(coords.pxX, coords.pxY);
+      }
+
+      if (targetIdx !== -1) {
+        e.preventDefault(); // Stop page zoom / scroll only when within a node circle
+        const targetTrack = this.tracks[targetIdx];
+        const zSensitivity = 0.05;
+        const newZ = Math.min(Math.max(targetTrack.z + (e.deltaY * zSensitivity), 0), 50);
+        targetTrack.setPosition(targetTrack.x, targetTrack.y, newZ);
+      }
+    }, { passive: false });
 
     // Touch support for tablets/phones
     this.canvas.addEventListener('touchstart', (e) => {
@@ -2915,7 +3081,7 @@ class SpatialStudio {
     this.tracks.forEach((t, i) => {
       const pxX = t.x * w;
       const pxY = (1.0 - t.y) * h;
-      const nodeRadius = 24;
+      const nodeRadius = t.getVisualRadius();
 
       // Projection lines to axes
       this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
@@ -2934,14 +3100,25 @@ class SpatialStudio {
 
       this.ctx.setLineDash([]);
 
+      // Visual 3D Depth Rings (when Z > 0)
+      if (t.z > 0.5) {
+        this.ctx.beginPath();
+        this.ctx.arc(pxX, pxY, nodeRadius + (t.z * 0.45), 0, 2 * Math.PI);
+        this.ctx.strokeStyle = t.color;
+        this.ctx.globalAlpha = 0.25;
+        this.ctx.lineWidth = 1.5;
+        this.ctx.stroke();
+        this.ctx.globalAlpha = 1.0;
+      }
+
       // Outer Progress Ring
       const progress = t.getProgress();
-      const ringRadius = nodeRadius + 8;
+      const ringRadius = nodeRadius + 6;
 
       this.ctx.beginPath();
       this.ctx.arc(pxX, pxY, ringRadius, 0, 2 * Math.PI);
       this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
-      this.ctx.lineWidth = 4;
+      this.ctx.lineWidth = 3.5;
       this.ctx.stroke();
 
       if (progress > 0 || (t.isLiveIn && t.isPlaying)) {
@@ -2951,7 +3128,7 @@ class SpatialStudio {
         this.ctx.beginPath();
         this.ctx.arc(pxX, pxY, ringRadius, startAngle, endAngle);
         this.ctx.strokeStyle = t.color;
-        this.ctx.lineWidth = 4.5;
+        this.ctx.lineWidth = 4;
         this.ctx.stroke();
       }
 
@@ -2971,7 +3148,7 @@ class SpatialStudio {
       this.ctx.textBaseline = 'middle';
       this.ctx.fillText(`T${i + 1}`, pxX, pxY);
 
-      // Coordinate telemetry text
+      // Coordinate telemetry text (X, Y, Z Depth)
       this.ctx.fillStyle = this.isDark ? '#FFFFFF' : '#000000';
       this.ctx.font = 'bold 9px monospace';
       const volPct = Math.round(t.y * 100);
@@ -2983,7 +3160,7 @@ class SpatialStudio {
       else if (t.isPlayingMotion) statusExtra = ` [${t.motionSpeed}x]`;
       else if (t.isLiveIn) statusExtra = ' [LIVE]';
 
-      this.ctx.fillText(`V:${volPct}% P:${panStr}${statusExtra}`, pxX, pxY + nodeRadius + 18);
+      this.ctx.fillText(`V:${volPct}% P:${panStr} Z:${t.z.toFixed(1)}${statusExtra}`, pxX, pxY + nodeRadius + 16);
     });
   }
 }

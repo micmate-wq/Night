@@ -1,7 +1,8 @@
 let ws;
-let mediaRecorder;
+let mediaStream = null;
+let activeRecorder = null;
+let currentMode = null; // 'command' | 'audio'
 let audioChunks = [];
-let recognition;
 
 const statusEl = document.getElementById('status');
 const btnCommand = document.getElementById('btn-command');
@@ -18,12 +19,32 @@ if (ipInput) {
 
 function initWebSocket(serverIp) {
     const wsHost = serverIp || localStorage.getItem('wsServerIp') || DEFAULT_IP;
+    try {
+        if (ws) {
+            ws.close();
+        }
+    } catch (e) {}
+
     ws = new WebSocket(`ws://${wsHost}:8765`);
 
     ws.onopen = () => {
         console.log('WS Connected to ' + wsHost);
         statusEl.textContent = 'Connected';
         statusEl.className = 'status connected';
+    };
+
+    ws.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'command_processed') {
+                const cmd = data.command;
+                const targetStr = cmd.target ? ` on ${cmd.target}` : '';
+                const valStr = cmd.value !== undefined ? ` [${cmd.value}]` : '';
+                transcriptBox.textContent = `⚡ ${cmd.action}${targetStr}${valStr}`;
+            }
+        } catch (e) {
+            // Ignore non-JSON messages
+        }
     };
 
     ws.onclose = (event) => {
@@ -38,102 +59,118 @@ function initWebSocket(serverIp) {
     };
 }
 
-function initSpeechRecognition() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-        recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = true;
-        
-        recognition.onresult = (event) => {
-            let interimTranscript = '';
-            let finalTranscript = '';
-            
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript;
-                } else {
-                    interimTranscript += event.results[i][0].transcript;
-                }
-            }
-            
-            transcriptBox.textContent = finalTranscript || interimTranscript;
-            
-            if (finalTranscript && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: 'voice_command',
-                    text: finalTranscript
-                }));
-            }
-        };
-
-        recognition.onerror = (event) => {
-            console.error('Speech recognition error', event.error);
-            transcriptBox.textContent = 'Error: ' + event.error;
-        };
-    } else {
-        transcriptBox.textContent = "Speech Recognition not supported in this browser.";
+async function getMediaStream() {
+    if (mediaStream && mediaStream.active) {
+        return mediaStream;
+    }
+    try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        return mediaStream;
+    } catch (err) {
+        console.error('Microphone access error:', err);
+        transcriptBox.textContent = 'Mic Error: ' + err.message;
+        return null;
     }
 }
 
-async function initMediaRecorder() {
+function getSupportedMimeType() {
+    const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac', 'audio/ogg;codecs=opus'];
+    for (const t of types) {
+        if (MediaRecorder.isTypeSupported(t)) {
+            return t;
+        }
+    }
+    return '';
+}
+
+async function startRecording(mode) {
+    currentMode = mode;
+    audioChunks = [];
+
+    const stream = await getMediaStream();
+    if (!stream) return;
+
+    const mimeType = getSupportedMimeType();
+    const options = mimeType ? { mimeType } : {};
+
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                audioChunks.push(event.data);
+        activeRecorder = new MediaRecorder(stream, options);
+    } catch (e) {
+        activeRecorder = new MediaRecorder(stream);
+    }
+
+    activeRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+            audioChunks.push(event.data);
+        }
+    };
+
+    activeRecorder.onstop = async () => {
+        const finalMime = activeRecorder.mimeType || mimeType || 'audio/webm';
+        const blob = new Blob(audioChunks, { type: finalMime });
+        audioChunks = [];
+
+        if (currentMode === 'command') {
+            if (transcriptBox.textContent === 'Listening...') {
+                transcriptBox.textContent = 'Analyzing voice command with Gemini...';
             }
-        };
-        
-        mediaRecorder.onstop = async () => {
-            const blob = new Blob(audioChunks, { type: 'audio/webm' });
-            audioChunks = [];
-            if (ws.readyState === WebSocket.OPEN) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64Data = reader.result.split(',')[1];
+                    ws.send(JSON.stringify({
+                        type: 'voice_command_audio',
+                        mimeType: finalMime,
+                        data: base64Data
+                    }));
+                };
+                reader.readAsDataURL(blob);
+            } else {
+                transcriptBox.textContent = 'Error: WebSocket not connected.';
+            }
+        } else if (currentMode === 'audio') {
+            if (ws && ws.readyState === WebSocket.OPEN) {
                 const arrayBuffer = await blob.arrayBuffer();
                 ws.send(arrayBuffer);
             }
-        };
-    } catch (err) {
-        console.error("Microphone access denied for MediaRecorder", err);
+        }
+        currentMode = null;
+    };
+
+    activeRecorder.start();
+}
+
+function stopRecording() {
+    if (activeRecorder && activeRecorder.state !== 'inactive') {
+        activeRecorder.stop();
     }
 }
 
 // Event Listeners for Command PTT
 function startCommand(e) {
     e.preventDefault();
-    if (!recognition) return;
     btnCommand.classList.add('active');
     transcriptBox.textContent = 'Listening...';
-    try {
-        recognition.start();
-    } catch (e) {}
+    startRecording('command');
 }
 
 function stopCommand(e) {
     e.preventDefault();
     btnCommand.classList.remove('active');
-    if (recognition) {
-        recognition.stop();
-    }
+    stopRecording();
 }
 
 // Event Listeners for Audio PTT
 function startAudio(e) {
     e.preventDefault();
-    if (!mediaRecorder) return;
     btnAudio.classList.add('active');
-    audioChunks = [];
-    mediaRecorder.start();
+    startRecording('audio');
 }
 
 function stopAudio(e) {
     e.preventDefault();
     btnAudio.classList.remove('active');
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-    }
+    stopRecording();
 }
 
 // Connect button — save IP and (re)connect
@@ -141,12 +178,11 @@ if (btnConnect) {
     btnConnect.addEventListener('click', () => {
         const ip = (ipInput && ipInput.value.trim()) || DEFAULT_IP;
         localStorage.setItem('wsServerIp', ip);
-        if (ws) ws.close();
         initWebSocket(ip);
     });
 }
 
-// Setup events
+// Setup touch / mouse events
 btnCommand.addEventListener('mousedown', startCommand);
 btnCommand.addEventListener('touchstart', startCommand, {passive: false});
 btnCommand.addEventListener('mouseup', stopCommand);
@@ -161,5 +197,7 @@ btnAudio.addEventListener('mouseleave', stopAudio);
 
 // Initialize
 initWebSocket();
-initSpeechRecognition();
-initMediaRecorder();
+// Pre-request mic permission on first user interaction if needed
+document.body.addEventListener('click', () => {
+    if (!mediaStream) getMediaStream();
+}, { once: true });

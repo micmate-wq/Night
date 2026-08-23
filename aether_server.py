@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import json
 import websockets
 from google import genai
@@ -46,7 +47,7 @@ async def broadcast_to_aether(payload, sender=None):
     )
 
 async def handle_gemini_command(text, websocket):
-    print(f"🎙️ [Voice Command Received]: {text}", flush=True)
+    print(f"🎙️ [Voice Command Text Received]: {text}", flush=True)
     MAX_RETRIES = 3
     for attempt in range(MAX_RETRIES):
         try:
@@ -67,10 +68,16 @@ async def handle_gemini_command(text, websocket):
                 ).strip()
 
             # Validate it's actual JSON before broadcasting
-            json.loads(parsed_json)
+            cmd_data = json.loads(parsed_json)
 
-            print(f"[Aether WS Payload]: {parsed_json}", flush=True)
+            print(f"🎛️ [Aether WS Payload]: {parsed_json}", flush=True)
             await broadcast_to_aether(parsed_json, sender=websocket)
+            
+            # Send confirmation back to sender for UI feedback
+            await websocket.send(json.dumps({
+                "type": "command_processed",
+                "command": cmd_data
+            }))
             break
 
         except Exception as e:
@@ -83,6 +90,51 @@ async def handle_gemini_command(text, websocket):
                 print(f"❌ Gemini error: {e}", flush=True)
                 break
 
+async def handle_gemini_audio_command(audio_bytes, mime_type, websocket):
+    print(f"🎙️ [Voice Command Audio Received]: {len(audio_bytes)} bytes (mime: {mime_type})", flush=True)
+    MAX_RETRIES = 3
+    for attempt in range(MAX_RETRIES):
+        try:
+            part = types.Part.from_bytes(data=audio_bytes, mime_type=mime_type)
+            response = ai_client.models.generate_content(
+                model="gemini-3.6-flash",
+                contents=[
+                    part,
+                    "Interpret the spoken voice command in this audio recording for the Aether DJ/Live Workstation and output the Web Audio control action JSON."
+                ],
+                config=types.GenerateContentConfig(
+                    system_instruction=sys_instruction,
+                )
+            )
+
+            parsed_json = response.text.strip()
+            if parsed_json.startswith("```"):
+                lines = parsed_json.splitlines()
+                parsed_json = "\n".join(
+                    l for l in lines if not l.startswith("```")
+                ).strip()
+
+            cmd_data = json.loads(parsed_json)
+            print(f"🎛️ [Aether WS Audio Command Interpreted]: {parsed_json}", flush=True)
+            await broadcast_to_aether(parsed_json, sender=websocket)
+            
+            # Send confirmation back to sender for UI feedback
+            await websocket.send(json.dumps({
+                "type": "command_processed",
+                "command": cmd_data
+            }))
+            break
+
+        except Exception as e:
+            err_str = str(e)
+            if "429" in err_str and attempt < MAX_RETRIES - 1:
+                wait = 15 * (attempt + 1)
+                print(f"⏳ Rate limited. Retrying in {wait}s...", flush=True)
+                await asyncio.sleep(wait)
+            else:
+                print(f"❌ Gemini Audio error: {e}", flush=True)
+                break
+
 async def ws_handler(websocket):
     """Registers connected Aether desktop/web clients and Mobile Controllers."""
     CONNECTED_CLIENTS.add(websocket)
@@ -90,21 +142,26 @@ async def ws_handler(websocket):
     try:
         async for message in websocket:
             if isinstance(message, str):
-                # We assume text messages are commands from the mobile controller
                 try:
-                    # Let's check if it's already JSON (from another UI component)
                     data = json.loads(message)
-                    if "type" in data and data["type"] == "voice_command":
-                        await handle_gemini_command(data["text"], websocket)
+                    msg_type = data.get("type")
+                    if msg_type == "voice_command":
+                        await handle_gemini_command(data.get("text", ""), websocket)
+                    elif msg_type == "voice_command_audio":
+                        audio_data = base64.b64decode(data.get("data", ""))
+                        mime_type = data.get("mimeType", "audio/webm")
+                        # Normalize mimeType if it contains codec parameters
+                        clean_mime = mime_type.split(";")[0]
+                        await handle_gemini_audio_command(audio_data, clean_mime, websocket)
                     else:
-                        # Direct JSON command, just broadcast
+                        # Direct JSON command, broadcast to all clients
                         print(f"🎛️ [Direct Command]: {message}", flush=True)
                         await broadcast_to_aether(message, sender=websocket)
                 except json.JSONDecodeError:
                     # Raw text fallback
                     await handle_gemini_command(message, websocket)
             elif isinstance(message, bytes):
-                print(f"🔊 [Audio Payload Received]: {len(message)} bytes. Broadcasting...", flush=True)
+                print(f"🔊 [Audio Stream Received]: {len(message)} bytes. Broadcasting...", flush=True)
                 await broadcast_to_aether(message, sender=websocket)
     except websockets.exceptions.ConnectionClosed:
         pass

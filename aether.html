@@ -2356,7 +2356,10 @@ class SpatialStudio {
     if (!command || !command.action) return;
     this.setupAudioContext();
 
-    const action = String(command.action).toLowerCase();
+    // Normalize action aliases (Gemini may return 'pan' instead of 'set_pan', etc.)
+    let action = String(command.action).toLowerCase();
+    if (action === 'pan' || action === 'set_pan' || action === 'panning') action = 'set_pan';
+    if (action === 'gain' || action === 'volume' || action === 'set_volume' || action === 'set_gain') action = 'set_gain';
     const rawTarget = String(command.target || '').toLowerCase().trim();
 
     // Resolve target track or master
@@ -2416,6 +2419,8 @@ class SpatialStudio {
     } else if (action === 'set_pan') {
       let val = parseFloat(command.value);
       if (isNaN(val)) return;
+      // Normalize: Gemini may return percentage (-100..100) instead of -1..1
+      if (val > 1.0 || val < -1.0) val = val / 100.0;
       val = Math.max(-1.0, Math.min(1.0, val));
       // Bot sends -1..1; track.x is 0..1 (0.5 = center)
       const newX = (val + 1) / 2;
