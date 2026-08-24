@@ -230,6 +230,7 @@ body {
   background: var(--accent-soft);
 }
 
+
 .master-vol-control {
   display: flex;
   align-items: center;
@@ -891,13 +892,13 @@ body {
         <button id="demo-btn" class="header-btn" title="Load 4 synthetic demo stems">
           <span class="icon">∿</span> Demo Stems
         </button>
-        <button id="export-session-btn" class="header-btn" title="Export session settings & automation as JSON">
+        <button id="export-session-btn" class="header-btn" title="Save DAW Project to disk (Finder)">
           <span>💾</span> Save
         </button>
-        <button id="import-session-btn" class="header-btn" title="Import a saved session JSON file">
+        <button id="import-session-btn" class="header-btn" title="Open DAW Project from disk (Finder)">
           <span>📂</span> Load
         </button>
-        <input type="file" id="import-session-file" accept=".json" style="display:none;">
+        <input type="file" id="import-session-file" accept=".aether,.json,application/json" style="display:none;">
 
         <div class="master-vol-control">
           <span>MASTER</span>
@@ -1849,6 +1850,8 @@ class AudioTrack {
   async loadAudioFile(file) {
     if (!file) return;
     this.nameEl.textContent = file.name;
+    this.sampleName = file.name;
+    this.filePath = file.path || '';
     this.statusEl.textContent = 'Decoding...';
 
     this.studio.setupAudioContext();
@@ -2215,6 +2218,92 @@ function encodeWAV(audioBuffers, sampleRate) {
 }
 
 /**
+ * Tauri IPC & Audio Buffer Serialization Helpers
+ */
+async function invokeTauri(cmd, args = {}) {
+  try {
+    if (window.__TAURI__ && window.__TAURI__.core && typeof window.__TAURI__.core.invoke === 'function') {
+      return await window.__TAURI__.core.invoke(cmd, args);
+    }
+    if (window.__TAURI_INTERNALS__ && typeof window.__TAURI_INTERNALS__.invoke === 'function') {
+      return await window.__TAURI_INTERNALS__.invoke(cmd, args);
+    }
+  } catch (err) {
+    console.warn(`Tauri command "${cmd}" failed:`, err);
+    throw err;
+  }
+  return null;
+}
+
+async function audioBufferToBase64(audioBuffer) {
+  if (!audioBuffer) return null;
+  const numChannels = audioBuffer.numberOfChannels;
+  const sampleRate = audioBuffer.sampleRate;
+  const numFrames = audioBuffer.length;
+  const bytesPerSample = 2;
+  const blockAlign = numChannels * bytesPerSample;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = numFrames * blockAlign;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+
+  function writeString(offset, string) {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  }
+
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bytesPerSample * 8, true);
+  writeString(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  const channels = [];
+  for (let c = 0; c < numChannels; c++) {
+    channels.push(audioBuffer.getChannelData(c));
+  }
+
+  let offset = 44;
+  for (let i = 0; i < numFrames; i++) {
+    for (let c = 0; c < numChannels; c++) {
+      let sample = Math.max(-1, Math.min(1, channels[c][i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      offset += 2;
+    }
+  }
+
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  const chunk = 0x8000;
+  for (let i = 0; i < len; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunk, len)));
+  }
+  return btoa(binary);
+}
+
+async function base64ToAudioBuffer(base64Str, audioCtx) {
+  const binary = atob(base64Str);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return await new Promise((resolve, reject) => {
+    audioCtx.decodeAudioData(bytes.buffer.slice(0), resolve, reject);
+  });
+}
+
+/**
  * Main Aether Studio Engine
  */
 class SpatialStudio {
@@ -2292,11 +2381,26 @@ class SpatialStudio {
     // Theme Switcher
     this.themeToggleBtn.addEventListener('click', () => this.toggleTheme());
 
-    // Session Export & Import
+    // Session Export (Save via Finder) & Import (Load via Finder)
     this.exportSessionBtn.addEventListener('click', () => this.exportSession());
-    this.importSessionBtn.addEventListener('click', () => this.importSessionFileInput.click());
+    this.importSessionBtn.addEventListener('click', () => this.importSession());
     this.importSessionFileInput.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files[0]) this.importSession(e.target.files[0]);
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const session = JSON.parse(evt.target.result);
+          await this.applySession(session);
+          this.showToast(`✅ Loaded "${file.name}"!`);
+          this.flashButtonSuccess(this.importSessionBtn, 'Loaded!');
+        } catch (err) {
+          console.error('Failed to load session file:', err);
+          this.showToast('Error loading session file. Invalid JSON format.', 'error');
+        }
+        e.target.value = '';
+      };
+      reader.readAsText(file);
     });
 
     // Demo & Reset
@@ -2397,6 +2501,17 @@ class SpatialStudio {
         this.toggleMasterPlay();
       }
     });
+
+    // Auto-restore saved session from localStorage on startup
+    try {
+      const saved = localStorage.getItem('aether_saved_session');
+      if (saved) {
+        const session = JSON.parse(saved);
+        this.applySession(session);
+      }
+    } catch (e) {
+      console.warn('Could not auto-restore session:', e);
+    }
   }
 
   applyTheme() {
@@ -2738,15 +2853,55 @@ class SpatialStudio {
     }, 2000);
   }
 
-  // --- SESSION EXPORT & IMPORT ---
-  exportSession() {
-    const sessionData = {
-      version: '3.0',
-      timestamp: new Date().toISOString(),
-      masterVolume: parseFloat(this.masterVolumeSlider.value),
-      tracks: this.tracks.map(t => ({
+  showToast(message, type = 'info') {
+    let toast = document.getElementById('aether-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'aether-toast';
+      toast.style.position = 'fixed';
+      toast.style.bottom = '28px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.padding = '12px 24px';
+      toast.style.borderRadius = '8px';
+      toast.style.fontSize = '14px';
+      toast.style.fontWeight = '600';
+      toast.style.zIndex = '99999';
+      toast.style.boxShadow = '0 8px 24px rgba(0,0,0,0.3)';
+      toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      toast.style.pointerEvents = 'none';
+      document.body.appendChild(toast);
+    }
+    toast.style.background = type === 'error' ? '#ef4444' : '#10b981';
+    toast.style.color = '#ffffff';
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(this._toastTimeout);
+    this._toastTimeout = setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(10px)';
+    }, 2500);
+  }
+
+  // --- DAW PROJECT SAVE & LOAD (MACOS FINDER) ---
+  async getCurrentSessionData(name = 'Untitled Project') {
+    const tracksData = [];
+    for (const t of this.tracks) {
+      let sampleData = null;
+      if (t.audioBuffer) {
+        try {
+          sampleData = await audioBufferToBase64(t.audioBuffer);
+        } catch (e) {
+          console.warn(`Could not serialize audio buffer for track ${t.index + 1}:`, e);
+        }
+      }
+      tracksData.push({
         index: t.index,
         name: t.name,
+        sampleName: t.sampleName || t.name,
+        filePath: t.filePath || '',
+        sampleData: sampleData,
         x: t.x,
         y: t.y,
         z: t.z,
@@ -2757,67 +2912,298 @@ class SpatialStudio {
         eq: { ...t.eqValues },
         isStream: t.isStream,
         streamUrl: t.streamUrl
-      }))
-    };
+      });
+    }
 
-    const blob = new Blob([JSON.stringify(sessionData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Aether_Session_${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 1000);
+    return {
+      version: '3.0',
+      type: 'aether_project',
+      name: name,
+      timestamp: new Date().toISOString(),
+      masterVolume: parseFloat(this.masterVolumeSlider.value),
+      tracks: tracksData
+    };
   }
 
-  async importSession(file) {
+  flashButtonSuccess(btn, text) {
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = `<span>✅</span> ${text}`;
+    btn.style.borderColor = '#10b981';
+    btn.style.color = '#10b981';
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }, 2000);
+  }
+
+  async exportSession() {
+    this.showToast('💾 Opening Finder Save As...', 'info');
+    const sessionData = await this.getCurrentSessionData('Untitled Project');
+    const jsonString = JSON.stringify(sessionData, null, 2);
+
+    let savedPath = null;
+    // 1. Native macOS Finder Save As Dialog via Tauri backend
     try {
-      const text = await file.text();
-      const session = JSON.parse(text);
-
-      if (session.masterVolume !== undefined) {
-        this.masterVolumeSlider.value = session.masterVolume;
-        this.masterVolVal.textContent = `${Math.round(session.masterVolume * 100)}%`;
-        if (this.masterGain) this.masterGain.gain.value = session.masterVolume;
-      }
-
-      if (session.tracks && Array.isArray(session.tracks)) {
-        session.tracks.forEach((saved, idx) => {
-          if (this.tracks[idx]) {
-            const t = this.tracks[idx];
-            t.setPosition(saved.x || 0.5, saved.y || 0.5, saved.z || 0);
-            if (saved.eq) {
-              if (t.knobLow) t.knobLow.setValue(saved.eq.low || 0);
-              if (t.knobMid) t.knobMid.setValue(saved.eq.mid || 0);
-              if (t.knobHigh) t.knobHigh.setValue(saved.eq.high || 0);
-            }
-            if (saved.motionPath && saved.motionPath.length > 1) {
-              t.motionPath = saved.motionPath;
-              t.isPlayingMotion = true;
-              t.playMotionBtn.classList.add('active');
-              t.motionPlayStartTime = performance.now();
-            }
-            if (saved.motionSpeed) {
-              t.motionSpeed = saved.motionSpeed;
-              t.speedBtns.forEach(b => {
-                b.classList.toggle('active', parseFloat(b.getAttribute('data-speed')) === t.motionSpeed);
-              });
-            }
-            if (saved.isStream && saved.streamUrl) {
-              t.loadStreamUrl(saved.streamUrl);
-            }
-          }
-        });
-      }
-
-      alert('Session imported successfully!');
-    } catch (err) {
-      console.error('Failed to import session:', err);
-      alert('Error importing session file. Please check file format.');
+      savedPath = await invokeTauri('save_project_dialog', {
+        content: jsonString,
+        defaultName: 'Untitled_Project.aether'
+      });
+    } catch (e) {
+      console.warn('Tauri save_project_dialog error, falling back:', e);
     }
+
+    // 2. Web File System Access API Fallback (outside Tauri)
+    if (!savedPath && window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: 'Untitled_Project.aether',
+          types: [{
+            description: 'Aether DAW Project (*.aether, *.json)',
+            accept: { 'application/json': ['.aether', '.json'] }
+          }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(jsonString);
+        await writable.close();
+        savedPath = handle.name || 'Untitled_Project.aether';
+      } catch (err) {
+        if (err.name === 'AbortError') return; // User cancelled
+      }
+    }
+
+    // 3. Fallback to browser download
+    if (!savedPath) {
+      try {
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Untitled_Project.aether';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 1000);
+        savedPath = 'Untitled_Project.aether';
+      } catch (e) {
+        console.error('Download fallback error:', e);
+      }
+    }
+
+    if (savedPath) {
+      const displayFilename = typeof savedPath === 'string' ? savedPath.split('/').pop() : 'Project';
+      this.showToast(`✅ Saved project: ${displayFilename}`);
+      this.flashButtonSuccess(this.exportSessionBtn, 'Saved!');
+    }
+  }
+
+  async importSession() {
+    let session = null;
+    let fileName = '';
+
+    // 1. Native macOS Finder Open Dialog via Tauri backend
+    try {
+      const res = await invokeTauri('load_project_dialog');
+      if (res && res.content) {
+        session = JSON.parse(res.content);
+        fileName = res.filename || 'Project';
+      } else if (res === null) {
+        return; // User cancelled Finder dialog
+      }
+    } catch (e) {
+      console.warn('Tauri load_project_dialog error, falling back:', e);
+    }
+
+    // 2. Web File System Access API Fallback
+    if (!session && window.showOpenFilePicker) {
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          types: [{
+            description: 'Aether DAW Project (*.aether, *.json)',
+            accept: { 'application/json': ['.aether', '.json'] }
+          }],
+          multiple: false
+        });
+        const file = await handle.getFile();
+        const text = await file.text();
+        session = JSON.parse(text);
+        fileName = file.name;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+      }
+    }
+
+    // 3. Fallback to hidden file input
+    if (!session) {
+      this.importSessionFileInput.value = '';
+      this.importSessionFileInput.click();
+      return;
+    }
+
+    if (session) {
+      await this.applySession(session);
+      this.showToast(`✅ Loaded "${fileName}" from Finder!`);
+      this.flashButtonSuccess(this.importSessionBtn, 'Loaded!');
+    }
+  }
+
+  async applySession(session) {
+    if (!session) return;
+
+    // 1. Halt active audio & canvas engines
+    this.stopMaster();
+
+    this.setupAudioContext();
+    const ctx = this.audioCtx;
+    if (ctx && ctx.state === 'suspended') await ctx.resume();
+
+    // 2. Display loading state in UI
+    this.showToast('⏳ Hydrating project & loading audio samples...', 'info');
+
+    // 3. Hydrate Master Controls
+    if (session.masterVolume !== undefined) {
+      this.masterVolumeSlider.value = session.masterVolume;
+      this.masterVolVal.textContent = `${Math.round(session.masterVolume * 100)}%`;
+      if (this.masterGain) this.masterGain.gain.value = session.masterVolume;
+    }
+
+    // 4. Hydrate Tracks & Audio Buffers
+    if (session.tracks && Array.isArray(session.tracks)) {
+      for (const saved of session.tracks) {
+        const idx = saved.index !== undefined ? saved.index : 0;
+        const t = this.tracks[idx];
+        if (!t) continue;
+
+        // Clear existing sound sources
+        t.cleanupSources();
+        t.isLoaded = false;
+        t.useMediaElement = false;
+        t.statusEl.textContent = 'Loading sample...';
+
+        // 3D Spatial Position
+        const posX = saved.x !== undefined ? saved.x : 0.5;
+        const posY = saved.y !== undefined ? saved.y : 0.5;
+        const posZ = saved.z !== undefined ? saved.z : 0;
+        t.setPosition(posX, posY, posZ);
+
+        // Track & Sample Name
+        if (saved.name !== undefined) {
+          t.name = saved.name;
+          if (t.nameEl) t.nameEl.textContent = saved.sampleName || saved.name;
+        }
+        t.filePath = saved.filePath || '';
+        t.sampleName = saved.sampleName || saved.name || `Track ${idx + 1}`;
+
+        // Mute State
+        if (saved.isMuted !== undefined) {
+          t.isMuted = !!saved.isMuted;
+          if (t.muteBtn) t.muteBtn.classList.toggle('active', t.isMuted);
+        }
+
+        // Solo State
+        if (saved.isSoloed !== undefined) {
+          t.isSoloed = !!saved.isSoloed;
+          if (t.soloBtn) t.soloBtn.classList.toggle('active', t.isSoloed);
+        }
+
+        // 3-Band Bipolar EQ Knobs
+        if (saved.eq) {
+          if (t.knobLow) t.knobLow.setValue(saved.eq.low ?? 0);
+          if (t.knobMid) t.knobMid.setValue(saved.eq.mid ?? 0);
+          if (t.knobHigh) t.knobHigh.setValue(saved.eq.high ?? 0);
+        }
+
+        // Motion Automation Loop & Speed
+        if (saved.motionPath && saved.motionPath.length > 1) {
+          t.motionPath = saved.motionPath;
+          t.isPlayingMotion = true;
+          if (t.playMotionBtn) t.playMotionBtn.classList.add('active');
+          t.motionPlayStartTime = performance.now();
+        } else {
+          t.motionPath = [];
+          t.isPlayingMotion = false;
+          if (t.playMotionBtn) t.playMotionBtn.classList.remove('active');
+        }
+
+        if (saved.motionSpeed) {
+          t.motionSpeed = saved.motionSpeed;
+          if (t.speedBtns) {
+            t.speedBtns.forEach(b => {
+              b.classList.toggle('active', parseFloat(b.getAttribute('data-speed')) === t.motionSpeed);
+            });
+          }
+        }
+
+        // Asynchronous Audio Sample Buffer Loading
+        try {
+          if (saved.sampleData) {
+            // Case A: Embedded Base64 WAV sample data
+            const decodedBuffer = await base64ToAudioBuffer(saved.sampleData, ctx);
+            t.audioBuffer = decodedBuffer;
+            t.duration = decodedBuffer.duration;
+            t.isLoaded = true;
+            t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
+          } else if (saved.filePath) {
+            // Case B: Local disk file path via Tauri backend read
+            let loaded = false;
+            try {
+              const base64Str = await invokeTauri('read_audio_file', { path: saved.filePath });
+              if (base64Str) {
+                const decodedBuffer = await base64ToAudioBuffer(base64Str, ctx);
+                t.audioBuffer = decodedBuffer;
+                t.duration = decodedBuffer.duration;
+                t.isLoaded = true;
+                t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
+                loaded = true;
+              }
+            } catch (fsErr) {
+              console.warn(`Could not read audio file directly via Tauri for track ${idx + 1}:`, fsErr);
+            }
+
+            // Fallback: Web fetch if it's a URL or server path
+            if (!loaded) {
+              try {
+                const resp = await fetch(saved.filePath);
+                if (resp.ok) {
+                  const arrBuf = await resp.arrayBuffer();
+                  const decoded = await ctx.decodeAudioData(arrBuf);
+                  t.audioBuffer = decoded;
+                  t.duration = decoded.duration;
+                  t.isLoaded = true;
+                  t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
+                  loaded = true;
+                }
+              } catch (fetchErr) {
+                console.warn(`Could not fetch audio file for track ${idx + 1}:`, fetchErr);
+              }
+            }
+
+            if (!loaded) {
+              t.statusEl.textContent = 'Sample missing';
+            }
+          } else if (saved.isStream && saved.streamUrl) {
+            // Case C: Live stream URL
+            t.loadStreamUrl(saved.streamUrl);
+          } else {
+            t.statusEl.textContent = 'No file loaded';
+          }
+        } catch (sampleErr) {
+          console.error(`Error loading sample for track ${idx + 1}:`, sampleErr);
+          t.statusEl.textContent = 'Decode error';
+        }
+
+        // Re-calculate DSP spatial panning & filter nodes
+        t.updateAudioParamsFromPosition();
+      }
+
+      // Refresh master solo bus routing
+      this.updateSoloState();
+    }
+
+    this.showToast('✅ Project hydrated and ready!', 'info');
   }
 
   // --- MASTER PLAYBACK ---
