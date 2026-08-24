@@ -437,6 +437,11 @@ body {
   gap: 10px;
   min-width: 0; /* CRITICAL: Prevent grid child overflow */
   overflow: hidden;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.channel-strip.drag-over {
+  border-color: var(--strip-color, var(--accent-primary)) !important;
+  box-shadow: 0 0 16px var(--strip-color, var(--accent-primary));
 }
 
 #channel-0 { --strip-color: var(--track-1); }
@@ -2302,45 +2307,85 @@ class SpatialStudio {
     this.modalCancelBtn.addEventListener('click', () => this.hideLiveInModal());
     this.modalConfirmBtn.addEventListener('click', () => this.confirmLiveInput());
 
+    // Prevent browser default file open behavior on entire window
+    window.addEventListener('dragover', (e) => e.preventDefault());
+    window.addEventListener('drop', (e) => e.preventDefault());
+
     // Drag and drop onto channel strips
     document.querySelectorAll('.channel-strip').forEach((strip, idx) => {
+      strip.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        strip.classList.add('drag-over');
+      });
       strip.addEventListener('dragover', (e) => {
         e.preventDefault();
         e.stopPropagation();
       });
+      strip.addEventListener('dragleave', (e) => {
+        // Only remove highlight if we've actually left the strip (not just moved to a child)
+        if (!strip.contains(e.relatedTarget)) {
+          strip.classList.remove('drag-over');
+        }
+      });
       strip.addEventListener('drop', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        strip.classList.remove('drag-over');
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
           this.tracks[idx].loadAudioFiles(Array.from(e.dataTransfer.files));
         }
       });
     });
 
-    // Drag and drop onto 2D Canvas
-    ['dragenter', 'dragover'].forEach(name => {
-      this.arenaContainer.addEventListener(name, (e) => {
-        e.preventDefault();
-        this.arenaDropHint.classList.add('active');
-      });
-    });
+    // Drag and drop onto 2D Canvas Arena
+    const updateArenaHint = (e) => {
+      this.arenaDropHint.classList.add('active');
+      const rect = this.canvas.getBoundingClientRect();
+      const pxX = e.clientX - rect.left;
+      const pxY = e.clientY - rect.top;
+      const hitIdx = this.findHoverNodeIndex(pxX, pxY, 18);
+      const hintBox = this.arenaDropHint.querySelector('.hint-box');
+      if (hintBox) {
+        hintBox.textContent = hitIdx !== -1
+          ? `Drop Audio File onto Track ${hitIdx + 1} (T${hitIdx + 1})`
+          : `Drop Audio File(s) to Assign Track`;
+      }
+    };
 
-    ['dragleave', 'drop'].forEach(name => {
-      this.arenaContainer.addEventListener(name, (e) => {
-        e.preventDefault();
+    this.arenaContainer.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      updateArenaHint(e);
+    });
+    this.arenaContainer.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      updateArenaHint(e);
+    });
+    this.arenaContainer.addEventListener('dragleave', (e) => {
+      // Only hide hint when leaving the arena entirely (not into a child)
+      if (!this.arenaContainer.contains(e.relatedTarget)) {
         this.arenaDropHint.classList.remove('active');
-      });
+      }
     });
-
     this.arenaContainer.addEventListener('drop', (e) => {
+      e.preventDefault();
+      this.arenaDropHint.classList.remove('active');
       const files = e.dataTransfer.files;
       if (files && files.length > 0) {
         const rect = this.canvas.getBoundingClientRect();
-        const dropX = (e.clientX - rect.left) / rect.width;
-        const dropY = 1.0 - ((e.clientY - rect.top) / rect.height);
+        const pxX = e.clientX - rect.left;
+        const pxY = e.clientY - rect.top;
+        const dropX = pxX / rect.width;
+        const dropY = 1.0 - (pxY / rect.height);
 
-        let targetTrack = this.tracks.find(t => !t.isLoaded) || this.tracks[0];
-        targetTrack.setPosition(dropX, dropY);
+        const hitIdx = this.findHoverNodeIndex(pxX, pxY, 18);
+        let targetTrack;
+        if (hitIdx !== -1) {
+          targetTrack = this.tracks[hitIdx];
+        } else {
+          targetTrack = this.tracks.find(t => !t.isLoaded) || this.tracks[0];
+          targetTrack.setPosition(dropX, dropY);
+        }
         targetTrack.loadAudioFiles(Array.from(files));
       }
     });
@@ -2916,6 +2961,19 @@ class SpatialStudio {
     this.playMaster();
   }
 
+  findHoverNodeIndex(pxX, pxY, hitPadding = 10) {
+    for (let i = this.tracks.length - 1; i >= 0; i--) {
+      const t = this.tracks[i];
+      const nodePxX = t.x * this.width;
+      const nodePxY = (1.0 - t.y) * this.height;
+      const r = t.getVisualRadius() + hitPadding;
+      if (Math.hypot(nodePxX - pxX, nodePxY - pxY) <= r) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
   // --- 2D SPATIAL CANVAS RENDERING ---
   initCanvas() {
     this.resizeCanvas();
@@ -2933,25 +2991,16 @@ class SpatialStudio {
       return { normX, normY, pxX: clientX - rect.left, pxY: clientY - rect.top };
     };
 
-    const findHoverNodeIndex = (pxX, pxY) => {
-      return this.tracks.findIndex(t => {
-        const nodePxX = t.x * this.width;
-        const nodePxY = (1.0 - t.y) * this.height;
-        const r = t.getVisualRadius() + 4; // strictly within the circle bounds
-        return Math.hypot(nodePxX - pxX, nodePxY - pxY) <= r;
-      });
-    };
-
     this.canvas.addEventListener('mousemove', (e) => {
       if (isDragging) return;
       const coords = getCanvasCoords(e);
-      const hitIdx = findHoverNodeIndex(coords.pxX, coords.pxY);
+      const hitIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
       this.canvas.style.cursor = hitIdx !== -1 ? 'grab' : 'crosshair';
     });
 
     this.canvas.addEventListener('mousedown', (e) => {
       const coords = getCanvasCoords(e);
-      const hitIdx = findHoverNodeIndex(coords.pxX, coords.pxY);
+      const hitIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
       if (hitIdx !== -1) {
         isDragging = true;
         this.activeDragNodeIndex = hitIdx;
@@ -2987,7 +3036,7 @@ class SpatialStudio {
       const coords = getCanvasCoords(e);
       let targetIdx = this.activeDragNodeIndex;
       if (targetIdx === -1) {
-        targetIdx = findHoverNodeIndex(coords.pxX, coords.pxY);
+        targetIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
       }
 
       if (targetIdx !== -1) {
@@ -3002,7 +3051,7 @@ class SpatialStudio {
     // Touch support for tablets/phones
     this.canvas.addEventListener('touchstart', (e) => {
       const coords = getCanvasCoords(e);
-      const hitIdx = findHoverNodeIndex(coords.pxX, coords.pxY);
+      const hitIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
       if (hitIdx !== -1) {
         isDragging = true;
         this.activeDragNodeIndex = hitIdx;
