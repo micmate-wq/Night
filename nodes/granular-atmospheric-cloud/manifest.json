@@ -1,0 +1,71 @@
+{
+  "id": "com.aether.nodes.granular-cloud",
+  "name": "Granular Atmospheric Cloud",
+  "version": "1.0.0",
+  "author": "Aether Community",
+  "description": "Transforms short ambient audio bursts into evolving, low-CPU granular texture loops and ethereal drone beds.",
+  "category": "Granular / Texture Generator",
+  "inputs": 0,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "density",
+      "name": "Grain Density",
+      "type": "float",
+      "min": 2.0,
+      "max": 60.0,
+      "default": 18.0,
+      "unit": "grains/s"
+    },
+    {
+      "id": "grainSize",
+      "name": "Grain Duration",
+      "type": "float",
+      "min": 0.03,
+      "max": 0.8,
+      "default": 0.22,
+      "unit": "s"
+    },
+    {
+      "id": "spray",
+      "name": "Position Spray",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.45,
+      "unit": "norm"
+    },
+    {
+      "id": "pitchShift",
+      "name": "Pitch Shift",
+      "type": "float",
+      "min": -24.0,
+      "max": 24.0,
+      "default": 0.0,
+      "unit": "st"
+    },
+    {
+      "id": "feedback",
+      "name": "Diffusion Feedback",
+      "type": "float",
+      "min": 0.0,
+      "max": 0.95,
+      "default": 0.55,
+      "unit": "norm"
+    },
+    {
+      "id": "freeze",
+      "name": "Freeze Buffer",
+      "type": "boolean",
+      "default": false
+    }
+  ],
+  "canvas_animation": {
+    "type": "ripple"
+  }
+}
+

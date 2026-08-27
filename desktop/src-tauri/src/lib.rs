@@ -1,6 +1,82 @@
 use tauri::Manager;
 use serde::{Deserialize, Serialize};
 use base64::prelude::*;
+use std::io::Read;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct LoadedNodeBundle {
+    pub file_path: String,
+    pub file_name: String,
+    pub manifest_raw: String,
+    pub manifest: serde_json::Value,
+    pub ui_html: Option<String>,
+    pub dsp_wasm_base64: Option<String>,
+    pub dsp_js: Option<String>,
+}
+
+fn unpack_node_bundle_bytes(bytes: &[u8], file_name: &str, file_path: &str) -> Result<LoadedNodeBundle, String> {
+    let cursor = std::io::Cursor::new(bytes);
+    let mut archive = zip::ZipArchive::new(cursor)
+        .map_err(|e| format!("Failed to read zip archive: {}", e))?;
+
+    let mut manifest_raw: Option<String> = None;
+    let mut ui_html: Option<String> = None;
+    let mut dsp_wasm_base64: Option<String> = None;
+    let mut dsp_js: Option<String> = None;
+
+    for i in 0..archive.len() {
+        let mut zip_file = archive.by_index(i)
+            .map_err(|e| format!("Failed to read entry from bundle: {}", e))?;
+        
+        let raw_name = zip_file.name().to_string();
+        let normalized = raw_name.rsplit('/').next().unwrap_or(&raw_name).to_lowercase();
+
+        if normalized == "manifest.json" {
+            let mut content = String::new();
+            zip_file.read_to_string(&mut content)
+                .map_err(|e| format!("Failed to read manifest.json: {}", e))?;
+            manifest_raw = Some(content);
+        } else if normalized == "ui.html" {
+            let mut content = String::new();
+            zip_file.read_to_string(&mut content)
+                .map_err(|e| format!("Failed to read ui.html: {}", e))?;
+            ui_html = Some(content);
+        } else if normalized == "dsp.wasm" {
+            let mut b = Vec::new();
+            zip_file.read_to_end(&mut b)
+                .map_err(|e| format!("Failed to read dsp.wasm: {}", e))?;
+            dsp_wasm_base64 = Some(BASE64_STANDARD.encode(b));
+        } else if normalized == "dsp.js" {
+            let mut content = String::new();
+            zip_file.read_to_string(&mut content)
+                .map_err(|e| format!("Failed to read dsp.js: {}", e))?;
+            dsp_js = Some(content);
+        }
+    }
+
+    let manifest_str = manifest_raw.ok_or_else(|| "Missing manifest.json in .aethernode bundle".to_string())?;
+    let manifest_json: serde_json::Value = serde_json::from_str(&manifest_str)
+        .map_err(|e| format!("Invalid manifest.json format: {}", e))?;
+
+    Ok(LoadedNodeBundle {
+        file_path: file_path.to_string(),
+        file_name: file_name.to_string(),
+        manifest_raw: manifest_str,
+        manifest: manifest_json,
+        ui_html,
+        dsp_wasm_base64,
+        dsp_js,
+    })
+}
+
+fn unpack_node_bundle(path: &std::path::Path) -> Result<LoadedNodeBundle, String> {
+    let bytes = std::fs::read(path)
+        .map_err(|e| format!("Failed to open node bundle: {}", e))?;
+    let file_name = path.file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_else(|| "unknown.aethernode".to_string());
+    unpack_node_bundle_bytes(&bytes, &file_name, &path.to_string_lossy())
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct LoadProjectResponse {
@@ -55,6 +131,37 @@ async fn load_project_dialog() -> Result<Option<LoadProjectResponse>, String> {
 }
 
 #[tauri::command]
+async fn load_node_bundle_dialog() -> Result<Option<LoadedNodeBundle>, String> {
+    let file = rfd::AsyncFileDialog::new()
+        .set_title("Load Aether Node Bundle")
+        .add_filter("Aether Node (*.aethernode, *.zip)", &["aethernode", "zip"])
+        .pick_file()
+        .await;
+
+    if let Some(handle) = file {
+        let path = handle.path().to_path_buf();
+        let bundle = unpack_node_bundle(&path)?;
+        Ok(Some(bundle))
+    } else {
+        Ok(None)
+    }
+}
+
+#[tauri::command]
+async fn load_node_bundle_from_path(path: String) -> Result<LoadedNodeBundle, String> {
+    let file_path = std::path::PathBuf::from(&path);
+    unpack_node_bundle(&file_path)
+}
+
+#[tauri::command]
+async fn load_node_bundle_from_base64(base64: String, filename: Option<String>) -> Result<LoadedNodeBundle, String> {
+    let bytes = BASE64_STANDARD.decode(&base64)
+        .map_err(|e| format!("Failed to decode base64 bundle data: {}", e))?;
+    let name = filename.unwrap_or_else(|| "custom.aethernode".to_string());
+    unpack_node_bundle_bytes(&bytes, &name, "")
+}
+
+#[tauri::command]
 async fn read_audio_file(path: String) -> Result<String, String> {
     let bytes = std::fs::read(&path).map_err(|e| format!("Failed to read audio file at {}: {}", path, e))?;
     Ok(BASE64_STANDARD.encode(bytes))
@@ -71,6 +178,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             save_project_dialog,
             load_project_dialog,
+            load_node_bundle_dialog,
+            load_node_bundle_from_path,
+            load_node_bundle_from_base64,
             read_audio_file,
             write_file_at_path
         ])
@@ -84,4 +194,5 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
 

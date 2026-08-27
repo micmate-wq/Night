@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Granular Atmospheric Cloud Node UI</title>
+  <style>
+    :root {
+      --bg: var(--bg-main, #0A0A0A);
+      --panel: var(--bg-card, #141414);
+      --canvas-bg: var(--bg-canvas, #000000);
+      --accent: var(--accent-primary, #FFFFFF);
+      --accent-glow: var(--accent-soft, rgba(255, 255, 255, 0.15));
+      --text: var(--text-main, #FFFFFF);
+      --text-muted: var(--text-muted, #888888);
+      --border: var(--border-light, #333333);
+      --border-subtle: var(--border-subtle, #222222);
+      --font-heading: var(--font-heading, 'Space Grotesk', -apple-system, sans-serif);
+      --font-body: var(--font-body, 'Inter', -apple-system, sans-serif);
+      --font-mono: var(--font-mono, 'JetBrains Mono', monospace);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 11px;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .node-header {
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .node-title {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .node-badge {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--accent-glow);
+      color: var(--text);
+    }
+
+    .cloud-canvas-container {
+      position: relative;
+      flex: 1;
+      min-height: 90px;
+      background: var(--canvas-bg);
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .controls-grid {
+      padding: 10px 14px;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px 14px;
+    }
+
+    .control-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-family: var(--font-heading);
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .control-value {
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--text);
+      cursor: pointer;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 6px var(--accent-glow);
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .footer-actions {
+      grid-column: span 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .freeze-btn {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-family: var(--font-heading);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+
+    .freeze-btn.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .status-text {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="node-header">
+    <div class="node-title">
+      <span>☁</span> Granular Cloud
+    </div>
+    <span class="node-badge">DSP.JS</span>
+  </div>
+
+  <div class="cloud-canvas-container">
+    <canvas id="grainCanvas"></canvas>
+  </div>
+
+  <div class="controls-grid">
+    <div class="control-item">
+      <div class="control-header">
+        <span>Density</span>
+        <span class="control-value" id="val-density">18 /s</span>
+      </div>
+      <input type="range" id="param-density" min="2" max="60" step="1" value="18">
+    </div>
+
+    <div class="control-item">
+      <div class="control-header">
+        <span>Grain Size</span>
+        <span class="control-value" id="val-grainSize">0.22 s</span>
+      </div>
+      <input type="range" id="param-grainSize" min="0.03" max="0.8" step="0.01" value="0.22">
+    </div>
+
+    <div class="control-item">
+      <div class="control-header">
+        <span>Spray</span>
+        <span class="control-value" id="val-spray">0.45</span>
+      </div>
+      <input type="range" id="param-spray" min="0" max="1" step="0.01" value="0.45">
+    </div>
+
+    <div class="control-item">
+      <div class="control-header">
+        <span>Pitch Shift</span>
+        <span class="control-value" id="val-pitchShift">0 st</span>
+      </div>
+      <input type="range" id="param-pitchShift" min="-24" max="24" step="1" value="0">
+    </div>
+
+    <div class="footer-actions">
+      <button class="freeze-btn" id="btn-freeze">
+        <span>❄</span> Freeze
+      </button>
+      <div class="status-text" id="status-display">Stereo Active</div>
+    </div>
+  </div>
+
+  <script>
+    // State & UI Synchronization
+    const state = {
+      density: 18,
+      grainSize: 0.22,
+      spray: 0.45,
+      pitchShift: 0,
+      feedback: 0.55,
+      freeze: false
+    };
+
+    // Canvas Visualization
+    const canvas = document.getElementById('grainCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth * window.devicePixelRatio;
+      canvas.height = canvas.parentElement.clientHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class GrainParticle {
+      constructor() {
+        const w = canvas.width / window.devicePixelRatio;
+        const h = canvas.height / window.devicePixelRatio;
+        this.x = (0.2 + (Math.random() * 2 - 1) * state.spray * 0.4) * w;
+        this.y = h * 0.5 + (Math.random() * 2 - 1) * (h * 0.35);
+        this.radius = 2 + (state.grainSize * 10);
+        this.alpha = 1.0;
+        this.decay = 0.02 / Math.max(0.1, state.grainSize);
+        this.hue = 200 + state.pitchShift * 3;
+      }
+      update() {
+        this.alpha -= this.decay;
+        this.y -= 0.3;
+      }
+      draw(c) {
+        if (this.alpha <= 0) return;
+        c.save();
+        c.beginPath();
+        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        c.fillStyle = `hsla(${this.hue}, 85%, 65%, ${this.alpha})`;
+        c.shadowColor = `hsla(${this.hue}, 90%, 60%, 0.8)`;
+        c.shadowBlur = 8;
+        c.fill();
+        c.restore();
+      }
+    }
+
+    let lastSpawn = 0;
+    function animate(timestamp) {
+      const w = canvas.width / window.devicePixelRatio;
+      const h = canvas.height / window.devicePixelRatio;
+      ctx.clearRect(0, 0, w, h);
+
+      // Spawn grains according to density
+      const interval = 1000 / state.density;
+      if (timestamp - lastSpawn > interval) {
+        particles.push(new GrainParticle());
+        lastSpawn = timestamp;
+      }
+
+      particles.forEach(p => {
+        p.update();
+        p.draw(ctx);
+      });
+      particles = particles.filter(p => p.alpha > 0);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+    // Host IPC Bridge (window.postMessage)
+    function notifyHost(paramId, value) {
+      window.parent.postMessage({
+        type: 'aether:param-change',
+        paramId: paramId,
+        value: value
+      }, '*');
+    }
+
+    function bindSlider(id, paramKey, formatFn) {
+      const el = document.getElementById(id);
+      const valEl = document.getElementById('val-' + paramKey);
+      el.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        state[paramKey] = val;
+        valEl.textContent = formatFn(val);
+        notifyHost(paramKey, val);
+      });
+    }
+
+    bindSlider('param-density', 'density', v => `${v} /s`);
+    bindSlider('param-grainSize', 'grainSize', v => `${v.toFixed(2)} s`);
+    bindSlider('param-spray', 'spray', v => v.toFixed(2));
+    bindSlider('param-pitchShift', 'pitchShift', v => `${v > 0 ? '+' : ''}${v} st`);
+
+    const freezeBtn = document.getElementById('btn-freeze');
+    freezeBtn.addEventListener('click', () => {
+      state.freeze = !state.freeze;
+      freezeBtn.classList.toggle('active', state.freeze);
+      notifyHost('freeze', state.freeze);
+    });
+
+    // Inbound listener from Aether host
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (event.data.type === 'aether:param-update') {
+        const { paramId, value } = event.data;
+        if (state[paramId] !== undefined) {
+          state[paramId] = value;
+          const input = document.getElementById('param-' + paramId);
+          if (input) input.value = value;
+          const valEl = document.getElementById('val-' + paramId);
+          if (valEl) valEl.textContent = value;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

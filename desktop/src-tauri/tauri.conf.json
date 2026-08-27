@@ -5,8 +5,8 @@
   "identifier": "com.aether.desktop",
   "build": {
     "frontendDist": "../",
-    "devUrl": "http://localhost:3456",
-    "beforeDevCommand": "python3 -m http.server 3456"
+    "devUrl": "http://localhost:3456/desktop/index.html",
+    "beforeDevCommand": "python3 -m http.server 3456 -d /Users/matt/.gemini/antigravity/scratch/aether"
   },
   "app": {
     "withGlobalTauri": true,

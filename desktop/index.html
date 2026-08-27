@@ -902,8 +902,8 @@ body {
 
         <div class="master-vol-control">
           <span>MASTER</span>
-          <input type="range" id="master-volume" min="0" max="1" step="0.01" value="0.85" class="header-slider">
-          <span id="master-vol-val" style="min-width:32px;font-family:var(--font-mono);">85%</span>
+          <input type="range" id="master-volume" min="0" max="1" step="0.01" value="1.0" class="header-slider">
+          <span id="master-vol-val" style="min-width:32px;font-family:var(--font-mono);">100%</span>
         </div>
 
         <button id="theme-toggle-btn" class="header-btn theme-toggle-btn" title="Toggle Dark / Light Theme">
@@ -955,8 +955,9 @@ body {
               <div class="track-status" id="t0-status">Drop file or choose source</div>
             </div>
             <div class="header-source-actions">
-              <input type="file" id="t0-file" accept="audio/*" multiple class="file-input-hidden">
-              <button class="btn-src" onclick="document.getElementById('t0-file').click()" title="Load local audio file(s)">Load</button>
+              <input type="file" id="t0-file" accept="audio/*,.aethernode,.zip" multiple class="file-input-hidden">
+              <button class="btn-src btn-node-inspect" id="t0-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-cyan); font-weight: bold;">⚙ UI</button>
+              <button class="btn-src" onclick="document.getElementById('t0-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t0-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
               <button class="btn-src" id="t0-stream" title="Live Stream / URL Receiver">Stream</button>
             </div>
@@ -973,8 +974,8 @@ body {
               <button class="btn-toggle solo-btn" id="t0-solo">SOLO</button>
             </div>
             <div class="gauges-row">
-              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t0-vol-txt">82%</span></div>
-              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t0-pan-txt">L50</span></div>
+              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t0-vol-txt">80%</span></div>
+              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t0-pan-txt">C</span></div>
             </div>
             <div class="motion-box">
               <div class="motion-header">MOTION AUTOMATION</div>
@@ -1029,8 +1030,9 @@ body {
               <div class="track-status" id="t1-status">Drop file or choose source</div>
             </div>
             <div class="header-source-actions">
-              <input type="file" id="t1-file" accept="audio/*" multiple class="file-input-hidden">
-              <button class="btn-src" onclick="document.getElementById('t1-file').click()" title="Load local audio file(s)">Load</button>
+              <input type="file" id="t1-file" accept="audio/*,.aethernode,.zip" multiple class="file-input-hidden">
+              <button class="btn-src btn-node-inspect" id="t1-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-magenta); font-weight: bold;">⚙ UI</button>
+              <button class="btn-src" onclick="document.getElementById('t1-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t1-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
               <button class="btn-src" id="t1-stream" title="Live Stream / URL Receiver">Stream</button>
             </div>
@@ -1047,8 +1049,8 @@ body {
               <button class="btn-toggle solo-btn" id="t1-solo">SOLO</button>
             </div>
             <div class="gauges-row">
-              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t1-vol-txt">82%</span></div>
-              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t1-pan-txt">R50</span></div>
+              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t1-vol-txt">30%</span></div>
+              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t1-pan-txt">C</span></div>
             </div>
             <div class="motion-box">
               <div class="motion-header">MOTION AUTOMATION</div>
@@ -1100,8 +1102,9 @@ body {
               <div class="track-status" id="t2-status">Drop file or choose source</div>
             </div>
             <div class="header-source-actions">
-              <input type="file" id="t2-file" accept="audio/*" multiple class="file-input-hidden">
-              <button class="btn-src" onclick="document.getElementById('t2-file').click()" title="Load local audio file(s)">Load</button>
+              <input type="file" id="t2-file" accept="audio/*,.aethernode,.zip" multiple class="file-input-hidden">
+              <button class="btn-src btn-node-inspect" id="t2-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-orange); font-weight: bold;">⚙ UI</button>
+              <button class="btn-src" onclick="document.getElementById('t2-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t2-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
               <button class="btn-src" id="t2-stream" title="Live Stream / URL Receiver">Stream</button>
             </div>
@@ -1118,7 +1121,7 @@ body {
               <button class="btn-toggle solo-btn" id="t2-solo">SOLO</button>
             </div>
             <div class="gauges-row">
-              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t2-vol-txt">38%</span></div>
+              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t2-vol-txt">50%</span></div>
               <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t2-pan-txt">L50</span></div>
             </div>
             <div class="motion-box">
@@ -1171,8 +1174,9 @@ body {
               <div class="track-status" id="t3-status">Drop file or choose source</div>
             </div>
             <div class="header-source-actions">
-              <input type="file" id="t3-file" accept="audio/*" multiple class="file-input-hidden">
-              <button class="btn-src" onclick="document.getElementById('t3-file').click()" title="Load local audio file(s)">Load</button>
+              <input type="file" id="t3-file" accept="audio/*,.aethernode,.zip" multiple class="file-input-hidden">
+              <button class="btn-src btn-node-inspect" id="t3-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-lime); font-weight: bold;">⚙ UI</button>
+              <button class="btn-src" onclick="document.getElementById('t3-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t3-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
               <button class="btn-src" id="t3-stream" title="Live Stream / URL Receiver">Stream</button>
             </div>
@@ -1189,7 +1193,7 @@ body {
               <button class="btn-toggle solo-btn" id="t3-solo">SOLO</button>
             </div>
             <div class="gauges-row">
-              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t3-vol-txt">38%</span></div>
+              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t3-vol-txt">50%</span></div>
               <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t3-pan-txt">R50</span></div>
             </div>
             <div class="motion-box">
@@ -1257,10 +1261,31 @@ body {
     </div>
   </div>
 
+  <!-- AETHER NODE INSPECTOR MODAL -->
+  <div class="modal-overlay" id="node-inspector-modal">
+    <div class="modal-card" style="width: 520px; max-width: 92vw; padding: 0; overflow: hidden; background: #0d1117; border: 1px solid rgba(88, 166, 255, 0.35); box-shadow: 0 16px 36px rgba(0,0,0,0.75);">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+        <h3 id="node-modal-title" style="font-size: 13px; font-weight: 600; color: #58a6ff; margin: 0; display: flex; align-items: center; gap: 8px;">
+          <span>⚡</span> Aether Node Inspector
+        </h3>
+        <button class="header-btn" id="node-modal-close-btn" style="padding: 3px 10px; font-size: 11px;">✕ Close</button>
+      </div>
+      <iframe id="node-inspector-frame" style="width: 100%; height: 340px; border: none; display: block; background: #0d1117;"></iframe>
+    </div>
+  </div>
+
   <!-- ==========================================================================
        JAVASCRIPT LOGIC: AETHER ENGINE
        ========================================================================== -->
   <script>
+// Top-level reload shortcut for Tauri Desktop Webview
+window.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && (e.key === 'r' || e.key === 'R' || e.code === 'KeyR')) {
+    e.preventDefault();
+    window.location.reload();
+  }
+}, true);
+
 /**
  * Ableton-Style Bipolar Rotary Knob Component (0dB @ 12 o'clock)
  */
@@ -1420,6 +1445,8 @@ class AudioTrack {
     this.color = color;
     this.studio = studio;
 
+    this.isSpatialized = false;
+
     this.isLoaded = false;
     this.isPlaying = false;
     this.isMuted = false;
@@ -1446,13 +1473,19 @@ class AudioTrack {
     this.streamAudio = null;
     this.streamMediaSource = null;
 
+    // Default opening coordinates for the 4 tracks on 2D canvas:
+    // T1: Center Top (80% Vol, C) | T2: Center Bottom (30% Vol, C)
+    // T3: Mid Left (50% Vol, L50) | T4: Mid Right (50% Vol, R50)
     const defaultPositions = [
-      { x: 0.25, y: 0.82 }, { x: 0.75, y: 0.82 },
-      { x: 0.25, y: 0.38 }, { x: 0.75, y: 0.38 }
+      { x: 0.5, y: 0.80, z: 0 },
+      { x: 0.5, y: 0.30, z: 0 },
+      { x: 0.25, y: 0.50, z: 0 },
+      { x: 0.75, y: 0.50, z: 0 }
     ];
-    this.x = defaultPositions[index].x;
-    this.y = defaultPositions[index].y;
-    this.z = 0; // Depth / Distance (0 = close, 50 = far)
+    const defPos = defaultPositions[this.index % defaultPositions.length];
+    this.x = defPos.x;
+    this.y = defPos.y;
+    this.z = defPos.z;
     this.baseRadius = 24;
 
     this.motionPath = [];
@@ -1475,12 +1508,18 @@ class AudioTrack {
     this.stereoPanNode = null;
     this.reverbPanNode = null;
     this.gainNode = null;
+    this.spatialGainNode = null;
     this.pannerNode = null;
 
     this.eqValues = { low: 0, mid: 0, high: 0 };
 
     this.startTime = 0;
     this.duration = 0;
+
+    // Aether Custom Node Ecosystem State
+    this.isCustomNode = false;
+    this.customNodeBundle = null;
+    this.customNodeDSP = null;
 
     this.initDOM();
   }
@@ -1492,6 +1531,14 @@ class AudioTrack {
     this.fileInput = document.getElementById(`t${i}-file`);
     this.liveInBtn = document.getElementById(`t${i}-live-in`);
     this.streamBtn = document.getElementById(`t${i}-stream`);
+    this.nodeInspectBtn = document.getElementById(`t${i}-node-inspect`);
+    if (this.nodeInspectBtn) {
+      this.nodeInspectBtn.addEventListener('click', () => {
+        if (this.isCustomNode && this.customNodeBundle) {
+          this.studio.openNodeInspector(this);
+        }
+      });
+    }
 
     this.muteBtn = document.getElementById(`t${i}-mute`);
     this.soloBtn = document.getElementById(`t${i}-solo`);
@@ -1561,6 +1608,9 @@ class AudioTrack {
       min: -15, max: 15, value: 0,
       onChange: (val) => this.updateEQ('high', val)
     });
+
+    // Apply default initial volume/pan labels immediately
+    this.updateAudioParamsFromPosition();
   }
 
   setupWebAudioNodes(audioCtx) {
@@ -1612,39 +1662,81 @@ class AudioTrack {
     // Direct / Dry Gain Node
     this.gainNode = audioCtx.createGain();
 
-    // Track Summing Bus (Dry + Localized Reverb)
+    // Track Summing Bus
     this.trackSumNode = audioCtx.createGain();
 
-    // Dedicated Track Stereo Pan Node (guarantees direct pan positioning for dry + all effects)
+    // Dedicated Track Stereo Pan Node (equal-power dry stereo panning)
     this.stereoPanNode = audioCtx.createStereoPanner();
+    
+    // Direct Pan Gain to mute the native dry path when spatialization is active
+    this.directPanGain = audioCtx.createGain();
+    this.directPanGain.gain.value = 1.0;
 
     // 3D Spatial Panner Node (HRTF)
     this.pannerNode = audioCtx.createPanner();
     this.pannerNode.panningModel = 'HRTF';
     this.pannerNode.distanceModel = 'none';
 
-    // EQ Chain
+    // Spatial Wet Gain Node
+    this.spatialGainNode = audioCtx.createGain();
+    this.spatialGainNode.gain.value = 0.0;
+
+    // EQ Chain -> Gain Node -> Track Sum (100% clean direct dry audio path)
     this.eqLowNode.connect(this.eqMidNode);
     this.eqMidNode.connect(this.eqHighNode);
-    this.eqHighNode.connect(this.depthFilterNode);
-
-    // 1. Dry Path -> Track Sum
-    this.depthFilterNode.connect(this.gainNode);
+    this.eqHighNode.connect(this.gainNode);
     this.gainNode.connect(this.trackSumNode);
 
-    // 2. Localized Reverb Path -> Convolver -> Damping -> Reverb Pan -> Track Sum
-    this.depthFilterNode.connect(this.reverbSendFilterNode);
+    // Branch 1: Direct Clean Stereo Path (State A & State B)
+    this.trackSumNode.connect(this.stereoPanNode);
+    this.stereoPanNode.connect(this.directPanGain);
+    this.directPanGain.connect(this.studio.masterGain);
+
+    // Branch 2: 3D HRTF Spatial Path (State C)
+    this.trackSumNode.connect(this.depthFilterNode);
+    this.depthFilterNode.connect(this.pannerNode);
+    this.pannerNode.connect(this.spatialGainNode);
+    this.spatialGainNode.connect(this.studio.masterGain);
+
+    // Branch 3: Distance Reverb Path (State C)
+    this.trackSumNode.connect(this.reverbSendFilterNode);
     this.reverbSendFilterNode.connect(this.reverbSendGain);
     this.reverbSendGain.connect(this.reverbConvolver);
     this.reverbConvolver.connect(this.reverbDampingFilter);
     this.reverbDampingFilter.connect(this.reverbPanNode);
-    this.reverbPanNode.connect(this.trackSumNode);
+    this.reverbPanNode.connect(this.studio.masterGain);
 
-    // 3. Track Sum -> Track Stereo Panner -> HRTF 3D Panner -> Master Gain
-    this.trackSumNode.connect(this.stereoPanNode);
-    this.stereoPanNode.connect(this.pannerNode);
-    this.pannerNode.connect(this.studio.masterGain);
+    this.spatializerNode = null;
+    this.updateAudioParamsFromPosition();
+  }
 
+  initSpatializerWorklet(audioCtx) {
+    if (this.spatializerNode) return;
+    try {
+      this.spatializerNode = new AudioWorkletNode(audioCtx, 'spatializer-worklet', {
+          numberOfInputs: 1,
+          numberOfOutputs: 1,
+          outputChannelCount: [2]
+      });
+
+      // Fetch wasm and send to worklet
+      fetch('/desktop/dsp-wasm/pkg/dsp_wasm_bg.wasm')
+          .then(r => r.arrayBuffer())
+          .then(wasmBytes => {
+              this.spatializerNode.port.postMessage({ type: 'load-wasm', wasmBytes });
+          });
+
+      // Reroute depth filter through the new custom spatializer instead of native panner
+      this.depthFilterNode.disconnect();
+      this.depthFilterNode.connect(this.spatializerNode);
+      this.spatializerNode.connect(this.spatialGainNode);
+    } catch (e) {
+      console.warn("Worklet init failed, falling back to HRTF", e);
+    }
+  }
+
+  enableSpatialization() {
+    this.isSpatialized = true;
     this.updateAudioParamsFromPosition();
   }
 
@@ -1664,9 +1756,20 @@ class AudioTrack {
     }
   }
 
+  cleanupCustomNode() {
+    if (this.customNodeDSP && typeof this.customNodeDSP.dispose === 'function') {
+      try { this.customNodeDSP.dispose(); } catch(e){}
+    }
+    this.customNodeDSP = null;
+    this.customNodeBundle = null;
+    this.isCustomNode = false;
+    if (this.nodeInspectBtn) this.nodeInspectBtn.style.display = 'none';
+  }
+
   cleanupSources() {
     this.cleanupLiveIn();
     this.cleanupStream();
+    this.cleanupCustomNode();
     this.stopNodeOnly();
     this.audioBuffer = null;
   }
@@ -1849,6 +1952,48 @@ class AudioTrack {
 
   async loadAudioFile(file) {
     if (!file) return;
+    const lower = (file.name || '').toLowerCase();
+
+    // Check if uploaded/dropped file is a custom .aethernode bundle or zip
+    if (lower.endsWith('.aethernode') || (lower.endsWith('.zip') && !file.type.startsWith('audio/'))) {
+      this.statusEl.textContent = 'Unpacking node...';
+      try {
+        let bundle = null;
+        if (file.path) {
+          try {
+            bundle = await invokeTauri('load_node_bundle_from_path', { path: file.path });
+          } catch(e) {
+            console.warn('Path unpack failed, trying base64 fallback:', e);
+          }
+        }
+        if (!bundle) {
+          bundle = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async () => {
+              try {
+                const base64Data = reader.result.split(',')[1];
+                const res = await invokeTauri('load_node_bundle_from_base64', { base64: base64Data, filename: file.name });
+                resolve(res);
+              } catch(e) { reject(e); }
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+        if (bundle) {
+          await this.loadNodeBundle(bundle);
+          this.studio.showToast(`Loaded node: ${bundle.manifest.name || bundle.file_name}`, 'success');
+          return;
+        } else {
+          throw new Error('Bundle unpack returned null');
+        }
+      } catch (nodeErr) {
+        this.statusEl.textContent = 'Node unpack error';
+        this.studio.showToast(`Error unpacking node: ${nodeErr.message || nodeErr}`, 'error');
+        return;
+      }
+    }
+
     this.nameEl.textContent = file.name;
     this.sampleName = file.name;
     this.filePath = file.path || '';
@@ -1912,11 +2057,72 @@ class AudioTrack {
     }
   }
 
+  async loadNodeBundle(bundle) {
+    if (!bundle || !bundle.manifest) return;
+    this.nameEl.textContent = bundle.manifest.name || bundle.file_name || 'Aether Node';
+    this.sampleName = bundle.manifest.name || bundle.file_name;
+    this.filePath = bundle.file_path || '';
+    this.statusEl.textContent = 'Node Ready';
+
+    this.studio.setupAudioContext();
+    const ctx = this.studio.audioCtx;
+    if (ctx.state === 'suspended') await ctx.resume();
+
+    this.stopNodeOnly();
+    this.useMediaElement = false;
+    this.isLiveIn = false;
+    this.isStream = false;
+    this.audioBuffer = null;
+    this.playlist = [];
+
+    if (this.customNodeDSP && typeof this.customNodeDSP.dispose === 'function') {
+      try { this.customNodeDSP.dispose(); } catch(e){}
+    }
+
+    try {
+      if (bundle.dsp_js) {
+        const fn = new Function('window', 'module', 'exports', `${bundle.dsp_js}\nreturn (typeof GranularAtmosphericCloudDSP !== 'undefined' ? GranularAtmosphericCloudDSP : (typeof window !== 'undefined' ? window.GranularAtmosphericCloudDSP : null));`);
+        const DSPClass = fn(window, {}, {}) || window.GranularAtmosphericCloudDSP;
+        if (DSPClass) {
+          this.customNodeDSP = new DSPClass();
+          this.customNodeDSP.init(ctx);
+          this.customNodeDSP.connect(this.eqLowNode);
+        }
+      }
+      this.isCustomNode = true;
+      this.isLoaded = true;
+      this.duration = Infinity;
+      this.customNodeBundle = bundle;
+      this.statusEl.textContent = '⚡ Aether Node Active';
+      if (this.nodeInspectBtn) this.nodeInspectBtn.style.display = 'inline-block';
+
+      // Open interactive UI view
+      this.studio.openNodeInspector(this);
+
+      if (this.studio.isPlaying) {
+        this.play();
+      }
+      this.studio.showToast(`✨ Loaded node: ${bundle.manifest.name}`, 'success');
+    } catch (err) {
+      console.error('Failed to instantiate node DSP:', err);
+      this.statusEl.textContent = 'Node DSP Error';
+      this.studio.showToast(`Node DSP error: ${err.message || err}`, 'error');
+    }
+  }
+
   play(startTimeOffset = 0) {
     if (!this.isLoaded) return;
     this.stopNodeOnly();
 
     const ctx = this.studio.audioCtx;
+
+    if (this.isCustomNode && this.customNodeDSP) {
+      if (typeof this.customNodeDSP.start === 'function') {
+        this.customNodeDSP.start();
+      }
+      this.isPlaying = true;
+      return;
+    }
 
     if (this.isLiveIn) {
       this.isPlaying = true;
@@ -1961,6 +2167,12 @@ class AudioTrack {
   }
 
   stopNodeOnly() {
+    if (this.isCustomNode && this.customNodeDSP) {
+      if (typeof this.customNodeDSP.stop === 'function') {
+        this.customNodeDSP.stop();
+      }
+      this.isPlaying = false;
+    }
     if (this.bufferSource) {
       this.bufferSource.onended = null;
       try { this.bufferSource.stop(); } catch(e){}
@@ -2001,16 +2213,60 @@ class AudioTrack {
   }
 
   updateAudioParamsFromPosition() {
-    const now = this.studio.audioCtx ? this.studio.audioCtx.currentTime : 0;
-    const t = Math.max(0, Math.min(1, this.z / 50)); // Normalized distance (0 = close, 1 = max distance)
-    const panVal = Math.max(-1.0, Math.min(1.0, (this.x - 0.5) * 2.0)); // -1 (Hard L) to +1 (Hard R)
+    const now = this.studio && this.studio.audioCtx ? this.studio.audioCtx.currentTime : 0;
+    const hasSolo = !!(this.studio && this.studio.tracks && this.studio.tracks.some(tr => tr.isSoloed));
+    const isSilenced = this.isMuted || (hasSolo && !this.isSoloed);
+    const gainTimeConst = 0.02;
 
-    // Smooth de-zippering time constants (eliminates clicks/artifacts during rapid wheel scroll & dragging)
+    const rawPan = (this.x - 0.5) * 2.0; // -1.0 (Hard L) to +1.0 (Hard R)
+    const isCentered = Math.abs(rawPan) < 0.02;
+    const panVal = isCentered ? 0.0 : Math.max(-1.0, Math.min(1.0, rawPan));
+    const isSpatialActive = this.isSpatialized || this.z > 0.5;
+
+    const baseVol = Math.pow(this.y, 1.5);
+
+    if (!isSpatialActive) {
+      // -------------------------------------------------------------
+      // STATE A (Default Center) & STATE B (Panned Stereo)
+      // 100% dry, pristine, bit-perfect audio without spatial coloring
+      // -------------------------------------------------------------
+      if (this.gainNode) {
+        this.gainNode.gain.setTargetAtTime(isSilenced ? 0 : baseVol, now, gainTimeConst);
+      }
+      if (this.stereoPanNode && this.stereoPanNode.pan) {
+        this.stereoPanNode.pan.setTargetAtTime(panVal, now, gainTimeConst);
+      }
+      if (this.depthFilterNode) {
+        this.depthFilterNode.frequency.setTargetAtTime(24000, now, gainTimeConst);
+      }
+      if (this.directPanGain) {
+        this.directPanGain.gain.setTargetAtTime(1.0, now, gainTimeConst);
+      }
+      if (this.spatialGainNode) {
+        this.spatialGainNode.gain.setTargetAtTime(0, now, gainTimeConst);
+      }
+      if (this.reverbSendGain) {
+        this.reverbSendGain.gain.setTargetAtTime(0, now, gainTimeConst);
+      }
+
+      if (this.volTxt) this.volTxt.textContent = `${Math.round(this.y * 100)}%`;
+      if (this.panTxt) {
+        if (isCentered) this.panTxt.textContent = 'C';
+        else if (panVal < 0) this.panTxt.textContent = `L${Math.abs(Math.round(panVal * 100))}`;
+        else this.panTxt.textContent = `R${Math.round(panVal * 100)}`;
+      }
+      return;
+    }
+
+    // -------------------------------------------------------------
+    // STATE C: 3D Spatialized (Spatialization = ON / Z > 0.5)
+    // Full spherical azimuth HRTF + air absorption + reverb diffusion
+    // -------------------------------------------------------------
+    const t = Math.max(0, Math.min(1, this.z / 50)); // Normalized distance (0 = close, 1 = max distance)
     const posTimeConst = 0.06;
     const filterTimeConst = 0.08;
-    const gainTimeConst = 0.05;
 
-    // 1. Spherical Azimuth Mapping for HRTF 3D Panner (prevents depth from collapsing stereo angle)
+    // 1. Spherical Azimuth Mapping for HRTF 3D Panner
     const azimuth = panVal * (Math.PI * 0.46);          // -83° to +83° stereo spread
     const distanceMeters = 2.0 + (t * 6.0);             // 2.0m (adjacent) to 8.0m (far)
     const elevation = (this.y - 0.5) * 0.4;             // Subtle height offset
@@ -2019,7 +2275,17 @@ class AudioTrack {
     const audioY = elevation * distanceMeters;
     const audioZ = -Math.cos(azimuth) * distanceMeters;
 
-    if (this.pannerNode) {
+    if (this.spatializerNode) {
+      const pX = this.spatializerNode.parameters.get('x');
+      const pY = this.spatializerNode.parameters.get('y');
+      const pZ = this.spatializerNode.parameters.get('z');
+      const pInt = this.spatializerNode.parameters.get('intensity');
+      
+      if (pX) pX.setTargetAtTime(this.x, now, posTimeConst);
+      if (pY) pY.setTargetAtTime(this.y, now, posTimeConst);
+      if (pZ) pZ.setTargetAtTime(this.z, now, posTimeConst);
+      if (pInt) pInt.setTargetAtTime(1.0, now, posTimeConst);
+    } else if (this.pannerNode) {
       if (this.pannerNode.positionX) {
         this.pannerNode.positionX.setTargetAtTime(audioX, now, posTimeConst);
         this.pannerNode.positionY.setTargetAtTime(audioY, now, posTimeConst);
@@ -2029,47 +2295,51 @@ class AudioTrack {
       }
     }
 
-    // 2. Direct Stereo Pan Locks (ensures dry sound, filtering, and reverb tail strictly follow pan)
+    // 2. Direct Stereo Pan Lock
     if (this.stereoPanNode && this.stereoPanNode.pan) {
       this.stereoPanNode.pan.setTargetAtTime(panVal, now, gainTimeConst);
     }
     if (this.reverbPanNode && this.reverbPanNode.pan) {
-      // Reverb tail follows the node's position with a natural spatialized width
       this.reverbPanNode.pan.setTargetAtTime(panVal * 0.85, now, gainTimeConst);
     }
 
-    // 3. Progressive Air Absorption Low-Pass Filter: sweeps from 20kHz (fully open at front) down to 800Hz (muffled in the distance)
+    // 3. Progressive Air Absorption Low-Pass Filter
     if (this.depthFilterNode) {
       const cutoff = Math.max(800, 20000 * Math.pow(800 / 20000, t));
       this.depthFilterNode.frequency.setTargetAtTime(cutoff, now, filterTimeConst);
     }
 
-    // 4. Dynamic Reverb Damping Low-Pass Filter: sweeps from 8000Hz (near) down to 1200Hz (far)
+    // 4. Dynamic Reverb Damping Low-Pass Filter
     if (this.reverbSendFilterNode) {
       const reverbCutoff = Math.max(1200, 8000 * Math.pow(1200 / 8000, t));
       this.reverbSendFilterNode.frequency.setTargetAtTime(reverbCutoff, now, filterTimeConst);
     }
 
-    // 5. Direct-to-Reverberant Equal-Power Mix
-    const dryGainFactor = Math.sqrt(Math.max(0.2, 1.0 - (0.45 * t)));
-    const baseVol = Math.pow(this.y, 1.5);
+    // 5. Direct-to-Reverberant Equal-Power Mix (Gentle distance attenuation: ~30% less volume drop at max distance)
+    const dryGainFactor = Math.sqrt(Math.max(0.4, 1.0 - (0.315 * t)));
     const dryVol = baseVol * dryGainFactor;
-    const reverbGain = (0.42 * Math.pow(t, 1.3)) * Math.pow(this.y, 1.2);
-
-    const hasSolo = this.studio.tracks.some(tr => tr.isSoloed);
-    const isSilenced = this.isMuted || (hasSolo && !this.isSoloed);
+    // 10% dark reverb when furtherest back
+    const reverbGain = (0.10 * Math.pow(t, 1.3)) * Math.pow(this.y, 1.2);
 
     if (this.gainNode) {
       this.gainNode.gain.setTargetAtTime(isSilenced ? 0 : dryVol, now, gainTimeConst);
+    }
+    if (this.directPanGain) {
+      this.directPanGain.gain.setTargetAtTime(0, now, gainTimeConst);
+    }
+    if (this.spatialGainNode) {
+      this.spatialGainNode.gain.setTargetAtTime(isSilenced ? 0 : 1.0, now, gainTimeConst);
     }
     if (this.reverbSendGain) {
       this.reverbSendGain.gain.setTargetAtTime(isSilenced ? 0 : reverbGain, now, gainTimeConst);
     }
 
-    this.volTxt.textContent = `${Math.round(this.y * 100)}%`;
-    if (Math.abs(panVal) < 0.05) this.panTxt.textContent = 'C';
-    else if (panVal < 0) this.panTxt.textContent = `L${Math.abs(Math.round(panVal * 100))}`;
-    else this.panTxt.textContent = `R${Math.round(panVal * 100)}`;
+    if (this.volTxt) this.volTxt.textContent = `${Math.round(this.y * 100)}%`;
+    if (this.panTxt) {
+      if (isCentered) this.panTxt.textContent = 'C';
+      else if (panVal < 0) this.panTxt.textContent = `L${Math.abs(Math.round(panVal * 100))}`;
+      else this.panTxt.textContent = `R${Math.round(panVal * 100)}`;
+    }
   }
 
   toggleMute() {
@@ -2327,6 +2597,7 @@ class SpatialStudio {
     const trackColors = ['#FC4037', '#FFEA00', '#8B68B9', '#00D600'];
     const trackNames = ['Bass Stem', 'Rhythm Beat', 'Synth Pad', 'Melody Lead'];
     this.tracks = trackColors.map((color, idx) => new AudioTrack(idx, trackNames[idx], color, this));
+    this.tracks.forEach(t => t.updateAudioParamsFromPosition());
 
     this.pendingLiveTrackIndex = 0;
 
@@ -2411,6 +2682,32 @@ class SpatialStudio {
     this.modalCancelBtn.addEventListener('click', () => this.hideLiveInModal());
     this.modalConfirmBtn.addEventListener('click', () => this.confirmLiveInput());
 
+    // Node Inspector Modal & IPC PostMessage Bridge
+    this.activeInspectorTrack = null;
+    this.nodeInspectorModal = document.getElementById('node-inspector-modal');
+    this.nodeModalCloseBtn = document.getElementById('node-modal-close-btn');
+    if (this.nodeModalCloseBtn && this.nodeInspectorModal) {
+      this.nodeModalCloseBtn.addEventListener('click', () => {
+        this.nodeInspectorModal.classList.remove('active');
+      });
+      this.nodeInspectorModal.addEventListener('click', (e) => {
+        if (e.target === this.nodeInspectorModal) {
+          this.nodeInspectorModal.classList.remove('active');
+        }
+      });
+    }
+
+    // Bidirectional window.postMessage bridge from embedded Node UIs
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (event.data.type === 'aether:param-change') {
+        const { paramId, value } = event.data;
+        if (this.activeInspectorTrack && this.activeInspectorTrack.customNodeDSP) {
+          this.activeInspectorTrack.customNodeDSP.setParameter(paramId, value);
+        }
+      }
+    });
+
     // Prevent browser default file open behavior on entire window
     window.addEventListener('dragover', (e) => e.preventDefault());
     window.addEventListener('drop', (e) => e.preventDefault());
@@ -2487,31 +2784,29 @@ class SpatialStudio {
         if (hitIdx !== -1) {
           targetTrack = this.tracks[hitIdx];
         } else {
+          // Find first empty track, or default to track 1
           targetTrack = this.tracks.find(t => !t.isLoaded) || this.tracks[0];
-          targetTrack.setPosition(dropX, dropY);
         }
         targetTrack.loadAudioFiles(Array.from(files));
       }
     });
 
-    // Keyboard Spacebar play/pause
+    // Keyboard shortcuts
     window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        window.location.reload();
+      }
       if (e.code === 'Space' && e.target === document.body) {
         e.preventDefault();
         this.toggleMasterPlay();
       }
     });
 
-    // Auto-restore saved session from localStorage on startup
+    // Clear any stale cached sessions from localStorage to ensure pristine default diamond opening layout
     try {
-      const saved = localStorage.getItem('aether_saved_session');
-      if (saved) {
-        const session = JSON.parse(saved);
-        this.applySession(session);
-      }
-    } catch (e) {
-      console.warn('Could not auto-restore session:', e);
-    }
+      localStorage.removeItem('aether_saved_session');
+    } catch (e) {}
   }
 
   applyTheme() {
@@ -2530,42 +2825,58 @@ class SpatialStudio {
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     this.audioCtx = new AudioContext();
-
-    // Master Limiter / Compressor to avoid harsh clipping
-    this.masterLimiter = this.audioCtx.createDynamicsCompressor();
-    this.masterLimiter.threshold.value = -1.0;
-    this.masterLimiter.knee.value = 6.0;
-    this.masterLimiter.ratio.value = 12.0;
-    this.masterLimiter.attack.value = 0.003;
-    this.masterLimiter.release.value = 0.1;
-
-    // Shared Room Impulse Response Buffer (1.2s natural room response)
-    this.reverbBuffer = this.createReverbBuffer(this.audioCtx, 1.2, 1.2);
+    this.reverbBuffer = this.createReverbBuffer(this.audioCtx);
 
     // Master Gain
     this.masterGain = this.audioCtx.createGain();
     this.masterGain.gain.value = parseFloat(this.masterVolumeSlider.value);
 
-    // Audio Graph: MasterGain -> MasterLimiter -> Destination
-    this.masterGain.connect(this.masterLimiter);
-    this.masterLimiter.connect(this.audioCtx.destination);
+    // Audio Graph: Direct bit-perfect transparent master bus
+    this.masterGain.connect(this.audioCtx.destination);
 
-    // Setup ScriptProcessor / Worklet for Master Recording capture
+    // Master Limiter Node (available for peak-limiting safety)
+    this.masterLimiter = this.audioCtx.createDynamicsCompressor();
+    this.masterLimiter.threshold.value = -0.5;
+    this.masterLimiter.knee.value = 12.0;
+    this.masterLimiter.ratio.value = 4.0;
+    this.masterLimiter.attack.value = 0.003;
+    this.masterLimiter.release.value = 0.15;
+
+    // Setup ScriptProcessor / Worklet for Master Recording capture (isolated with 0-gain sink to prevent duplicate delayed audio output)
     const bufferSize = 4096;
     this.masterRecorderNode = this.audioCtx.createScriptProcessor(bufferSize, 2, 2);
     this.masterRecorderNode.onaudioprocess = (e) => {
-      if (!this.isRecordingMaster) return;
-      const inputL = e.inputBuffer.getChannelData(0);
-      const inputR = e.inputBuffer.getChannelData(1);
-      this.masterRecChunksL.push(new Float32Array(inputL));
-      this.masterRecChunksR.push(new Float32Array(inputR));
+      if (this.isRecordingMaster) {
+        const inputL = e.inputBuffer.getChannelData(0);
+        const inputR = e.inputBuffer.getChannelData(1);
+        this.masterRecChunksL.push(new Float32Array(inputL));
+        this.masterRecChunksR.push(new Float32Array(inputR));
+      }
+      const outL = e.outputBuffer.getChannelData(0);
+      const outR = e.outputBuffer.getChannelData(1);
+      outL.fill(0);
+      outR.fill(0);
     };
 
-    // Feed limiter into recorder node (recorder connects to destination with 0 gain to keep active)
-    this.masterLimiter.connect(this.masterRecorderNode);
-    this.masterRecorderNode.connect(this.audioCtx.destination);
+    this.recorderZeroGain = this.audioCtx.createGain();
+    this.recorderZeroGain.gain.value = 0.0;
+    this.masterGain.connect(this.masterRecorderNode);
+    this.masterRecorderNode.connect(this.recorderZeroGain);
+    this.recorderZeroGain.connect(this.audioCtx.destination);
 
     this.tracks.forEach(track => track.setupWebAudioNodes(this.audioCtx));
+
+    // Load custom Rust DSP spatializer
+    this.audioCtx.audioWorklet.addModule('/desktop/spatializer-worklet.js')
+      .then(() => {
+        this.workletReady = true;
+        this.tracks.forEach(track => {
+          if (track.audioCtx && track.initSpatializerWorklet) {
+            track.initSpatializerWorklet(this.audioCtx);
+          }
+        });
+      })
+      .catch(e => console.error('Failed to load spatializer worklet:', e));
   }
 
   initWebSocket() {
@@ -2629,7 +2940,7 @@ class SpatialStudio {
       voiceGain.gain.setValueAtTime(1.0, this.audioCtx.currentTime);
 
       sourceNode.connect(voiceGain);
-      voiceGain.connect(this.masterLimiter || this.audioCtx.destination);
+      voiceGain.connect(this.masterGain || this.audioCtx.destination);
 
       sourceNode.start(this.audioCtx.currentTime);
       console.log('🎙️ Voice note playback initiated via Web Audio API.');
@@ -3282,12 +3593,16 @@ class SpatialStudio {
 
   resetAll() {
     const defaultPositions = [
-      { x: 0.25, y: 0.82 }, { x: 0.75, y: 0.82 },
-      { x: 0.25, y: 0.38 }, { x: 0.75, y: 0.38 }
+      { x: 0.5, y: 0.80, z: 0 },
+      { x: 0.5, y: 0.30, z: 0 },
+      { x: 0.25, y: 0.50, z: 0 },
+      { x: 0.75, y: 0.50, z: 0 }
     ];
-    this.tracks.forEach((t, i) => {
+    this.tracks.forEach((t, idx) => {
       t.clearMotion();
-      t.setPosition(defaultPositions[i].x, defaultPositions[i].y);
+      t.isSpatialized = false;
+      const def = defaultPositions[idx % defaultPositions.length];
+      t.setPosition(def.x, def.y, def.z);
       if (t.knobLow) t.knobLow.setValue(0);
       if (t.knobMid) t.knobMid.setValue(0);
       if (t.knobHigh) t.knobHigh.setValue(0);
@@ -3360,6 +3675,22 @@ class SpatialStudio {
     return -1;
   }
 
+  findHoverGearNodeIndex(pxX, pxY) {
+    for (let i = this.tracks.length - 1; i >= 0; i--) {
+      const t = this.tracks[i];
+      if (!t.isCustomNode) continue;
+      const nodePxX = t.x * this.width;
+      const nodePxY = (1.0 - t.y) * this.height;
+      const nodeRadius = t.getVisualRadius();
+      const gearX = nodePxX + nodeRadius * 0.72;
+      const gearY = nodePxY - nodeRadius * 0.72;
+      if (Math.hypot(gearX - pxX, gearY - pxY) <= 14) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
   // --- 2D SPATIAL CANVAS RENDERING ---
   initCanvas() {
     this.resizeCanvas();
@@ -3380,12 +3711,22 @@ class SpatialStudio {
     this.canvas.addEventListener('mousemove', (e) => {
       if (isDragging) return;
       const coords = getCanvasCoords(e);
-      const hitIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
-      this.canvas.style.cursor = hitIdx !== -1 ? 'grab' : 'crosshair';
+      const gearIdx = this.findHoverGearNodeIndex(coords.pxX, coords.pxY);
+      if (gearIdx !== -1) {
+        this.canvas.style.cursor = 'pointer';
+      } else {
+        const hitIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
+        this.canvas.style.cursor = hitIdx !== -1 ? 'grab' : 'crosshair';
+      }
     });
 
     this.canvas.addEventListener('mousedown', (e) => {
       const coords = getCanvasCoords(e);
+      const gearIdx = this.findHoverGearNodeIndex(coords.pxX, coords.pxY);
+      if (gearIdx !== -1) {
+        this.openNodeInspector(this.tracks[gearIdx]);
+        return;
+      }
       const hitIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
       if (hitIdx !== -1) {
         isDragging = true;
@@ -3437,6 +3778,11 @@ class SpatialStudio {
     // Touch support for tablets/phones
     this.canvas.addEventListener('touchstart', (e) => {
       const coords = getCanvasCoords(e);
+      const gearIdx = this.findHoverGearNodeIndex(coords.pxX, coords.pxY);
+      if (gearIdx !== -1) {
+        this.openNodeInspector(this.tracks[gearIdx]);
+        return;
+      }
       const hitIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
       if (hitIdx !== -1) {
         isDragging = true;
@@ -3455,7 +3801,82 @@ class SpatialStudio {
       this.activeDragNodeIndex = -1;
     });
 
+    // Double-click to inspect custom .aethernode DSP and visual controls
+    this.canvas.addEventListener('dblclick', (e) => {
+      const coords = getCanvasCoords(e);
+      const hitIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
+      if (hitIdx !== -1) {
+        const track = this.tracks[hitIdx];
+        if (track.isCustomNode) {
+          this.openNodeInspector(track);
+        }
+      }
+    });
+
     this.startRenderLoop();
+  }
+
+  openNodeInspector(track) {
+    if (!track || !track.customNodeBundle) return;
+    this.activeInspectorTrack = track;
+    const modal = document.getElementById('node-inspector-modal');
+    const title = document.getElementById('node-modal-title');
+    const frame = document.getElementById('node-inspector-frame');
+    if (modal && frame && title) {
+      title.innerHTML = `<span>⚡</span> T${track.index + 1}: ${track.customNodeBundle.manifest.name || 'Aether Node'}`;
+      if (track.customNodeBundle.ui_html) {
+        let uiHtml = track.customNodeBundle.ui_html;
+        const isDark = document.body.classList.contains('theme-dark');
+        
+        try {
+          // Extract and sync all native Aether root CSS variables, fonts, and theme rules
+          let rootStyles = '';
+          for (let sheet of document.styleSheets) {
+            try {
+              for (let rule of sheet.cssRules) {
+                if (rule.selectorText === ':root' || rule.selectorText === 'body.theme-dark' || rule.selectorText === 'body') {
+                  rootStyles += rule.cssText + '\n';
+                }
+              }
+            } catch (_) {}
+          }
+          if (!rootStyles) {
+            rootStyles = Array.from(document.styleSheets[0]?.cssRules || [])
+              .filter(r => r.selectorText === ':root' || r.selectorText === 'body.theme-dark')
+              .map(r => r.cssText).join('\n');
+          }
+            
+          const fontLinks = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">`;
+          const styleTag = `${fontLinks}\n<style id="aether-theme-sync">\n${rootStyles}\n</style>`;
+          if (uiHtml.includes('</head>')) {
+            uiHtml = uiHtml.replace('</head>', styleTag + '\n</head>');
+          } else {
+            uiHtml = styleTag + '\n' + uiHtml;
+          }
+          if (isDark && uiHtml.includes('<body')) {
+            uiHtml = uiHtml.replace('<body', '<body class="theme-dark"');
+          }
+        } catch (e) {
+          console.warn('Failed to inject theme variables into Node UI', e);
+        }
+        
+        frame.srcdoc = uiHtml;
+        frame.onload = () => {
+          if (track.customNodeDSP && track.customNodeDSP.params) {
+            Object.entries(track.customNodeDSP.params).forEach(([paramId, value]) => {
+              try {
+                frame.contentWindow.postMessage({
+                  type: 'aether:param-update',
+                  paramId,
+                  value
+                }, '*');
+              } catch (_) {}
+            });
+          }
+        };
+      }
+      modal.classList.add('active');
+    }
   }
 
   resizeCanvas() {
@@ -3556,9 +3977,45 @@ class SpatialStudio {
       this.ctx.lineWidth = 3.5;
       this.ctx.stroke();
 
-      if (progress > 0 || (t.isLiveIn && t.isPlaying)) {
+      const animType = t.customNodeBundle?.manifest?.canvas_animation?.type;
+
+      if (animType === 'ripple' && t.isLoaded && (t.isPlaying || progress > 0)) {
+        const nowMs = performance.now();
+        for (let j = 0; j < 4; j++) {
+          const wavePhase = (nowMs * 0.0025) + (j * 1.57);
+          const rippleExpansion = ((nowMs * 0.018 + j * 6.5) % 22);
+          const jitter = Math.sin(wavePhase) * 3;
+          const currentRadius = ringRadius + rippleExpansion + jitter;
+          const alpha = Math.max(0, (1.0 - (rippleExpansion / 22)) * 0.5);
+
+          this.ctx.beginPath();
+          this.ctx.arc(pxX, pxY, currentRadius, 0, 2 * Math.PI);
+          this.ctx.strokeStyle = t.color;
+          this.ctx.globalAlpha = alpha;
+          this.ctx.lineWidth = 2.0;
+          this.ctx.shadowColor = t.color;
+          this.ctx.shadowBlur = 8;
+          this.ctx.stroke();
+        }
+        this.ctx.shadowBlur = 0;
+        this.ctx.globalAlpha = 1.0;
+      } else if (animType === 'pulse' && t.isLoaded && (t.isPlaying || progress > 0)) {
+        const nowMs = performance.now();
+        const pulse = (Math.sin(nowMs * 0.006) + 1.0) * 0.5;
+        const currentRadius = ringRadius + (pulse * 8);
+        this.ctx.beginPath();
+        this.ctx.arc(pxX, pxY, currentRadius, 0, 2 * Math.PI);
+        this.ctx.strokeStyle = t.color;
+        this.ctx.globalAlpha = 0.35 + (pulse * 0.45);
+        this.ctx.lineWidth = 3.0;
+        this.ctx.shadowColor = t.color;
+        this.ctx.shadowBlur = 10;
+        this.ctx.stroke();
+        this.ctx.shadowBlur = 0;
+        this.ctx.globalAlpha = 1.0;
+      } else if (progress > 0 || (t.isLiveIn && t.isPlaying) || (t.isLoaded && t.isPlaying)) {
         const startAngle = -Math.PI / 2;
-        const endAngle = startAngle + ((t.isLiveIn ? 1.0 : progress) * 2 * Math.PI);
+        const endAngle = startAngle + ((t.isLiveIn || t.isCustomNode ? 1.0 : progress) * 2 * Math.PI);
 
         this.ctx.beginPath();
         this.ctx.arc(pxX, pxY, ringRadius, startAngle, endAngle);
@@ -3575,6 +4032,26 @@ class SpatialStudio {
       this.ctx.shadowBlur = (this.activeDragNodeIndex === i || t.isRecordingMotion) ? 16 : 6;
       this.ctx.fill();
       this.ctx.shadowBlur = 0;
+
+      // Dedicated Gear Icon Badge on Canvas Node
+      if (t.isCustomNode) {
+        const gearX = pxX + nodeRadius * 0.72;
+        const gearY = pxY - nodeRadius * 0.72;
+        const gearR = 9;
+        this.ctx.beginPath();
+        this.ctx.arc(gearX, gearY, gearR, 0, 2 * Math.PI);
+        this.ctx.fillStyle = this.isDark ? '#0d1117' : '#ffffff';
+        this.ctx.strokeStyle = t.color;
+        this.ctx.lineWidth = 1.5;
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        this.ctx.fillStyle = t.color;
+        this.ctx.font = 'bold 9px sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText('⚙', gearX, gearY);
+      }
 
       // Track Label
       this.ctx.fillStyle = (i === 1 || i === 3) ? '#000000' : '#FFFFFF';
