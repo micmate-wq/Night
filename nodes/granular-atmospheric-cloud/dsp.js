@@ -28,6 +28,9 @@ class GranularAtmosphericCloudDSP {
       grainSize: 0.22,    // duration in seconds
       spray: 0.45,        // scan pointer random spray (0..1)
       pitchShift: 0.0,    // semitones (-24..24)
+      harmony: 0,         // scale quantization
+      reverseChance: 0,   // chance to reverse grain (0..100)
+      texture: 'cloud',   // 'cloud' or 'pluck'
       feedback: 0.55,     // diffusion loop feedback (0..0.95)
       freeze: false       // freeze scan position
     };
@@ -62,12 +65,13 @@ class GranularAtmosphericCloudDSP {
     this.feedbackGain.connect(this.delayNode);
     this.feedbackGain.connect(this.outputNode);
 
-    // Pre-calculate Hanning window curve for smooth micro-grain edges
-    this._generateHanningWindow(256);
+    // Pre-calculate window curves for grains
+    this._generateWindows(256);
 
     // Generate lush default ambient texture buffer if none provided
     if (config.sampleBuffer) {
       this.sampleBuffer = config.sampleBuffer;
+      this._generateReverseBuffer();
     } else {
       this._generateDefaultHarmonicTexture();
     }
@@ -76,11 +80,33 @@ class GranularAtmosphericCloudDSP {
     return this.outputNode;
   }
 
-  _generateHanningWindow(length) {
-    this.windowTable = new Float32Array(length);
+  _generateWindows(length) {
+    this.windowTableCloud = new Float32Array(length);
+    this.windowTablePluck = new Float32Array(length);
     for (let i = 0; i < length; i++) {
-      this.windowTable[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (length - 1)));
+      this.windowTableCloud[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (length - 1)));
+      
+      const t = i / (length - 1);
+      if (t < 0.05) {
+        this.windowTablePluck[i] = t / 0.05;
+      } else {
+        this.windowTablePluck[i] = Math.exp(-8.0 * (t - 0.05) / 0.95);
+      }
     }
+  }
+
+  _generateReverseBuffer() {
+    if (!this.ctx || !this.sampleBuffer) return;
+    const buf = this.sampleBuffer;
+    const revBuf = this.ctx.createBuffer(buf.numberOfChannels, buf.length, buf.sampleRate);
+    for (let c = 0; c < buf.numberOfChannels; c++) {
+      const srcData = buf.getChannelData(c);
+      const dstData = revBuf.getChannelData(c);
+      for (let i = 0; i < buf.length; i++) {
+        dstData[i] = srcData[buf.length - 1 - i];
+      }
+    }
+    this.sampleBufferRev = revBuf;
   }
 
   _generateDefaultHarmonicTexture() {
@@ -119,11 +145,13 @@ class GranularAtmosphericCloudDSP {
     }
 
     this.sampleBuffer = buffer;
+    this._generateReverseBuffer();
   }
 
   injectAudioBuffer(audioBuffer) {
     if (audioBuffer && audioBuffer.numberOfChannels) {
       this.sampleBuffer = audioBuffer;
+      this._generateReverseBuffer();
     }
   }
 
@@ -164,6 +192,23 @@ class GranularAtmosphericCloudDSP {
     this.timerId = setTimeout(() => this._scheduleNextGrain(), nextTime);
   }
 
+  _getHarmonyOffset() {
+    if (this.params.harmony === 0) return 0;
+
+    let pitchClasses = [];
+    switch(Math.floor(this.params.harmony)) {
+      case 1: pitchClasses = [0, 12, -12]; break; // Octaves Only
+      case 2: pitchClasses = [0, 7, 12]; break; // Fifths & Octaves
+      case 3: pitchClasses = [0, 2, 7, 12]; break; // Ethereal Sus2
+      case 4: pitchClasses = [0, 7, 11, 14]; break; // Cinematic Maj7
+      case 5: pitchClasses = [0, 3, 7, 10, 14]; break; // Moody Min9
+      default: return 0;
+    }
+
+    const idx = Math.floor(Math.random() * pitchClasses.length);
+    return pitchClasses[idx];
+  }
+
   _spawnGrain() {
     if (!this.sampleBuffer || !this.ctx) return;
 
@@ -179,18 +224,29 @@ class GranularAtmosphericCloudDSP {
     let offsetNorm = (this.scanPosition + sprayOffset + 1.0) % 1.0;
     let offsetSeconds = offsetNorm * Math.max(0, bufferDuration - grainDur);
 
+    const isReverse = (Math.random() * 100) < this.params.reverseChance;
+    
     // Source Node
     const src = this.ctx.createBufferSource();
-    src.buffer = this.sampleBuffer;
+    if (isReverse && this.sampleBufferRev) {
+      src.buffer = this.sampleBufferRev;
+      offsetSeconds = Math.max(0, bufferDuration - offsetSeconds - grainDur);
+    } else {
+      src.buffer = this.sampleBuffer;
+    }
 
     // Pitch playback rate calculation
-    const semitones = this.params.pitchShift + (Math.random() * 0.4 - 0.2);
-    src.playbackRate.setValueAtTime(Math.pow(2, semitones / 12), now);
+    const basePitch = this.params.pitchShift;
+    const harmonyOffset = this._getHarmonyOffset();
+    const microDetune = (Math.random() * 0.4 - 0.2);
+    const finalSemitones = basePitch + harmonyOffset + microDetune;
+    src.playbackRate.setValueAtTime(Math.pow(2, finalSemitones / 12), now);
 
-    // Envelope Gain Node (Hanning window shape)
+    // Envelope Gain Node (Hanning or Pluck shape)
     const envGain = this.ctx.createGain();
     envGain.gain.setValueAtTime(0.0001, now);
-    envGain.gain.setValueCurveAtTime(this.windowTable, now, grainDur);
+    const envelopeTable = this.params.texture === 'pluck' ? this.windowTablePluck : this.windowTableCloud;
+    envGain.gain.setValueCurveAtTime(envelopeTable, now, grainDur);
 
     // Stereo Panning for spatial grain spread
     const panner = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;

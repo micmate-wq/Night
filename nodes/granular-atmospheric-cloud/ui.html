@@ -145,6 +145,32 @@
       transform: scale(1.2);
     }
 
+    .texture-toggle {
+      display: flex;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      height: 16px;
+      margin-top: 2px;
+    }
+    .toggle-option {
+      flex: 1;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      line-height: 14px;
+      text-transform: uppercase;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+    .toggle-option.active {
+      background: var(--text);
+      color: var(--bg);
+    }
+
     .footer-actions {
       grid-column: span 2;
       display: flex;
@@ -238,6 +264,32 @@
       <input type="range" id="param-pitchShift" min="-24" max="24" step="1" value="0">
     </div>
 
+    <div class="control-item">
+      <div class="control-header">
+        <span>Harmony</span>
+        <span class="control-value" id="val-harmony">Free</span>
+      </div>
+      <input type="range" id="param-harmony" min="0" max="5" step="1" value="0">
+    </div>
+
+    <div class="control-item">
+      <div class="control-header">
+        <span>Reverse Chance</span>
+        <span class="control-value" id="val-reverseChance">0%</span>
+      </div>
+      <input type="range" id="param-reverseChance" min="0" max="100" step="1" value="0">
+    </div>
+
+    <div class="control-item">
+      <div class="control-header">
+        <span>Texture</span>
+      </div>
+      <div class="texture-toggle" id="toggle-texture">
+        <div class="toggle-option active" data-val="cloud">Cloud</div>
+        <div class="toggle-option" data-val="pluck">Pluck</div>
+      </div>
+    </div>
+
     <div class="footer-actions">
       <button class="freeze-btn" id="btn-freeze">
         <span>❄</span> Freeze
@@ -253,6 +305,9 @@
       grainSize: 0.22,
       spray: 0.45,
       pitchShift: 0,
+      harmony: 0,
+      reverseChance: 0,
+      texture: 'cloud',
       feedback: 0.55,
       freeze: false
     };
@@ -370,6 +425,19 @@
     bindSlider('param-grainSize', 'grainSize', v => `${v.toFixed(2)} s`);
     bindSlider('param-spray', 'spray', v => v.toFixed(2));
     bindSlider('param-pitchShift', 'pitchShift', v => `${v > 0 ? '+' : ''}${v} st`);
+    bindSlider('param-harmony', 'harmony', v => ['Free', 'Octaves', '5ths/Oct', 'Sus2', 'Maj7', 'Min9'][Math.floor(v)]);
+    bindSlider('param-reverseChance', 'reverseChance', v => `${v}%`);
+
+    const textureOpts = document.querySelectorAll('.toggle-option');
+    textureOpts.forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        textureOpts.forEach(o => o.classList.remove('active'));
+        e.target.classList.add('active');
+        const val = e.target.getAttribute('data-val');
+        state.texture = val;
+        notifyHost('texture', val);
+      });
+    });
 
     const freezeBtn = document.getElementById('btn-freeze');
     freezeBtn.addEventListener('click', () => {
@@ -385,10 +453,19 @@
         const { paramId, value } = event.data;
         if (state[paramId] !== undefined) {
           state[paramId] = value;
-          const input = document.getElementById('param-' + paramId);
-          if (input) input.value = value;
-          const valEl = document.getElementById('val-' + paramId);
-          if (valEl) valEl.textContent = value;
+          if (paramId === 'texture') {
+            document.querySelectorAll('.toggle-option').forEach(o => {
+              o.classList.toggle('active', o.getAttribute('data-val') === value);
+            });
+          } else {
+            const input = document.getElementById('param-' + paramId);
+            if (input) input.value = value;
+            const valEl = document.getElementById('val-' + paramId);
+            if (valEl) {
+               // Quick format hook since we don't have the original format fn
+               valEl.textContent = paramId === 'reverseChance' ? `${value}%` : value;
+            }
+          }
         }
       }
     });

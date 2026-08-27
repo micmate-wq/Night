@@ -2081,12 +2081,70 @@ class AudioTrack {
 
     try {
       if (bundle.dsp_js) {
-        const fn = new Function('window', 'module', 'exports', `${bundle.dsp_js}\nreturn (typeof GranularAtmosphericCloudDSP !== 'undefined' ? GranularAtmosphericCloudDSP : (typeof window !== 'undefined' ? window.GranularAtmosphericCloudDSP : null));`);
-        const DSPClass = fn(window, {}, {}) || window.GranularAtmosphericCloudDSP;
-        if (DSPClass) {
-          this.customNodeDSP = new DSPClass();
-          this.customNodeDSP.init(ctx);
+        if (bundle.dsp_js.includes('registerProcessor') || bundle.dsp_js.includes('AudioWorkletProcessor')) {
+          const match = bundle.dsp_js.match(/registerProcessor\s*\(\s*['"]([^'"]+)['"]/);
+          const processorName = match ? match[1] : (bundle.manifest.id || 'custom-dsp');
+          const blob = new Blob([bundle.dsp_js], { type: 'application/javascript' });
+          const blobUrl = URL.createObjectURL(blob);
+          try {
+            await ctx.audioWorklet.addModule(blobUrl);
+          } catch(e) {
+            console.warn('AudioWorklet addModule:', e);
+          }
+          URL.revokeObjectURL(blobUrl);
+          
+          const workletNode = new AudioWorkletNode(ctx, processorName);
+          const gainNode = ctx.createGain();
+          gainNode.gain.setValueAtTime(1.0, ctx.currentTime);
+          workletNode.connect(gainNode);
+          
+          const defaultParams = {};
+          if (bundle.manifest && Array.isArray(bundle.manifest.parameters)) {
+            bundle.manifest.parameters.forEach(p => { defaultParams[p.id] = p.default; });
+          }
+
+          this.customNodeDSP = {
+            workletNode,
+            gainNode,
+            params: defaultParams,
+            setParameter(paramId, value) {
+              this.params[paramId] = value;
+              if (this.workletNode && this.workletNode.port) {
+                this.workletNode.port.postMessage({ type: 'PARAMETER_CHANGE', id: paramId, value: value });
+                this.workletNode.port.postMessage({ type: 'aether:param-change', paramId, value });
+              }
+            },
+            connect(dest) {
+              if (this.gainNode) this.gainNode.connect(dest);
+            },
+            disconnect() {
+              if (this.gainNode) this.gainNode.disconnect();
+              if (this.workletNode) this.workletNode.disconnect();
+            },
+            start() {
+              if (this.gainNode && ctx) {
+                this.gainNode.gain.setValueAtTime(1.0, ctx.currentTime);
+              }
+            },
+            stop() {
+              if (this.gainNode && ctx) {
+                this.gainNode.gain.setValueAtTime(0.0, ctx.currentTime);
+              }
+            },
+            dispose() {
+              this.stop();
+              this.disconnect();
+            }
+          };
           this.customNodeDSP.connect(this.eqLowNode);
+        } else {
+          const fn = new Function('window', 'module', 'exports', `${bundle.dsp_js}\nreturn (typeof GranularAtmosphericCloudDSP !== 'undefined' ? GranularAtmosphericCloudDSP : (typeof window !== 'undefined' ? (window.GranularAtmosphericCloudDSP || window.CustomNodeDSP) : null));`);
+          const DSPClass = fn(window, {}, {}) || window.GranularAtmosphericCloudDSP;
+          if (DSPClass) {
+            this.customNodeDSP = new DSPClass();
+            this.customNodeDSP.init(ctx);
+            this.customNodeDSP.connect(this.eqLowNode);
+          }
         }
       }
       this.isCustomNode = true;
@@ -2700,10 +2758,13 @@ class SpatialStudio {
     // Bidirectional window.postMessage bridge from embedded Node UIs
     window.addEventListener('message', (event) => {
       if (!event.data || typeof event.data !== 'object') return;
-      if (event.data.type === 'aether:param-change') {
-        const { paramId, value } = event.data;
+      if (event.data.type === 'aether:param-change' || event.data.type === 'PARAMETER_CHANGE') {
+        const paramId = event.data.paramId || event.data.id;
+        const value = event.data.value;
         if (this.activeInspectorTrack && this.activeInspectorTrack.customNodeDSP) {
-          this.activeInspectorTrack.customNodeDSP.setParameter(paramId, value);
+          if (typeof this.activeInspectorTrack.customNodeDSP.setParameter === 'function') {
+            this.activeInspectorTrack.customNodeDSP.setParameter(paramId, value);
+          }
         }
       }
     });

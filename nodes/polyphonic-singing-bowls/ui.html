@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Polyphonic Singing Bowls</title>
+  <style>
+    :root {
+      --bg: var(--aether-bg, var(--bg-main, #0A0A0A));
+      --panel: var(--aether-panel, var(--bg-card, #141414));
+      --text: var(--aether-text, var(--text-main, #FFFFFF));
+      --text-muted: var(--aether-text-muted, var(--text-muted, #888888));
+      --border: var(--aether-border, var(--border-light, #333333));
+      --border-subtle: var(--aether-border-subtle, var(--border-subtle, #222222));
+      --font-heading: var(--aether-font-heading, var(--font-heading, 'Space Grotesk', -apple-system, sans-serif));
+      --font-body: var(--aether-font-body, var(--font-body, 'Inter', -apple-system, sans-serif));
+      --font-mono: var(--aether-font-mono, var(--font-mono, 'JetBrains Mono', monospace));
+      --node-color: var(--track-color, var(--aether-accent, #FFFFFF));
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 11px;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .node-header {
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .node-title {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .node-badge {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: 1px solid var(--node-color);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--node-color);
+      letter-spacing: 0.5px;
+    }
+
+    .bowls-visualizer-container {
+      position: relative;
+      flex: 1;
+      min-height: 80px;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .bowl-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bowl-ring {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--panel);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+    }
+
+    .bowl-ring.active {
+      border-color: var(--node-color);
+      box-shadow: 0 0 12px var(--node-color);
+      transform: scale(1.15);
+    }
+
+    .bowl-label {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .controls-grid {
+      padding: 10px 12px;
+      background: var(--panel);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px 12px;
+    }
+
+    .control-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-family: var(--font-heading);
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .control-value {
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--border-subtle);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--node-color, var(--aether-accent, #FFFFFF));
+      cursor: pointer;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="node-header">
+    <div class="node-title">
+      <span>🥣</span> Polyphonic Singing Bowls
+    </div>
+    <span class="node-badge" id="badge-mode">5 VOICES</span>
+  </div>
+
+  <div class="bowls-visualizer-container">
+    <div class="bowl-item" id="bowl-0"><div class="bowl-ring"></div><span class="bowl-label">I (1.0)</span></div>
+    <div class="bowl-item" id="bowl-1"><div class="bowl-ring"></div><span class="bowl-label">bIII (1.19)</span></div>
+    <div class="bowl-item" id="bowl-2"><div class="bowl-ring"></div><span class="bowl-label">IV (1.33)</span></div>
+    <div class="bowl-item" id="bowl-3"><div class="bowl-ring"></div><span class="bowl-label">V (1.50)</span></div>
+    <div class="bowl-item" id="bowl-4"><div class="bowl-ring"></div><span class="bowl-label">bVII (1.78)</span></div>
+  </div>
+
+  <div class="controls-grid">
+    <div class="control-item">
+      <div class="control-header">
+        <span>Root Pitch</span>
+        <span class="control-value" id="val-rootPitch">120 Hz</span>
+      </div>
+      <input type="range" id="param-rootPitch" min="60" max="300" step="1" value="120">
+    </div>
+
+    <div class="control-item">
+      <div class="control-header">
+        <span>Activity</span>
+        <span class="control-value" id="val-activity">50%</span>
+      </div>
+      <input type="range" id="param-activity" min="0.05" max="1" step="0.01" value="0.5">
+    </div>
+
+    <div class="control-item">
+      <div class="control-header">
+        <span>Resonance</span>
+        <span class="control-value" id="val-resonance">70%</span>
+      </div>
+      <input type="range" id="param-resonance" min="0.1" max="1" step="0.01" value="0.7">
+    </div>
+
+    <div class="control-item">
+      <div class="control-header">
+        <span>Beating Mix</span>
+        <span class="control-value" id="val-beatingMix">60%</span>
+      </div>
+      <input type="range" id="param-beatingMix" min="0" max="1" step="0.01" value="0.6">
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      rootPitch: 120,
+      activity: 0.5,
+      resonance: 0.7,
+      beatingMix: 0.6
+    };
+
+    function notifyHost(paramId, value) {
+      window.parent.postMessage({
+        type: 'aether:param-change',
+        paramId: paramId,
+        value: value
+      }, '*');
+      window.parent.postMessage({
+        type: 'PARAMETER_CHANGE',
+        id: paramId,
+        value: value
+      }, '*');
+    }
+
+    function bindSlider(id, paramKey, formatFn) {
+      const el = document.getElementById(id);
+      const valEl = document.getElementById('val-' + paramKey);
+      el.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        state[paramKey] = val;
+        valEl.textContent = formatFn(val);
+        notifyHost(paramKey, val);
+      });
+    }
+
+    bindSlider('param-rootPitch', 'rootPitch', v => `${Math.round(v)} Hz`);
+    bindSlider('param-activity', 'activity', v => `${Math.round(v * 100)}%`);
+    bindSlider('param-resonance', 'resonance', v => `${Math.round(v * 100)}%`);
+    bindSlider('param-beatingMix', 'beatingMix', v => `${Math.round(v * 100)}%`);
+
+    // Inbound listener from Aether host
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      
+      if (event.data.type === 'aether:voice-trigger') {
+        const voiceIdx = event.data.voiceIndex;
+        const bowlEl = document.querySelector(`#bowl-${voiceIdx} .bowl-ring`);
+        if (bowlEl) {
+          bowlEl.classList.add('active');
+          setTimeout(() => bowlEl.classList.remove('active'), 1800);
+        }
+      }
+
+      if (event.data.type === 'aether:param-update' || event.data.type === 'PARAMETER_CHANGE') {
+        const paramId = event.data.paramId || event.data.id;
+        const value = event.data.value;
+        if (state[paramId] !== undefined) {
+          state[paramId] = value;
+          const input = document.getElementById('param-' + paramId);
+          if (input) input.value = value;
+          const valEl = document.getElementById('val-' + paramId);
+          if (valEl) {
+            if (paramId === 'rootPitch') valEl.textContent = `${Math.round(value)} Hz`;
+            else valEl.textContent = `${Math.round(value * 100)}%`;
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
