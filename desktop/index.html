@@ -1,0 +1,4174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AETHER 3D — Standalone 4-Track Spatial Audio Studio</title>
+  <meta name="description" content="Standalone 4-track 3D spatial audio player & live performance workstation with HRTF 3D spatial canvas, trackpad depth pinch, motion automation, Ableton-style bipolar EQ, live input, and master WAV recording.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+/* ==========================================================================
+   AETHER DESIGN SYSTEM & THEMES
+   ========================================================================== */
+:root {
+  --bg-main: #FFFFFF;
+  --bg-card: #F4F4F4;
+  --bg-canvas: #FAFAFA;
+  --border-accent: #000000;
+  --border-light: #CCCCCC;
+  --border-subtle: #E5E5E5;
+  --text-main: #000000;
+  --text-accent: #000000;
+  --text-muted: #666666;
+  --accent-primary: #000000;
+  --accent-hover: #333333;
+  --accent-soft: rgba(0, 0, 0, 0.08);
+  --canvas-grid: rgba(0, 0, 0, 0.12);
+  --canvas-axis: #000000;
+  
+  --track-1: #FC4037; /* Poppy Coral */
+  --track-2: #FFEA00; /* Canary Yellow */
+  --track-3: #8B68B9; /* Slate Lavender */
+  --track-4: #00D600; /* Signal Green */
+
+  --knob-bg: #FFFFFF;
+  --knob-track: #DDDDDD;
+  --knob-arc: #000000;
+  --knob-pointer: #000000;
+
+  --font-heading: 'Space Grotesk', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+}
+
+body.theme-dark {
+  --bg-main: #0A0A0A;
+  --bg-card: #141414;
+  --bg-canvas: #000000;
+  --border-accent: #FFFFFF;
+  --border-light: #333333;
+  --border-subtle: #222222;
+  --text-main: #FFFFFF;
+  --text-accent: #FFFFFF;
+  --text-muted: #888888;
+  --accent-primary: #FFFFFF;
+  --accent-hover: #EEEEEE;
+  --accent-soft: rgba(255, 255, 255, 0.12);
+  --canvas-grid: rgba(255, 255, 255, 0.15);
+  --canvas-axis: #FFFFFF;
+
+  --track-1: #FC4037; /* Poppy Coral */
+  --track-2: #FFEA00; /* Canary Yellow */
+  --track-3: #8B68B9; /* Slate Lavender */
+  --track-4: #00D600; /* Signal Green */
+
+  --knob-bg: #1A1A1A;
+  --knob-track: #333333;
+  --knob-arc: #FFFFFF;
+  --knob-pointer: #FFFFFF;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  line-height: 1.4;
+  min-height: 100vh;
+  padding: 16px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.app-container {
+  max-width: 1260px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==========================================================================
+   HEADER & MASTER TRANSPORT
+   ========================================================================== */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.header-left, .header-center, .header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.transport-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-transport {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-main);
+  border: 1.5px solid var(--border-accent);
+  color: var(--text-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-transport:hover {
+  background: var(--accent-primary);
+  color: #FFF;
+}
+.btn-transport.playing {
+  background: var(--accent-primary);
+  color: #FFF;
+}
+
+.btn-rec-master {
+  background: var(--bg-main);
+  border: 1.5px solid var(--border-accent);
+  color: var(--text-accent);
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.btn-rec-master:hover {
+  background: var(--accent-soft);
+}
+.btn-rec-master.recording {
+  background: var(--text-main);
+  color: var(--bg-main);
+  animation: pulse-rec-border 1.2s infinite alternate;
+}
+@keyframes pulse-rec-border {
+  0% { box-shadow: 0 0 0 0 rgba(128, 128, 128, 0.4); }
+  100% { box-shadow: 0 0 10px 3px rgba(128, 128, 128, 0.7); }
+}
+
+.app-title-group {
+  display: flex;
+  flex-direction: column;
+}
+.app-title {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-accent);
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.app-title .version-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.app-subtitle {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.master-time-display {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-accent);
+  background: var(--bg-main);
+  border: 1.5px solid var(--border-accent);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.05em;
+  min-width: 96px;
+  text-align: center;
+}
+
+.header-btn {
+  background: var(--bg-main);
+  border: 1.5px solid var(--border-accent);
+  color: var(--text-accent);
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.header-btn:hover {
+  background: var(--accent-soft);
+}
+
+
+.master-vol-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-accent);
+  font-family: var(--font-heading);
+}
+.header-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;
+  height: 4px;
+  background: var(--border-light);
+  outline: none;
+  border-radius: 2px;
+}
+.header-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--text-main);
+  cursor: pointer;
+}
+
+.theme-toggle-btn {
+  padding: 6px 10px;
+  font-size: 0.78rem;
+}
+
+/* ==========================================================================
+   2D SPATIAL CANVAS WORKSPACE
+   ========================================================================== */
+.spatial-workspace-section {
+  background: var(--bg-card);
+  border: 2px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workspace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.workspace-title {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-accent);
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dot-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+}
+.workspace-instructions {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.workspace-instructions strong {
+  color: var(--text-accent);
+}
+
+.canvas-arena-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  background: var(--bg-canvas);
+  border: 1.5px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  user-select: none;
+}
+.axis-label {
+  position: absolute;
+  font-family: var(--font-heading);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--canvas-axis);
+  letter-spacing: 0.08em;
+  pointer-events: none;
+  z-index: 2;
+}
+.axis-top { top: 8px; left: 50%; transform: translateX(-50%); }
+.axis-bottom { bottom: 8px; left: 50%; transform: translateX(-50%); }
+.axis-left { left: 12px; top: 50%; transform: translateY(-50%); }
+.axis-right { right: 12px; top: 50%; transform: translateY(-50%); }
+
+.grid-crosshair {
+  position: absolute;
+  background: var(--canvas-grid);
+  pointer-events: none;
+  z-index: 1;
+}
+.grid-crosshair.horizontal { top: 50%; left: 0; width: 100%; height: 1px; }
+.grid-crosshair.vertical { left: 50%; top: 0; height: 100%; width: 1px; }
+
+#spatial-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+}
+
+.arena-drop-hint {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--accent-soft);
+  border: 2px dashed var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+}
+.arena-drop-hint.active { opacity: 1; }
+.hint-box {
+  background: var(--bg-main);
+  border: 1.5px solid var(--accent-primary);
+  color: var(--text-accent);
+  padding: 10px 20px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+}
+
+/* ==========================================================================
+   4-CHANNEL MIXER RACK & STRIPS
+   ========================================================================== */
+.mixer-section {
+  background: var(--bg-card);
+  border: 2px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mixer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mixer-header h2 {
+  font-family: var(--font-heading);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-accent);
+  letter-spacing: 0.05em;
+}
+.mixer-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+.btn-text:hover { color: var(--text-accent); }
+
+.channels-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1024px) { .channels-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .channels-grid { grid-template-columns: 1fr; } }
+
+.channel-strip {
+  background: var(--bg-main);
+  border: 1.5px solid var(--border-accent);
+  border-top: 3px solid var(--strip-color, var(--border-accent));
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0; /* CRITICAL: Prevent grid child overflow */
+  overflow: hidden;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.channel-strip.drag-over {
+  border-color: var(--strip-color, var(--accent-primary)) !important;
+  box-shadow: 0 0 16px var(--strip-color, var(--accent-primary));
+}
+
+#channel-0 { --strip-color: var(--track-1); }
+#channel-1 { --strip-color: var(--track-2); }
+#channel-2 { --strip-color: var(--track-3); }
+#channel-3 { --strip-color: var(--track-4); }
+
+.channel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+  min-width: 0;
+}
+.track-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.badge-t1 { background: var(--track-1); color: #FFF; }
+.badge-t2 { background: var(--track-2); color: #000; }
+.badge-t3 { background: var(--track-3); color: #FFF; }
+.badge-t4 { background: var(--track-4); color: #000; }
+
+.track-info {
+  flex: 1 1 0%;
+  min-width: 0; /* CRITICAL for text truncation */
+  overflow: hidden;
+}
+.track-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-main);
+}
+.track-status {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-source-actions {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.file-input-hidden { display: none; }
+.btn-src {
+  background: transparent;
+  border: 1px solid var(--border-accent);
+  color: var(--text-accent);
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-src:hover { background: var(--accent-soft); }
+.btn-src.active {
+  background: var(--strip-color, var(--accent-primary));
+  color: #FFF;
+  border-color: var(--strip-color, var(--accent-primary));
+}
+
+.channel-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.playlist-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 3px 6px;
+  gap: 4px;
+}
+.btn-playlist {
+  background: var(--bg-main);
+  border: 1px solid var(--border-accent);
+  color: var(--text-accent);
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.btn-playlist:hover { background: var(--accent-soft); }
+.btn-playlist.btn-shuf.active {
+  background: var(--strip-color, var(--accent-primary));
+  color: #FFF;
+  border-color: var(--strip-color, var(--accent-primary));
+}
+.playlist-counter {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 32px;
+  text-align: center;
+}
+
+.mute-solo-group {
+  display: flex;
+  gap: 6px;
+}
+.btn-toggle {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border-accent);
+  color: var(--text-accent);
+  font-family: var(--font-heading);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 4px 0;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-toggle:hover { background: var(--accent-soft); }
+.btn-toggle.active {
+  background: var(--strip-color, var(--accent-primary));
+  color: #FFF;
+  border-color: var(--strip-color, var(--accent-primary));
+}
+
+.gauges-row {
+  display: flex;
+  justify-content: space-between;
+  background: var(--bg-card);
+  padding: 4px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--border-light);
+  font-size: 0.7rem;
+}
+.gauge-item { display: flex; gap: 4px; }
+.g-label { font-weight: 700; color: var(--text-muted); }
+.g-val { font-weight: 700; color: var(--text-accent); font-family: var(--font-mono); }
+
+/* Motion Automation Container */
+.motion-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.motion-header {
+  font-family: var(--font-heading);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text-accent);
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+.motion-buttons-row { display: flex; gap: 4px; }
+.btn-motion {
+  flex: 1;
+  background: var(--bg-main);
+  border: 1px solid var(--border-accent);
+  color: var(--text-accent);
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 0;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-motion:hover { background: var(--accent-soft); }
+.rec-btn.recording {
+  background: var(--strip-color, var(--accent-primary));
+  color: #FFF;
+  border-color: var(--strip-color, var(--accent-primary));
+  animation: pulse-rec 1s infinite alternate;
+}
+@keyframes pulse-rec { 0% { opacity: 0.8; } 100% { opacity: 1; } }
+.play-motion-btn.active {
+  background: var(--strip-color, var(--accent-primary));
+  color: #FFF;
+  border-color: var(--strip-color, var(--accent-primary));
+}
+.motion-speed-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.speed-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.speed-btn-group { display: flex; gap: 2px; }
+.btn-speed {
+  background: var(--bg-main);
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  font-size: 0.6rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.btn-speed:hover { color: var(--text-accent); border-color: var(--border-accent); }
+.btn-speed.active {
+  background: var(--strip-color, var(--accent-primary));
+  color: #FFF;
+  border-color: var(--strip-color, var(--accent-primary));
+}
+
+/* High contrast text on yellow (T2) and green (T4) active buttons */
+#channel-1 .btn-src.active,
+#channel-1 .btn-playlist.btn-shuf.active,
+#channel-1 .btn-toggle.active,
+#channel-1 .rec-btn.recording,
+#channel-1 .play-motion-btn.active,
+#channel-1 .btn-speed.active,
+#channel-3 .btn-src.active,
+#channel-3 .btn-playlist.btn-shuf.active,
+#channel-3 .btn-toggle.active,
+#channel-3 .rec-btn.recording,
+#channel-3 .play-motion-btn.active,
+#channel-3 .btn-speed.active {
+  color: #000000;
+}
+
+.channel-strip .knob-arc-active {
+  stroke: var(--strip-color, var(--accent-primary));
+}
+
+/* ==========================================================================
+   ABLETON-STYLE BIPOLAR ROTARY EQ KNOBS (12 O'CLOCK CENTER)
+   ========================================================================== */
+.eq-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 8px 6px;
+}
+.eq-title {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-accent);
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+.eq-knobs-row {
+  display: flex;
+  justify-content: space-evenly; /* Evenly spaced */
+  align-items: center;
+  width: 100%;
+}
+.eq-knob-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  user-select: none;
+}
+
+.rotary-knob-container {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.rotary-knob-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.knob-track-bg {
+  fill: none;
+  stroke: var(--knob-track);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.knob-arc-active {
+  fill: none;
+  stroke: var(--accent-primary);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  transition: stroke 0.15s ease;
+}
+
+.knob-center-tick {
+  stroke: var(--knob-pointer);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.knob-body {
+  fill: var(--knob-bg);
+  stroke: var(--border-light);
+  stroke-width: 1.5;
+}
+
+.knob-needle {
+  stroke: var(--knob-pointer);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.knob-val-badge {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--text-accent);
+  text-align: center;
+  min-width: 38px;
+}
+.knob-label {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   FOOTER & MODAL DIALOGS
+   ========================================================================== */
+.app-footer {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  padding: 6px;
+}
+
+/* Live Input Modal / Toast */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  width: 90%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.modal-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-accent);
+}
+.modal-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.modal-select {
+  background: var(--bg-main);
+  color: var(--text-main);
+  border: 1.5px solid var(--border-accent);
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  outline: none;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+  </style>
+</head>
+<body class="theme-minimal">
+  <div class="app-container">
+    <!-- APP HEADER & MASTER CONTROLS -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="transport-brand">
+          <button id="master-play-btn" class="btn-transport" title="Play / Pause All (Space)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <button id="master-stop-btn" class="btn-transport" title="Stop All & Rewind">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+          </button>
+          <button id="master-rec-btn" class="btn-rec-master" title="Record Master Live Output to WAV">
+            <span id="rec-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;"></span>
+            <span id="rec-btn-text">REC MASTER</span>
+          </button>
+        </div>
+        <div class="app-title-group">
+          <h1 class="app-title">AETHER 3D <span class="version-tag">v3.0 3D</span></h1>
+          <span class="app-subtitle">4-Track 3D Spatial Audio Studio &amp; Motion Automation</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="master-time-display" id="master-time">00:00.0</div>
+      </div>
+
+      <div class="header-right">
+        <button id="demo-btn" class="header-btn" title="Load 4 synthetic demo stems">
+          <span class="icon">∿</span> Demo Stems
+        </button>
+        <button id="export-session-btn" class="header-btn" title="Save DAW Project to disk (Finder)">
+          <span>💾</span> Save
+        </button>
+        <button id="import-session-btn" class="header-btn" title="Open DAW Project from disk (Finder)">
+          <span>📂</span> Load
+        </button>
+        <input type="file" id="import-session-file" accept=".aether,.json,application/json" style="display:none;">
+
+        <div class="master-vol-control">
+          <span>MASTER</span>
+          <input type="range" id="master-volume" min="0" max="1" step="0.01" value="1.0" class="header-slider">
+          <span id="master-vol-val" style="min-width:32px;font-family:var(--font-mono);">100%</span>
+        </div>
+
+        <button id="theme-toggle-btn" class="header-btn theme-toggle-btn" title="Toggle Dark / Light Theme">
+          <span id="theme-icon">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 2D SPATIAL CANVAS WORKSPACE -->
+    <section class="spatial-workspace-section">
+      <div class="workspace-header">
+        <div class="workspace-title">
+          <span class="dot-indicator"></span> 3D SPATIAL CANVAS &amp; MOTION AUTOMATION
+        </div>
+        <div class="workspace-instructions">
+          Drag nodes for <strong>X/Y</strong> • <strong>Ctrl + Two-Finger Scroll / Pinch</strong> for <strong>Z Depth (Air Absorption)</strong> • Ableton EQ • Live In • Rec Master
+        </div>
+      </div>
+      <div class="canvas-arena-container" id="arena-container">
+        <div class="axis-label axis-top">+100% VOLUME</div>
+        <div class="axis-label axis-bottom">0% VOLUME</div>
+        <div class="axis-label axis-left">100% LEFT</div>
+        <div class="axis-label axis-right">100% RIGHT</div>
+        <div class="grid-crosshair horizontal"></div>
+        <div class="grid-crosshair vertical"></div>
+        <canvas id="spatial-canvas"></canvas>
+        <div class="arena-drop-hint" id="arena-drop-hint">
+          <div class="hint-box">Drop Audio File(s) to Assign Track</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4-CHANNEL MIXER RACK -->
+    <section class="mixer-section">
+      <div class="mixer-header">
+        <h2>4-CHANNEL MIXER &amp; AUTOMATION RACK</h2>
+        <div class="mixer-header-actions">
+          <button class="btn-text" id="reset-all-btn">Reset All Channels &amp; Paths</button>
+        </div>
+      </div>
+
+      <div class="channels-grid">
+        <!-- Track 1 -->
+        <div class="channel-strip" data-track="0" id="channel-0">
+          <div class="channel-header">
+            <div class="track-badge badge-t1">T1</div>
+            <div class="track-info">
+              <div class="track-name" id="t0-name">Track 1 (Empty)</div>
+              <div class="track-status" id="t0-status">Drop file or choose source</div>
+            </div>
+            <div class="header-source-actions">
+              <input type="file" id="t0-file" accept="audio/*,.aethernode,.zip" multiple class="file-input-hidden">
+              <button class="btn-src btn-node-inspect" id="t0-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-cyan); font-weight: bold;">⚙ UI</button>
+              <button class="btn-src" onclick="document.getElementById('t0-file').click()" title="Load local audio file or .aethernode">Load</button>
+              <button class="btn-src" id="t0-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
+              <button class="btn-src" id="t0-stream" title="Live Stream / URL Receiver">Stream</button>
+            </div>
+          </div>
+          <div class="channel-controls">
+            <div class="playlist-bar">
+              <button class="btn-playlist" id="t0-prev" title="Previous sample">⏮</button>
+              <span class="playlist-counter" id="t0-count">0/0</span>
+              <button class="btn-playlist" id="t0-next" title="Next sample">⏭</button>
+              <button class="btn-playlist btn-shuf" id="t0-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
+            </div>
+            <div class="mute-solo-group">
+              <button class="btn-toggle mute-btn" id="t0-mute">MUTE</button>
+              <button class="btn-toggle solo-btn" id="t0-solo">SOLO</button>
+            </div>
+            <div class="gauges-row">
+              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t0-vol-txt">80%</span></div>
+              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t0-pan-txt">C</span></div>
+            </div>
+            <div class="motion-box">
+              <div class="motion-header">MOTION AUTOMATION</div>
+              <div class="motion-buttons-row">
+                <button class="btn-motion rec-btn" id="t0-rec">● REC</button>
+                <button class="btn-motion play-motion-btn" id="t0-play-motion">▶ PLAY</button>
+                <button class="btn-motion clear-btn" id="t0-clear-motion">CLR</button>
+              </div>
+              <div class="motion-speed-row">
+                <span class="speed-label">SPEED</span>
+                <div class="speed-btn-group">
+                  <button class="btn-speed" data-track="0" data-speed="0.01">0.01x</button>
+                  <button class="btn-speed" data-track="0" data-speed="0.1">0.1x</button>
+                  <button class="btn-speed" data-track="0" data-speed="0.5">0.5x</button>
+                  <button class="btn-speed active" data-track="0" data-speed="1.0">1.0x</button>
+                  <button class="btn-speed" data-track="0" data-speed="2.0">2.0x</button>
+                </div>
+              </div>
+            </div>
+            <div class="eq-section">
+              <div class="eq-title">3-BAND BIPOLAR EQ</div>
+              <div class="eq-knobs-row">
+                <!-- Ableton style rotary dial LOW -->
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t0-knob-low" data-track="0" data-band="low" title="Low Shelf (150Hz) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t0-eq-low-val">0dB</span>
+                  <span class="knob-label">BASS</span>
+                </div>
+                <!-- MID -->
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t0-knob-mid" data-track="0" data-band="mid" title="Mid Peak (1kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t0-eq-mid-val">0dB</span>
+                  <span class="knob-label">MID</span>
+                </div>
+                <!-- HIGH -->
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t0-knob-high" data-track="0" data-band="high" title="High Shelf (6kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t0-eq-high-val">0dB</span>
+                  <span class="knob-label">TREBLE</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Track 2 -->
+        <div class="channel-strip" data-track="1" id="channel-1">
+          <div class="channel-header">
+            <div class="track-badge badge-t2">T2</div>
+            <div class="track-info">
+              <div class="track-name" id="t1-name">Track 2 (Empty)</div>
+              <div class="track-status" id="t1-status">Drop file or choose source</div>
+            </div>
+            <div class="header-source-actions">
+              <input type="file" id="t1-file" accept="audio/*,.aethernode,.zip" multiple class="file-input-hidden">
+              <button class="btn-src btn-node-inspect" id="t1-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-magenta); font-weight: bold;">⚙ UI</button>
+              <button class="btn-src" onclick="document.getElementById('t1-file').click()" title="Load local audio file or .aethernode">Load</button>
+              <button class="btn-src" id="t1-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
+              <button class="btn-src" id="t1-stream" title="Live Stream / URL Receiver">Stream</button>
+            </div>
+          </div>
+          <div class="channel-controls">
+            <div class="playlist-bar">
+              <button class="btn-playlist" id="t1-prev" title="Previous sample">⏮</button>
+              <span class="playlist-counter" id="t1-count">0/0</span>
+              <button class="btn-playlist" id="t1-next" title="Next sample">⏭</button>
+              <button class="btn-playlist btn-shuf" id="t1-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
+            </div>
+            <div class="mute-solo-group">
+              <button class="btn-toggle mute-btn" id="t1-mute">MUTE</button>
+              <button class="btn-toggle solo-btn" id="t1-solo">SOLO</button>
+            </div>
+            <div class="gauges-row">
+              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t1-vol-txt">30%</span></div>
+              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t1-pan-txt">C</span></div>
+            </div>
+            <div class="motion-box">
+              <div class="motion-header">MOTION AUTOMATION</div>
+              <div class="motion-buttons-row">
+                <button class="btn-motion rec-btn" id="t1-rec">● REC</button>
+                <button class="btn-motion play-motion-btn" id="t1-play-motion">▶ PLAY</button>
+                <button class="btn-motion clear-btn" id="t1-clear-motion">CLR</button>
+              </div>
+              <div class="motion-speed-row">
+                <span class="speed-label">SPEED</span>
+                <div class="speed-btn-group">
+                  <button class="btn-speed" data-track="1" data-speed="0.01">0.01x</button>
+                  <button class="btn-speed" data-track="1" data-speed="0.1">0.1x</button>
+                  <button class="btn-speed" data-track="1" data-speed="0.5">0.5x</button>
+                  <button class="btn-speed active" data-track="1" data-speed="1.0">1.0x</button>
+                  <button class="btn-speed" data-track="1" data-speed="2.0">2.0x</button>
+                </div>
+              </div>
+            </div>
+            <div class="eq-section">
+              <div class="eq-title">3-BAND BIPOLAR EQ</div>
+              <div class="eq-knobs-row">
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t1-knob-low" data-track="1" data-band="low" title="Low Shelf (150Hz) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t1-eq-low-val">0dB</span>
+                  <span class="knob-label">BASS</span>
+                </div>
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t1-knob-mid" data-track="1" data-band="mid" title="Mid Peak (1kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t1-eq-mid-val">0dB</span>
+                  <span class="knob-label">MID</span>
+                </div>
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t1-knob-high" data-track="1" data-band="high" title="High Shelf (6kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t1-eq-high-val">0dB</span>
+                  <span class="knob-label">TREBLE</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Track 3 -->
+        <div class="channel-strip" data-track="2" id="channel-2">
+          <div class="channel-header">
+            <div class="track-badge badge-t3">T3</div>
+            <div class="track-info">
+              <div class="track-name" id="t2-name">Track 3 (Empty)</div>
+              <div class="track-status" id="t2-status">Drop file or choose source</div>
+            </div>
+            <div class="header-source-actions">
+              <input type="file" id="t2-file" accept="audio/*,.aethernode,.zip" multiple class="file-input-hidden">
+              <button class="btn-src btn-node-inspect" id="t2-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-orange); font-weight: bold;">⚙ UI</button>
+              <button class="btn-src" onclick="document.getElementById('t2-file').click()" title="Load local audio file or .aethernode">Load</button>
+              <button class="btn-src" id="t2-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
+              <button class="btn-src" id="t2-stream" title="Live Stream / URL Receiver">Stream</button>
+            </div>
+          </div>
+          <div class="channel-controls">
+            <div class="playlist-bar">
+              <button class="btn-playlist" id="t2-prev" title="Previous sample">⏮</button>
+              <span class="playlist-counter" id="t2-count">0/0</span>
+              <button class="btn-playlist" id="t2-next" title="Next sample">⏭</button>
+              <button class="btn-playlist btn-shuf" id="t2-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
+            </div>
+            <div class="mute-solo-group">
+              <button class="btn-toggle mute-btn" id="t2-mute">MUTE</button>
+              <button class="btn-toggle solo-btn" id="t2-solo">SOLO</button>
+            </div>
+            <div class="gauges-row">
+              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t2-vol-txt">50%</span></div>
+              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t2-pan-txt">L50</span></div>
+            </div>
+            <div class="motion-box">
+              <div class="motion-header">MOTION AUTOMATION</div>
+              <div class="motion-buttons-row">
+                <button class="btn-motion rec-btn" id="t2-rec">● REC</button>
+                <button class="btn-motion play-motion-btn" id="t2-play-motion">▶ PLAY</button>
+                <button class="btn-motion clear-btn" id="t2-clear-motion">CLR</button>
+              </div>
+              <div class="motion-speed-row">
+                <span class="speed-label">SPEED</span>
+                <div class="speed-btn-group">
+                  <button class="btn-speed" data-track="2" data-speed="0.01">0.01x</button>
+                  <button class="btn-speed" data-track="2" data-speed="0.1">0.1x</button>
+                  <button class="btn-speed" data-track="2" data-speed="0.5">0.5x</button>
+                  <button class="btn-speed active" data-track="2" data-speed="1.0">1.0x</button>
+                  <button class="btn-speed" data-track="2" data-speed="2.0">2.0x</button>
+                </div>
+              </div>
+            </div>
+            <div class="eq-section">
+              <div class="eq-title">3-BAND BIPOLAR EQ</div>
+              <div class="eq-knobs-row">
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t2-knob-low" data-track="2" data-band="low" title="Low Shelf (150Hz) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t2-eq-low-val">0dB</span>
+                  <span class="knob-label">BASS</span>
+                </div>
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t2-knob-mid" data-track="2" data-band="mid" title="Mid Peak (1kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t2-eq-mid-val">0dB</span>
+                  <span class="knob-label">MID</span>
+                </div>
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t2-knob-high" data-track="2" data-band="high" title="High Shelf (6kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t2-eq-high-val">0dB</span>
+                  <span class="knob-label">TREBLE</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Track 4 -->
+        <div class="channel-strip" data-track="3" id="channel-3">
+          <div class="channel-header">
+            <div class="track-badge badge-t4">T4</div>
+            <div class="track-info">
+              <div class="track-name" id="t3-name">Track 4 (Empty)</div>
+              <div class="track-status" id="t3-status">Drop file or choose source</div>
+            </div>
+            <div class="header-source-actions">
+              <input type="file" id="t3-file" accept="audio/*,.aethernode,.zip" multiple class="file-input-hidden">
+              <button class="btn-src btn-node-inspect" id="t3-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-lime); font-weight: bold;">⚙ UI</button>
+              <button class="btn-src" onclick="document.getElementById('t3-file').click()" title="Load local audio file or .aethernode">Load</button>
+              <button class="btn-src" id="t3-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
+              <button class="btn-src" id="t3-stream" title="Live Stream / URL Receiver">Stream</button>
+            </div>
+          </div>
+          <div class="channel-controls">
+            <div class="playlist-bar">
+              <button class="btn-playlist" id="t3-prev" title="Previous sample">⏮</button>
+              <span class="playlist-counter" id="t3-count">0/0</span>
+              <button class="btn-playlist" id="t3-next" title="Next sample">⏭</button>
+              <button class="btn-playlist btn-shuf" id="t3-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
+            </div>
+            <div class="mute-solo-group">
+              <button class="btn-toggle mute-btn" id="t3-mute">MUTE</button>
+              <button class="btn-toggle solo-btn" id="t3-solo">SOLO</button>
+            </div>
+            <div class="gauges-row">
+              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t3-vol-txt">50%</span></div>
+              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t3-pan-txt">R50</span></div>
+            </div>
+            <div class="motion-box">
+              <div class="motion-header">MOTION AUTOMATION</div>
+              <div class="motion-buttons-row">
+                <button class="btn-motion rec-btn" id="t3-rec">● REC</button>
+                <button class="btn-motion play-motion-btn" id="t3-play-motion">▶ PLAY</button>
+                <button class="btn-motion clear-btn" id="t3-clear-motion">CLR</button>
+              </div>
+              <div class="motion-speed-row">
+                <span class="speed-label">SPEED</span>
+                <div class="speed-btn-group">
+                  <button class="btn-speed" data-track="3" data-speed="0.01">0.01x</button>
+                  <button class="btn-speed" data-track="3" data-speed="0.1">0.1x</button>
+                  <button class="btn-speed" data-track="3" data-speed="0.5">0.5x</button>
+                  <button class="btn-speed active" data-track="3" data-speed="1.0">1.0x</button>
+                  <button class="btn-speed" data-track="3" data-speed="2.0">2.0x</button>
+                </div>
+              </div>
+            </div>
+            <div class="eq-section">
+              <div class="eq-title">3-BAND BIPOLAR EQ</div>
+              <div class="eq-knobs-row">
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t3-knob-low" data-track="3" data-band="low" title="Low Shelf (150Hz) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t3-eq-low-val">0dB</span>
+                  <span class="knob-label">BASS</span>
+                </div>
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t3-knob-mid" data-track="3" data-band="mid" title="Mid Peak (1kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t3-eq-mid-val">0dB</span>
+                  <span class="knob-label">MID</span>
+                </div>
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t3-knob-high" data-track="3" data-band="high" title="High Shelf (6kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t3-eq-high-val">0dB</span>
+                  <span class="knob-label">TREBLE</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <p>AETHER v3.0 • Ableton-Style Bipolar EQ • Live Input (Mic/DAW) • Master WAV Recorder • Session Export • Web Audio 2D Spatial Engine</p>
+    </footer>
+  </div>
+
+  <!-- LIVE INPUT DEVICE SELECTION MODAL -->
+  <div class="modal-overlay" id="live-in-modal">
+    <div class="modal-card">
+      <h3 class="modal-title">Select Live Audio Input</h3>
+      <p class="modal-desc">Connect microphone, instrument interface, or DAW virtual loopback (BlackHole / Rogue Amoeba Loopback / VB-Cable) to this track:</p>
+      <select id="audio-input-select" class="modal-select">
+        <option value="default">Default System Audio Input</option>
+      </select>
+      <div class="modal-actions">
+        <button class="header-btn" id="modal-cancel-btn">Cancel</button>
+        <button class="header-btn" id="modal-confirm-btn" style="background:var(--accent-primary);color:#FFF;">Connect Live In</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AETHER NODE INSPECTOR MODAL -->
+  <div class="modal-overlay" id="node-inspector-modal">
+    <div class="modal-card" style="width: 520px; max-width: 92vw; padding: 0; overflow: hidden; background: var(--bg-card);">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: var(--bg-main); border-bottom: 1px solid var(--border-light);">
+        <h3 id="node-modal-title" style="font-family: var(--font-heading); font-size: 12px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; text-transform: uppercase; margin: 0; display: flex; align-items: center; gap: 8px;">
+          <span>⚡</span> Aether Node Inspector
+        </h3>
+        <button class="header-btn" id="node-modal-close-btn" style="padding: 3px 10px; font-size: 11px;">✕ Close</button>
+      </div>
+      <iframe id="node-inspector-frame" style="width: 100%; height: 340px; border: none; display: block; background: var(--bg-canvas);"></iframe>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT LOGIC: AETHER ENGINE
+       ========================================================================== -->
+  <script>
+// Top-level reload shortcut for Tauri Desktop Webview
+window.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && (e.key === 'r' || e.key === 'R' || e.code === 'KeyR')) {
+    e.preventDefault();
+    window.location.reload();
+  }
+}, true);
+
+/**
+ * Ableton-Style Bipolar Rotary Knob Component (0dB @ 12 o'clock)
+ */
+class BipolarRotaryKnob {
+  constructor(containerEl, options = {}) {
+    this.container = containerEl;
+    this.min = options.min !== undefined ? options.min : -15;
+    this.max = options.max !== undefined ? options.max : 15;
+    this.value = options.value !== undefined ? options.value : 0;
+    this.step = options.step !== undefined ? options.step : 0.5;
+    this.defaultValue = options.defaultValue !== undefined ? options.defaultValue : 0;
+    this.onChange = options.onChange || (() => {});
+
+    this.isDragging = false;
+    this.startY = 0;
+    this.startValue = 0;
+    this.sensitivity = 130; // Total px for full range
+
+    this.initSVG();
+    this.initEvents();
+    this.render();
+  }
+
+  initSVG() {
+    this.container.innerHTML = `
+      <svg class="rotary-knob-svg" viewBox="0 0 50 50">
+        <!-- Background guide ring (-135 deg to +135 deg) -->
+        <path class="knob-track-bg" id="track-bg" d=""></path>
+        <!-- Active Bipolar Arc (0dB at top) -->
+        <path class="knob-arc-active" id="arc-active" d=""></path>
+        <!-- Center top tick mark -->
+        <line class="knob-center-tick" x1="25" y1="5" x2="25" y2="10"></line>
+        <!-- Inner Knob Cap -->
+        <circle class="knob-body" cx="25" cy="25" r="14"></circle>
+        <!-- Pointer Needle -->
+        <line class="knob-needle" id="needle" x1="25" y1="25" x2="25" y2="13"></line>
+      </svg>
+    `;
+
+    this.trackBg = this.container.querySelector('#track-bg');
+    this.arcActive = this.container.querySelector('#arc-active');
+    this.needle = this.container.querySelector('#needle');
+
+    // Draw static background arc from -135° to +135° (radius 20, center 25, 25)
+    this.trackBg.setAttribute('d', this.describeArc(25, 25, 20, -135, 135));
+  }
+
+  polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+    const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+    return {
+      x: centerX + (radius * Math.cos(angleInRadians)),
+      y: centerY + (radius * Math.sin(angleInRadians))
+    };
+  }
+
+  describeArc(x, y, radius, startAngle, endAngle) {
+    if (Math.abs(endAngle - startAngle) < 0.1) return "";
+    const start = this.polarToCartesian(x, y, radius, endAngle);
+    const end = this.polarToCartesian(x, y, radius, startAngle);
+    const largeArcFlag = Math.abs(endAngle - startAngle) <= 180 ? "0" : "1";
+    const sweepFlag = endAngle >= startAngle ? "1" : "0";
+    return [
+      "M", start.x, start.y, 
+      "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
+    ].join(" ");
+  }
+
+  render() {
+    // Range -15 to +15 maps to angle -135° to +135°
+    // 0 is 0° (top dead center at 12 o'clock)
+    const norm = (this.value - this.min) / (this.max - this.min); // 0.0 to 1.0
+    const currentAngle = -135 + (norm * 270); // in degrees (-135 to +135)
+
+    // Bipolar arc: draws from 0° (12 o'clock) to currentAngle
+    if (Math.abs(this.value) < 0.2) {
+      this.arcActive.setAttribute('d', "");
+    } else if (this.value > 0) {
+      // Boost: 0° to currentAngle (clockwise)
+      this.arcActive.setAttribute('d', this.describeArc(25, 25, 20, 0, currentAngle));
+    } else {
+      // Cut: currentAngle to 0° (counter-clockwise)
+      this.arcActive.setAttribute('d', this.describeArc(25, 25, 20, currentAngle, 0));
+    }
+
+    // Rotate needle around center (25, 25)
+    this.needle.setAttribute('transform', `rotate(${currentAngle} 25 25)`);
+  }
+
+  setValue(val, triggerChange = true) {
+    let clamped = Math.max(this.min, Math.min(this.max, val));
+    clamped = Math.round(clamped / this.step) * this.step;
+    this.value = clamped;
+    this.render();
+    if (triggerChange) {
+      this.onChange(this.value);
+    }
+  }
+
+  initEvents() {
+    const handlePointerDown = (e) => {
+      this.isDragging = true;
+      this.startY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+      this.startValue = this.value;
+      document.body.style.cursor = 'ns-resize';
+
+      const handlePointerMove = (moveEvent) => {
+        if (!this.isDragging) return;
+        const currentY = moveEvent.clientY || (moveEvent.touches ? moveEvent.touches[0].clientY : 0);
+        const deltaY = this.startY - currentY; // Moving UP increases value
+        const speed = (moveEvent.shiftKey ? 0.25 : 1.0); // Fine precision with Shift key
+        const valDelta = (deltaY / this.sensitivity) * (this.max - this.min) * speed;
+        this.setValue(this.startValue + valDelta);
+      };
+
+      const handlePointerUp = () => {
+        if (this.isDragging) {
+          this.isDragging = false;
+          document.body.style.cursor = '';
+          window.removeEventListener('mousemove', handlePointerMove);
+          window.removeEventListener('mouseup', handlePointerUp);
+          window.removeEventListener('touchmove', handlePointerMove);
+          window.removeEventListener('touchend', handlePointerUp);
+        }
+      };
+
+      window.addEventListener('mousemove', handlePointerMove);
+      window.addEventListener('mouseup', handlePointerUp);
+      window.addEventListener('touchmove', handlePointerMove, { passive: false });
+      window.addEventListener('touchend', handlePointerUp);
+    };
+
+    this.container.addEventListener('mousedown', handlePointerDown);
+    this.container.addEventListener('touchstart', handlePointerDown, { passive: true });
+
+    // Double click resets to neutral (0 dB)
+    this.container.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      this.setValue(this.defaultValue);
+    });
+
+    // Mouse wheel adjust
+    this.container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? (e.shiftKey ? 0.5 : 1.0) : (e.shiftKey ? -0.5 : -1.0);
+      this.setValue(this.value + delta);
+    }, { passive: false });
+  }
+}
+
+/**
+ * Audio Track Model
+ */
+class AudioTrack {
+  constructor(index, name, color, studio) {
+    this.index = index;
+    this.name = name;
+    this.color = color;
+    this.studio = studio;
+
+    this.isSpatialized = false;
+
+    this.isLoaded = false;
+    this.isPlaying = false;
+    this.isMuted = false;
+    this.isSoloed = false;
+
+    this.audioBuffer = null;
+    this.bufferSource = null;
+    this.htmlAudio = null;
+    this.mediaElementSource = null;
+    this.useMediaElement = false;
+
+    this.playlist = [];
+    this.playlistIndex = 0;
+    this.isShuffle = false;
+
+    // Live Input (Mic / Instrument)
+    this.isLiveIn = false;
+    this.liveStream = null;
+    this.liveMediaSource = null;
+
+    // Stream URL
+    this.isStream = false;
+    this.streamUrl = '';
+    this.streamAudio = null;
+    this.streamMediaSource = null;
+
+    // Default opening coordinates for the 4 tracks on 2D canvas:
+    // T1: Center Top (80% Vol, C) | T2: Center Bottom (30% Vol, C)
+    // T3: Mid Left (50% Vol, L50) | T4: Mid Right (50% Vol, R50)
+    const defaultPositions = [
+      { x: 0.5, y: 0.80, z: 0 },
+      { x: 0.5, y: 0.30, z: 0 },
+      { x: 0.25, y: 0.50, z: 0 },
+      { x: 0.75, y: 0.50, z: 0 }
+    ];
+    const defPos = defaultPositions[this.index % defaultPositions.length];
+    this.x = defPos.x;
+    this.y = defPos.y;
+    this.z = defPos.z;
+    this.baseRadius = 24;
+
+    this.motionPath = [];
+    this.isRecordingMotion = false;
+    this.isPlayingMotion = false;
+    this.motionSpeed = 1.0;
+    this.recordStartTime = 0;
+    this.motionPlayStartTime = 0;
+
+    // Web Audio Nodes
+    this.eqLowNode = null;
+    this.eqMidNode = null;
+    this.eqHighNode = null;
+    this.depthFilterNode = null;
+    this.reverbSendFilterNode = null;
+    this.reverbSendGain = null;
+    this.reverbConvolver = null;
+    this.reverbDampingFilter = null;
+    this.trackSumNode = null;
+    this.stereoPanNode = null;
+    this.reverbPanNode = null;
+    this.gainNode = null;
+    this.spatialGainNode = null;
+    this.pannerNode = null;
+
+    this.eqValues = { low: 0, mid: 0, high: 0 };
+
+    this.startTime = 0;
+    this.duration = 0;
+
+    // Aether Custom Node Ecosystem State
+    this.isCustomNode = false;
+    this.customNodeBundle = null;
+    this.customNodeDSP = null;
+
+    this.initDOM();
+  }
+
+  initDOM() {
+    const i = this.index;
+    this.nameEl = document.getElementById(`t${i}-name`);
+    this.statusEl = document.getElementById(`t${i}-status`);
+    this.fileInput = document.getElementById(`t${i}-file`);
+    this.liveInBtn = document.getElementById(`t${i}-live-in`);
+    this.streamBtn = document.getElementById(`t${i}-stream`);
+    this.nodeInspectBtn = document.getElementById(`t${i}-node-inspect`);
+    if (this.nodeInspectBtn) {
+      this.nodeInspectBtn.addEventListener('click', () => {
+        if (this.isCustomNode && this.customNodeBundle) {
+          this.studio.openNodeInspector(this);
+        }
+      });
+    }
+
+    this.muteBtn = document.getElementById(`t${i}-mute`);
+    this.soloBtn = document.getElementById(`t${i}-solo`);
+
+    this.volTxt = document.getElementById(`t${i}-vol-txt`);
+    this.panTxt = document.getElementById(`t${i}-pan-txt`);
+
+    this.prevBtn = document.getElementById(`t${i}-prev`);
+    this.nextBtn = document.getElementById(`t${i}-next`);
+    this.countEl = document.getElementById(`t${i}-count`);
+    this.shufBtn = document.getElementById(`t${i}-shuf`);
+
+    this.recBtn = document.getElementById(`t${i}-rec`);
+    this.playMotionBtn = document.getElementById(`t${i}-play-motion`);
+    this.clearMotionBtn = document.getElementById(`t${i}-clear-motion`);
+    this.speedBtns = document.querySelectorAll(`.btn-speed[data-track="${i}"]`);
+
+    this.eqLowVal = document.getElementById(`t${i}-eq-low-val`);
+    this.eqMidVal = document.getElementById(`t${i}-eq-mid-val`);
+    this.eqHighVal = document.getElementById(`t${i}-eq-high-val`);
+
+    // File loading
+    this.fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        this.loadAudioFiles(Array.from(e.target.files));
+      }
+    });
+
+    // Live In & Stream
+    if (this.liveInBtn) {
+      this.liveInBtn.addEventListener('click', () => this.studio.promptLiveInput(this.index));
+    }
+    if (this.streamBtn) {
+      this.streamBtn.addEventListener('click', () => this.promptStreamUrl());
+    }
+
+    // Transport buttons
+    this.muteBtn.addEventListener('click', () => this.toggleMute());
+    this.soloBtn.addEventListener('click', () => this.toggleSolo());
+
+    if (this.prevBtn) this.prevBtn.addEventListener('click', () => this.prevInPlaylist());
+    if (this.nextBtn) this.nextBtn.addEventListener('click', () => this.nextInPlaylist());
+    if (this.shufBtn) this.shufBtn.addEventListener('click', () => this.toggleShuffle());
+
+    this.recBtn.addEventListener('click', () => this.toggleRecordMotion());
+    this.playMotionBtn.addEventListener('click', () => this.togglePlayMotion());
+    this.clearMotionBtn.addEventListener('click', () => this.clearMotion());
+
+    this.speedBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.speedBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.motionSpeed = parseFloat(btn.getAttribute('data-speed'));
+      });
+    });
+
+    // Initialize Ableton-style bipolar rotary dials
+    this.knobLow = new BipolarRotaryKnob(document.getElementById(`t${i}-knob-low`), {
+      min: -15, max: 15, value: 0,
+      onChange: (val) => this.updateEQ('low', val)
+    });
+    this.knobMid = new BipolarRotaryKnob(document.getElementById(`t${i}-knob-mid`), {
+      min: -15, max: 15, value: 0,
+      onChange: (val) => this.updateEQ('mid', val)
+    });
+    this.knobHigh = new BipolarRotaryKnob(document.getElementById(`t${i}-knob-high`), {
+      min: -15, max: 15, value: 0,
+      onChange: (val) => this.updateEQ('high', val)
+    });
+
+    // Apply default initial volume/pan labels immediately
+    this.updateAudioParamsFromPosition();
+  }
+
+  setupWebAudioNodes(audioCtx) {
+    if (this.gainNode) return;
+
+    this.eqLowNode = audioCtx.createBiquadFilter();
+    this.eqLowNode.type = 'lowshelf';
+    this.eqLowNode.frequency.value = 150;
+    this.eqLowNode.gain.value = this.eqValues.low;
+
+    this.eqMidNode = audioCtx.createBiquadFilter();
+    this.eqMidNode.type = 'peaking';
+    this.eqMidNode.frequency.value = 1000;
+    this.eqMidNode.Q.value = 1.0;
+    this.eqMidNode.gain.value = this.eqValues.mid;
+
+    this.eqHighNode = audioCtx.createBiquadFilter();
+    this.eqHighNode.type = 'highshelf';
+    this.eqHighNode.frequency.value = 6000;
+    this.eqHighNode.gain.value = this.eqValues.high;
+
+    // Air Absorption / Distance Low-Pass Filter
+    this.depthFilterNode = audioCtx.createBiquadFilter();
+    this.depthFilterNode.type = 'lowpass';
+    this.depthFilterNode.frequency.value = 20000;
+    this.depthFilterNode.Q.value = 0.707;
+
+    // Dynamic Reverb Damping Low-Pass Filter
+    this.reverbSendFilterNode = audioCtx.createBiquadFilter();
+    this.reverbSendFilterNode.type = 'lowpass';
+    this.reverbSendFilterNode.frequency.value = 8000;
+
+    // Localized Spatial Reverb Chain for this Track
+    this.reverbSendGain = audioCtx.createGain();
+    this.reverbSendGain.gain.value = 0.0;
+
+    this.reverbConvolver = audioCtx.createConvolver();
+    if (this.studio.reverbBuffer) {
+      this.reverbConvolver.buffer = this.studio.reverbBuffer;
+    }
+
+    this.reverbDampingFilter = audioCtx.createBiquadFilter();
+    this.reverbDampingFilter.type = 'lowpass';
+    this.reverbDampingFilter.frequency.value = 3500;
+
+    // Dedicated Reverb Pan Node (locks reverb tail to track's stereo position)
+    this.reverbPanNode = audioCtx.createStereoPanner();
+
+    // Direct / Dry Gain Node
+    this.gainNode = audioCtx.createGain();
+
+    // Track Summing Bus
+    this.trackSumNode = audioCtx.createGain();
+
+    // Dedicated Track Stereo Pan Node (equal-power dry stereo panning)
+    this.stereoPanNode = audioCtx.createStereoPanner();
+    
+    // Direct Pan Gain to mute the native dry path when spatialization is active
+    this.directPanGain = audioCtx.createGain();
+    this.directPanGain.gain.value = 1.0;
+
+    // 3D Spatial Panner Node (HRTF)
+    this.pannerNode = audioCtx.createPanner();
+    this.pannerNode.panningModel = 'HRTF';
+    this.pannerNode.distanceModel = 'none';
+
+    // Spatial Wet Gain Node
+    this.spatialGainNode = audioCtx.createGain();
+    this.spatialGainNode.gain.value = 0.0;
+
+    // EQ Chain -> Gain Node -> Track Sum (100% clean direct dry audio path)
+    this.eqLowNode.connect(this.eqMidNode);
+    this.eqMidNode.connect(this.eqHighNode);
+    this.eqHighNode.connect(this.gainNode);
+    this.gainNode.connect(this.trackSumNode);
+
+    // Branch 1: Direct Clean Stereo Path (State A & State B)
+    this.trackSumNode.connect(this.stereoPanNode);
+    this.stereoPanNode.connect(this.directPanGain);
+    this.directPanGain.connect(this.studio.masterGain);
+
+    // Branch 2: 3D HRTF Spatial Path (State C)
+    this.trackSumNode.connect(this.depthFilterNode);
+    this.depthFilterNode.connect(this.pannerNode);
+    this.pannerNode.connect(this.spatialGainNode);
+    this.spatialGainNode.connect(this.studio.masterGain);
+
+    // Branch 3: Distance Reverb Path (State C)
+    this.trackSumNode.connect(this.reverbSendFilterNode);
+    this.reverbSendFilterNode.connect(this.reverbSendGain);
+    this.reverbSendGain.connect(this.reverbConvolver);
+    this.reverbConvolver.connect(this.reverbDampingFilter);
+    this.reverbDampingFilter.connect(this.reverbPanNode);
+    this.reverbPanNode.connect(this.studio.masterGain);
+
+    this.spatializerNode = null;
+    this.updateAudioParamsFromPosition();
+  }
+
+  initSpatializerWorklet(audioCtx) {
+    if (this.spatializerNode) return;
+    try {
+      this.spatializerNode = new AudioWorkletNode(audioCtx, 'spatializer-worklet', {
+          numberOfInputs: 1,
+          numberOfOutputs: 1,
+          outputChannelCount: [2]
+      });
+
+      // Fetch wasm and send to worklet
+      fetch('/desktop/dsp-wasm/pkg/dsp_wasm_bg.wasm')
+          .then(r => r.arrayBuffer())
+          .then(wasmBytes => {
+              this.spatializerNode.port.postMessage({ type: 'load-wasm', wasmBytes });
+          });
+
+      // Reroute depth filter through the new custom spatializer instead of native panner
+      this.depthFilterNode.disconnect();
+      this.depthFilterNode.connect(this.spatializerNode);
+      this.spatializerNode.connect(this.spatialGainNode);
+    } catch (e) {
+      console.warn("Worklet init failed, falling back to HRTF", e);
+    }
+  }
+
+  enableSpatialization() {
+    this.isSpatialized = true;
+    this.updateAudioParamsFromPosition();
+  }
+
+  updateEQ(band, gainDb) {
+    this.eqValues[band] = gainDb;
+    const txt = `${gainDb > 0 ? '+' : ''}${gainDb.toFixed(1).replace('.0', '')}dB`;
+
+    if (band === 'low') {
+      if (this.eqLowNode) this.eqLowNode.gain.setTargetAtTime(gainDb, this.studio.audioCtx ? this.studio.audioCtx.currentTime : 0, 0.01);
+      this.eqLowVal.textContent = txt;
+    } else if (band === 'mid') {
+      if (this.eqMidNode) this.eqMidNode.gain.setTargetAtTime(gainDb, this.studio.audioCtx ? this.studio.audioCtx.currentTime : 0, 0.01);
+      this.eqMidVal.textContent = txt;
+    } else if (band === 'high') {
+      if (this.eqHighNode) this.eqHighNode.gain.setTargetAtTime(gainDb, this.studio.audioCtx ? this.studio.audioCtx.currentTime : 0, 0.01);
+      this.eqHighVal.textContent = txt;
+    }
+  }
+
+  cleanupCustomNode() {
+    if (this.customNodeDSP && typeof this.customNodeDSP.dispose === 'function') {
+      try { this.customNodeDSP.dispose(); } catch(e){}
+    }
+    this.customNodeDSP = null;
+    this.customNodeBundle = null;
+    this.isCustomNode = false;
+    if (this.nodeInspectBtn) this.nodeInspectBtn.style.display = 'none';
+  }
+
+  cleanupSources() {
+    this.cleanupLiveIn();
+    this.cleanupStream();
+    this.cleanupCustomNode();
+    this.stopNodeOnly();
+    this.audioBuffer = null;
+  }
+
+  // --- LIVE INPUT (MIC / INSTRUMENT / DAW) ---
+  async connectLiveInput(stream, deviceLabel = 'Microphone / Line In') {
+    this.studio.setupAudioContext();
+    const ctx = this.studio.audioCtx;
+    if (ctx && ctx.state === 'suspended') await ctx.resume();
+
+    this.cleanupSources();
+    this.isLiveIn = true;
+    this.liveStream = stream;
+
+    try {
+      this.liveMediaSource = ctx.createMediaStreamSource(stream);
+      this.liveMediaSource.connect(this.eqLowNode);
+
+      this.isLoaded = true;
+      this.duration = Infinity;
+      this.isPlaying = true;
+
+      this.nameEl.textContent = `[LIVE] ${deviceLabel}`;
+      this.statusEl.textContent = 'Active Real-Time Audio Input';
+      if (this.liveInBtn) this.liveInBtn.classList.add('active');
+    } catch (err) {
+      console.error('Failed to attach live input stream:', err);
+      this.statusEl.textContent = 'Error attaching Live In';
+    }
+  }
+
+  cleanupLiveIn() {
+    if (this.liveStream) {
+      this.liveStream.getTracks().forEach(track => track.stop());
+      this.liveStream = null;
+    }
+    if (this.liveMediaSource) {
+      try { this.liveMediaSource.disconnect(); } catch (e) {}
+      this.liveMediaSource = null;
+    }
+    this.isLiveIn = false;
+    if (this.liveInBtn) this.liveInBtn.classList.remove('active');
+  }
+
+  // --- STREAM URL ---
+  async promptStreamUrl() {
+    this.studio.setupAudioContext();
+    const ctx = this.studio.audioCtx;
+    if (ctx && ctx.state === 'suspended') await ctx.resume();
+
+    const defaultUrl = this.streamUrl || '';
+    const url = prompt(`Track ${this.index + 1} — Enter Live Audio Stream URL (e.g. http://server:8000/stream.mp3):`, defaultUrl);
+    if (url !== null && url.trim() !== '') {
+      await this.loadStreamUrl(url.trim());
+    }
+  }
+
+  cleanupStream() {
+    if (this.streamAudio) {
+      try {
+        this.streamAudio.oncanplay = null;
+        this.streamAudio.onerror = null;
+        this.streamAudio.pause();
+        this.streamAudio.src = '';
+      } catch (e) {}
+      this.streamAudio = null;
+    }
+    if (this.streamMediaSource) {
+      try { this.streamMediaSource.disconnect(); } catch (e) {}
+      this.streamMediaSource = null;
+    }
+    this.isStream = false;
+    this.streamUrl = '';
+    if (this.streamBtn) this.streamBtn.classList.remove('active');
+  }
+
+  async loadStreamUrl(url) {
+    if (!url) return;
+    this.studio.setupAudioContext();
+    const ctx = this.studio.audioCtx;
+    if (ctx && ctx.state === 'suspended') await ctx.resume();
+
+    this.cleanupSources();
+    this.isStream = true;
+    this.streamUrl = url;
+    if (this.streamBtn) this.streamBtn.classList.add('active');
+
+    const displayUrl = url.replace(/^https?:\/\//i, '');
+    this.nameEl.textContent = `[STREAM] ${displayUrl}`;
+    this.statusEl.textContent = 'Connecting stream...';
+
+    try {
+      this.streamAudio = new Audio();
+      this.streamAudio.crossOrigin = 'anonymous';
+      this.streamAudio.src = url;
+
+      this.streamAudio.onerror = () => {
+        this.statusEl.textContent = '[STREAM ERROR]';
+      };
+      this.streamAudio.onplaying = () => {
+        this.statusEl.textContent = 'LIVE STREAMING';
+      };
+
+      this.streamMediaSource = ctx.createMediaElementSource(this.streamAudio);
+      this.streamMediaSource.connect(this.eqLowNode);
+
+      this.isLoaded = true;
+      this.duration = Infinity;
+
+      if (this.studio.isPlaying) {
+        this.play();
+      }
+    } catch (err) {
+      console.error('Failed to load audio stream:', err);
+      this.statusEl.textContent = '[STREAM ERROR]';
+    }
+  }
+
+  // --- LOCAL FILE LOADING ---
+  loadAudioFiles(files) {
+    if (!files || files.length === 0) return;
+    this.cleanupSources();
+    this.playlist = files;
+    this.playlistIndex = 0;
+    if (this.isShuffle) this.shufflePlaylist();
+    this.updatePlaylistUI();
+    this.loadAudioFile(this.playlist[this.playlistIndex]);
+  }
+
+  shufflePlaylist() {
+    if (this.playlist.length <= 1) return;
+    for (let i = this.playlist.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.playlist[i], this.playlist[j]] = [this.playlist[j], this.playlist[i]];
+    }
+  }
+
+  toggleShuffle() {
+    this.isShuffle = !this.isShuffle;
+    if (this.isShuffle && this.playlist.length > 1) {
+      this.shufflePlaylist();
+      this.playlistIndex = 0;
+      if (this.playlist.length > 0) this.loadAudioFile(this.playlist[0]);
+    }
+    this.updatePlaylistUI();
+  }
+
+  nextInPlaylist(isAuto = false) {
+    if (this.playlist.length === 0) return;
+    if (this.playlist.length <= 1 && !isAuto) return;
+
+    if (this.isShuffle && !isAuto) {
+      let nextIdx = Math.floor(Math.random() * this.playlist.length);
+      if (this.playlist.length > 1 && nextIdx === this.playlistIndex) {
+        nextIdx = (nextIdx + 1) % this.playlist.length;
+      }
+      this.playlistIndex = nextIdx;
+    } else {
+      this.playlistIndex = (this.playlistIndex + 1) % this.playlist.length;
+    }
+    this.updatePlaylistUI();
+    this.loadAudioFile(this.playlist[this.playlistIndex]);
+  }
+
+  prevInPlaylist() {
+    if (this.playlist.length === 0) return;
+    this.playlistIndex = (this.playlistIndex - 1 + this.playlist.length) % this.playlist.length;
+    this.updatePlaylistUI();
+    this.loadAudioFile(this.playlist[this.playlistIndex]);
+  }
+
+  updatePlaylistUI() {
+    if (this.countEl) {
+      this.countEl.textContent = this.playlist.length > 0 ? `${this.playlistIndex + 1}/${this.playlist.length}` : '0/0';
+    }
+    if (this.shufBtn) {
+      this.shufBtn.classList.toggle('active', this.isShuffle);
+    }
+  }
+
+  async loadAudioFile(file) {
+    if (!file) return;
+    const lower = (file.name || '').toLowerCase();
+
+    // Check if uploaded/dropped file is a custom .aethernode bundle or zip
+    if (lower.endsWith('.aethernode') || (lower.endsWith('.zip') && !file.type.startsWith('audio/'))) {
+      this.statusEl.textContent = 'Unpacking node...';
+      try {
+        let bundle = null;
+        if (file.path) {
+          try {
+            bundle = await invokeTauri('load_node_bundle_from_path', { path: file.path });
+          } catch(e) {
+            console.warn('Path unpack failed, trying base64 fallback:', e);
+          }
+        }
+        if (!bundle) {
+          bundle = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async () => {
+              try {
+                const base64Data = reader.result.split(',')[1];
+                const res = await invokeTauri('load_node_bundle_from_base64', { base64: base64Data, filename: file.name });
+                resolve(res);
+              } catch(e) { reject(e); }
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+        if (bundle) {
+          await this.loadNodeBundle(bundle);
+          this.studio.showToast(`Loaded node: ${bundle.manifest.name || bundle.file_name}`, 'success');
+          return;
+        } else {
+          throw new Error('Bundle unpack returned null');
+        }
+      } catch (nodeErr) {
+        this.statusEl.textContent = 'Node unpack error';
+        this.studio.showToast(`Error unpacking node: ${nodeErr.message || nodeErr}`, 'error');
+        return;
+      }
+    }
+
+    this.nameEl.textContent = file.name;
+    this.sampleName = file.name;
+    this.filePath = file.path || '';
+    this.statusEl.textContent = 'Decoding...';
+
+    this.studio.setupAudioContext();
+    const ctx = this.studio.audioCtx;
+    if (ctx.state === 'suspended') await ctx.resume();
+
+    this.stopNodeOnly();
+    this.useMediaElement = false;
+
+    const countInfo = this.playlist.length > 1 ? ` (${this.playlistIndex + 1}/${this.playlist.length})` : '';
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const decodedBuffer = await new Promise((resolve, reject) => {
+        ctx.decodeAudioData(arrayBuffer.slice(0), resolve, reject);
+      });
+
+      if (decodedBuffer) {
+        this.audioBuffer = decodedBuffer;
+        this.duration = decodedBuffer.duration;
+        this.isLoaded = true;
+        this.statusEl.textContent = `${this.duration.toFixed(1)}s • Loaded${countInfo}`;
+
+        if (this.studio.isPlaying) {
+          this.play(this.studio.getCurrentPlaybackTime());
+        }
+        return;
+      }
+    } catch (err) {
+      console.warn('ArrayBuffer decode fallback:', err);
+    }
+
+    try {
+      const objectUrl = URL.createObjectURL(file);
+      if (!this.htmlAudio) {
+        this.htmlAudio = new Audio();
+        this.mediaElementSource = ctx.createMediaElementSource(this.htmlAudio);
+        this.mediaElementSource.connect(this.eqLowNode);
+      }
+      this.htmlAudio.src = objectUrl;
+      this.useMediaElement = true;
+
+      await new Promise((resolve, reject) => {
+        this.htmlAudio.onloadedmetadata = resolve;
+        this.htmlAudio.onerror = reject;
+      });
+
+      this.duration = this.htmlAudio.duration || 10;
+      this.isLoaded = true;
+      this.statusEl.textContent = `${this.duration.toFixed(1)}s • Streaming${countInfo}`;
+
+      if (this.studio.isPlaying) {
+        this.play(this.studio.getCurrentPlaybackTime());
+      }
+    } catch (fallbackErr) {
+      console.error('Failed to load file:', fallbackErr);
+      this.statusEl.textContent = 'Error loading file';
+    }
+  }
+
+  async loadNodeBundle(bundle) {
+    if (!bundle || !bundle.manifest) return;
+    this.nameEl.textContent = bundle.manifest.name || bundle.file_name || 'Aether Node';
+    this.sampleName = bundle.manifest.name || bundle.file_name;
+    this.filePath = bundle.file_path || '';
+    this.statusEl.textContent = 'Node Ready';
+
+    this.studio.setupAudioContext();
+    const ctx = this.studio.audioCtx;
+    if (ctx.state === 'suspended') await ctx.resume();
+
+    this.stopNodeOnly();
+    this.useMediaElement = false;
+    this.isLiveIn = false;
+    this.isStream = false;
+    this.audioBuffer = null;
+    this.playlist = [];
+
+    if (this.customNodeDSP && typeof this.customNodeDSP.dispose === 'function') {
+      try { this.customNodeDSP.dispose(); } catch(e){}
+    }
+
+    try {
+      if (bundle.dsp_js) {
+        if (bundle.dsp_js.includes('registerProcessor') || bundle.dsp_js.includes('AudioWorkletProcessor')) {
+          const match = bundle.dsp_js.match(/registerProcessor\s*\(\s*['"]([^'"]+)['"]/);
+          const processorName = match ? match[1] : (bundle.manifest.id || 'custom-dsp');
+          const blob = new Blob([bundle.dsp_js], { type: 'application/javascript' });
+          const blobUrl = URL.createObjectURL(blob);
+          try {
+            await ctx.audioWorklet.addModule(blobUrl);
+          } catch(e) {
+            console.warn('AudioWorklet addModule:', e);
+          }
+          URL.revokeObjectURL(blobUrl);
+          
+          const workletNode = new AudioWorkletNode(ctx, processorName);
+          const gainNode = ctx.createGain();
+          gainNode.gain.setValueAtTime(1.0, ctx.currentTime);
+          workletNode.connect(gainNode);
+          
+          const defaultParams = {};
+          if (bundle.manifest && Array.isArray(bundle.manifest.parameters)) {
+            bundle.manifest.parameters.forEach(p => { defaultParams[p.id] = p.default; });
+          }
+
+          this.customNodeDSP = {
+            workletNode,
+            gainNode,
+            params: defaultParams,
+            setParameter(paramId, value) {
+              this.params[paramId] = value;
+              if (this.workletNode && this.workletNode.port) {
+                this.workletNode.port.postMessage({ type: 'PARAMETER_CHANGE', id: paramId, value: value });
+                this.workletNode.port.postMessage({ type: 'aether:param-change', paramId, value });
+              }
+            },
+            connect(dest) {
+              if (this.gainNode) this.gainNode.connect(dest);
+            },
+            disconnect() {
+              if (this.gainNode) this.gainNode.disconnect();
+              if (this.workletNode) this.workletNode.disconnect();
+            },
+            start() {
+              if (this.gainNode && ctx) {
+                this.gainNode.gain.setValueAtTime(1.0, ctx.currentTime);
+              }
+            },
+            stop() {
+              if (this.gainNode && ctx) {
+                this.gainNode.gain.setValueAtTime(0.0, ctx.currentTime);
+              }
+            },
+            dispose() {
+              this.stop();
+              this.disconnect();
+            }
+          };
+          this.customNodeDSP.connect(this.eqLowNode);
+        } else {
+          const fn = new Function('window', 'module', 'exports', `${bundle.dsp_js}\nreturn (typeof GranularAtmosphericCloudDSP !== 'undefined' ? GranularAtmosphericCloudDSP : (typeof window !== 'undefined' ? (window.GranularAtmosphericCloudDSP || window.CustomNodeDSP) : null));`);
+          const DSPClass = fn(window, {}, {}) || window.GranularAtmosphericCloudDSP;
+          if (DSPClass) {
+            this.customNodeDSP = new DSPClass();
+            this.customNodeDSP.init(ctx);
+            this.customNodeDSP.connect(this.eqLowNode);
+          }
+        }
+      }
+      this.isCustomNode = true;
+      this.isLoaded = true;
+      this.duration = Infinity;
+      this.customNodeBundle = bundle;
+      this.statusEl.textContent = '⚡ Aether Node Active';
+      if (this.nodeInspectBtn) this.nodeInspectBtn.style.display = 'inline-block';
+
+      // Open interactive UI view
+      this.studio.openNodeInspector(this);
+
+      if (this.studio.isPlaying) {
+        this.play();
+      }
+      this.studio.showToast(`✨ Loaded node: ${bundle.manifest.name}`, 'success');
+    } catch (err) {
+      console.error('Failed to instantiate node DSP:', err);
+      this.statusEl.textContent = 'Node DSP Error';
+      this.studio.showToast(`Node DSP error: ${err.message || err}`, 'error');
+    }
+  }
+
+  play(startTimeOffset = 0) {
+    if (!this.isLoaded) return;
+    this.stopNodeOnly();
+
+    const ctx = this.studio.audioCtx;
+
+    if (this.isCustomNode && this.customNodeDSP) {
+      if (typeof this.customNodeDSP.start === 'function') {
+        this.customNodeDSP.start();
+      }
+      this.isPlaying = true;
+      return;
+    }
+
+    if (this.isLiveIn) {
+      this.isPlaying = true;
+      return;
+    }
+
+    if (this.isStream && this.streamAudio) {
+      this.streamAudio.play().catch(e => console.warn('Stream play error:', e));
+      this.isPlaying = true;
+      this.startTime = ctx.currentTime;
+      return;
+    }
+
+    if (this.useMediaElement && this.htmlAudio) {
+      const offset = startTimeOffset % (this.duration || 1);
+      this.htmlAudio.currentTime = offset;
+      this.htmlAudio.loop = (this.playlist.length <= 1);
+      this.htmlAudio.onended = () => {
+        if (this.isPlaying && this.playlist.length > 1) this.nextInPlaylist(true);
+      };
+      this.htmlAudio.play().catch(e => console.error('HTML audio play error:', e));
+      this.isPlaying = true;
+      this.startTime = ctx.currentTime - offset;
+      return;
+    }
+
+    if (this.audioBuffer) {
+      this.bufferSource = ctx.createBufferSource();
+      this.bufferSource.buffer = this.audioBuffer;
+      this.bufferSource.loop = (this.playlist.length <= 1);
+      this.bufferSource.connect(this.eqLowNode);
+
+      this.bufferSource.onended = () => {
+        if (this.isPlaying && this.playlist.length > 1) this.nextInPlaylist(true);
+      };
+
+      const offset = startTimeOffset % this.duration;
+      this.startTime = ctx.currentTime - offset;
+      this.bufferSource.start(0, offset);
+      this.isPlaying = true;
+    }
+  }
+
+  stopNodeOnly() {
+    if (this.isCustomNode && this.customNodeDSP) {
+      if (typeof this.customNodeDSP.stop === 'function') {
+        this.customNodeDSP.stop();
+      }
+      this.isPlaying = false;
+    }
+    if (this.bufferSource) {
+      this.bufferSource.onended = null;
+      try { this.bufferSource.stop(); } catch(e){}
+      this.bufferSource.disconnect();
+      this.bufferSource = null;
+    }
+    if (this.htmlAudio) {
+      this.htmlAudio.onended = null;
+      this.htmlAudio.pause();
+    }
+    if (this.streamAudio) {
+      this.streamAudio.pause();
+    }
+    this.isPlaying = false;
+  }
+
+  stop() {
+    this.stopNodeOnly();
+  }
+
+  setPosition(x, y, z = undefined) {
+    this.x = Math.max(0.02, Math.min(0.98, x));
+    this.y = Math.max(0.02, Math.min(0.98, y));
+    if (z !== undefined) {
+      this.z = Math.max(0, Math.min(50, z));
+    }
+
+    if (this.isRecordingMotion) {
+      const elapsed = (performance.now() - this.recordStartTime) / 1000;
+      this.motionPath.push({ t: elapsed, x: this.x, y: this.y, z: this.z });
+    }
+
+    this.updateAudioParamsFromPosition();
+  }
+
+  getVisualRadius() {
+    return Math.max(this.baseRadius - (this.z * 0.32), 10);
+  }
+
+  updateAudioParamsFromPosition() {
+    const now = this.studio && this.studio.audioCtx ? this.studio.audioCtx.currentTime : 0;
+    const hasSolo = !!(this.studio && this.studio.tracks && this.studio.tracks.some(tr => tr.isSoloed));
+    const isSilenced = this.isMuted || (hasSolo && !this.isSoloed);
+    const gainTimeConst = 0.02;
+
+    const rawPan = (this.x - 0.5) * 2.0; // -1.0 (Hard L) to +1.0 (Hard R)
+    const isCentered = Math.abs(rawPan) < 0.02;
+    const panVal = isCentered ? 0.0 : Math.max(-1.0, Math.min(1.0, rawPan));
+    const isSpatialActive = this.isSpatialized || this.z > 0.5;
+
+    const baseVol = Math.pow(this.y, 1.5);
+
+    if (!isSpatialActive) {
+      // -------------------------------------------------------------
+      // STATE A (Default Center) & STATE B (Panned Stereo)
+      // 100% dry, pristine, bit-perfect audio without spatial coloring
+      // -------------------------------------------------------------
+      if (this.gainNode) {
+        this.gainNode.gain.setTargetAtTime(isSilenced ? 0 : baseVol, now, gainTimeConst);
+      }
+      if (this.stereoPanNode && this.stereoPanNode.pan) {
+        this.stereoPanNode.pan.setTargetAtTime(panVal, now, gainTimeConst);
+      }
+      if (this.depthFilterNode) {
+        this.depthFilterNode.frequency.setTargetAtTime(24000, now, gainTimeConst);
+      }
+      if (this.directPanGain) {
+        this.directPanGain.gain.setTargetAtTime(1.0, now, gainTimeConst);
+      }
+      if (this.spatialGainNode) {
+        this.spatialGainNode.gain.setTargetAtTime(0, now, gainTimeConst);
+      }
+      if (this.reverbSendGain) {
+        this.reverbSendGain.gain.setTargetAtTime(0, now, gainTimeConst);
+      }
+
+      if (this.volTxt) this.volTxt.textContent = `${Math.round(this.y * 100)}%`;
+      if (this.panTxt) {
+        if (isCentered) this.panTxt.textContent = 'C';
+        else if (panVal < 0) this.panTxt.textContent = `L${Math.abs(Math.round(panVal * 100))}`;
+        else this.panTxt.textContent = `R${Math.round(panVal * 100)}`;
+      }
+      return;
+    }
+
+    // -------------------------------------------------------------
+    // STATE C: 3D Spatialized (Spatialization = ON / Z > 0.5)
+    // Full spherical azimuth HRTF + air absorption + reverb diffusion
+    // -------------------------------------------------------------
+    const t = Math.max(0, Math.min(1, this.z / 50)); // Normalized distance (0 = close, 1 = max distance)
+    const posTimeConst = 0.06;
+    const filterTimeConst = 0.08;
+
+    // 1. Spherical Azimuth Mapping for HRTF 3D Panner
+    const azimuth = panVal * (Math.PI * 0.46);          // -83° to +83° stereo spread
+    const distanceMeters = 2.0 + (t * 6.0);             // 2.0m (adjacent) to 8.0m (far)
+    const elevation = (this.y - 0.5) * 0.4;             // Subtle height offset
+
+    const audioX = Math.sin(azimuth) * distanceMeters;
+    const audioY = elevation * distanceMeters;
+    const audioZ = -Math.cos(azimuth) * distanceMeters;
+
+    if (this.spatializerNode) {
+      const pX = this.spatializerNode.parameters.get('x');
+      const pY = this.spatializerNode.parameters.get('y');
+      const pZ = this.spatializerNode.parameters.get('z');
+      const pInt = this.spatializerNode.parameters.get('intensity');
+      
+      if (pX) pX.setTargetAtTime(this.x, now, posTimeConst);
+      if (pY) pY.setTargetAtTime(this.y, now, posTimeConst);
+      if (pZ) pZ.setTargetAtTime(this.z, now, posTimeConst);
+      if (pInt) pInt.setTargetAtTime(1.0, now, posTimeConst);
+    } else if (this.pannerNode) {
+      if (this.pannerNode.positionX) {
+        this.pannerNode.positionX.setTargetAtTime(audioX, now, posTimeConst);
+        this.pannerNode.positionY.setTargetAtTime(audioY, now, posTimeConst);
+        this.pannerNode.positionZ.setTargetAtTime(audioZ, now, posTimeConst);
+      } else {
+        this.pannerNode.setPosition(audioX, audioY, audioZ);
+      }
+    }
+
+    // 2. Direct Stereo Pan Lock
+    if (this.stereoPanNode && this.stereoPanNode.pan) {
+      this.stereoPanNode.pan.setTargetAtTime(panVal, now, gainTimeConst);
+    }
+    if (this.reverbPanNode && this.reverbPanNode.pan) {
+      this.reverbPanNode.pan.setTargetAtTime(panVal * 0.85, now, gainTimeConst);
+    }
+
+    // 3. Progressive Air Absorption Low-Pass Filter
+    if (this.depthFilterNode) {
+      const cutoff = Math.max(800, 20000 * Math.pow(800 / 20000, t));
+      this.depthFilterNode.frequency.setTargetAtTime(cutoff, now, filterTimeConst);
+    }
+
+    // 4. Dynamic Reverb Damping Low-Pass Filter
+    if (this.reverbSendFilterNode) {
+      const reverbCutoff = Math.max(1200, 8000 * Math.pow(1200 / 8000, t));
+      this.reverbSendFilterNode.frequency.setTargetAtTime(reverbCutoff, now, filterTimeConst);
+    }
+
+    // 5. Direct-to-Reverberant Equal-Power Mix (Gentle distance attenuation: ~30% less volume drop at max distance)
+    const dryGainFactor = Math.sqrt(Math.max(0.4, 1.0 - (0.315 * t)));
+    const dryVol = baseVol * dryGainFactor;
+    // 10% dark reverb when furtherest back
+    const reverbGain = (0.10 * Math.pow(t, 1.3)) * Math.pow(this.y, 1.2);
+
+    if (this.gainNode) {
+      this.gainNode.gain.setTargetAtTime(isSilenced ? 0 : dryVol, now, gainTimeConst);
+    }
+    if (this.directPanGain) {
+      this.directPanGain.gain.setTargetAtTime(0, now, gainTimeConst);
+    }
+    if (this.spatialGainNode) {
+      this.spatialGainNode.gain.setTargetAtTime(isSilenced ? 0 : 1.0, now, gainTimeConst);
+    }
+    if (this.reverbSendGain) {
+      this.reverbSendGain.gain.setTargetAtTime(isSilenced ? 0 : reverbGain, now, gainTimeConst);
+    }
+
+    if (this.volTxt) this.volTxt.textContent = `${Math.round(this.y * 100)}%`;
+    if (this.panTxt) {
+      if (isCentered) this.panTxt.textContent = 'C';
+      else if (panVal < 0) this.panTxt.textContent = `L${Math.abs(Math.round(panVal * 100))}`;
+      else this.panTxt.textContent = `R${Math.round(panVal * 100)}`;
+    }
+  }
+
+  toggleMute() {
+    this.isMuted = !this.isMuted;
+    this.muteBtn.classList.toggle('active', this.isMuted);
+    this.updateAudioParamsFromPosition();
+  }
+
+  toggleSolo() {
+    this.isSoloed = !this.isSoloed;
+    this.soloBtn.classList.toggle('active', this.isSoloed);
+    this.studio.updateSoloState();
+  }
+
+  toggleRecordMotion() {
+    if (this.isRecordingMotion) {
+      this.isRecordingMotion = false;
+      this.recBtn.classList.remove('recording');
+      this.recBtn.textContent = '● REC';
+
+      if (this.motionPath.length > 1) {
+        this.isPlayingMotion = true;
+        this.playMotionBtn.classList.add('active');
+        this.motionPlayStartTime = performance.now();
+      }
+    } else {
+      this.motionPath = [];
+      this.isRecordingMotion = true;
+      this.isPlayingMotion = false;
+      this.recordStartTime = performance.now();
+      this.recBtn.classList.add('recording');
+      this.recBtn.textContent = '■ REC...';
+      this.playMotionBtn.classList.remove('active');
+      this.motionPath.push({ t: 0, x: this.x, y: this.y, z: this.z });
+    }
+  }
+
+  togglePlayMotion() {
+    if (this.motionPath.length <= 1) return;
+    this.isPlayingMotion = !this.isPlayingMotion;
+    this.playMotionBtn.classList.toggle('active', this.isPlayingMotion);
+    if (this.isPlayingMotion) {
+      this.motionPlayStartTime = performance.now();
+    }
+  }
+
+  clearMotion() {
+    this.motionPath = [];
+    this.isRecordingMotion = false;
+    this.isPlayingMotion = false;
+    this.recBtn.classList.remove('recording');
+    this.recBtn.textContent = '● REC';
+    this.playMotionBtn.classList.remove('active');
+  }
+
+  updateMotionPlayback() {
+    if (!this.isPlayingMotion || this.isRecordingMotion || this.motionPath.length <= 1) return;
+
+    const totalPathDuration = this.motionPath[this.motionPath.length - 1].t;
+    if (totalPathDuration <= 0) return;
+
+    const now = performance.now();
+    const elapsedReal = (now - this.motionPlayStartTime) / 1000;
+    const elapsedScaled = (elapsedReal * this.motionSpeed) % totalPathDuration;
+
+    let p1 = this.motionPath[0];
+    let p2 = this.motionPath[this.motionPath.length - 1];
+
+    for (let i = 0; i < this.motionPath.length - 1; i++) {
+      if (elapsedScaled >= this.motionPath[i].t && elapsedScaled <= this.motionPath[i + 1].t) {
+        p1 = this.motionPath[i];
+        p2 = this.motionPath[i + 1];
+        break;
+      }
+    }
+
+    const dt = p2.t - p1.t;
+    const factor = dt > 0 ? (elapsedScaled - p1.t) / dt : 0;
+    const interpX = p1.x + (p2.x - p1.x) * factor;
+    const interpY = p1.y + (p2.y - p1.y) * factor;
+    const p1Z = p1.z !== undefined ? p1.z : 0;
+    const p2Z = p2.z !== undefined ? p2.z : 0;
+    const interpZ = p1Z + (p2Z - p1Z) * factor;
+
+    this.x = Math.max(0, Math.min(1, interpX));
+    this.y = Math.max(0, Math.min(1, interpY));
+    this.z = Math.max(0, Math.min(50, interpZ));
+    this.updateAudioParamsFromPosition();
+  }
+
+  getProgress() {
+    if (!this.isPlaying || !this.duration || this.isStream || this.isLiveIn) return 0;
+    const elapsed = this.studio.audioCtx ? (this.studio.audioCtx.currentTime - this.startTime) : 0;
+    return (elapsed % this.duration) / this.duration;
+  }
+}
+
+/**
+ * WAV File Encoder Helper (16-bit Stereo PCM)
+ */
+function encodeWAV(audioBuffers, sampleRate) {
+  const numChannels = audioBuffers.length;
+  const numFrames = audioBuffers[0].length;
+  const bytesPerSample = 2;
+  const blockAlign = numChannels * bytesPerSample;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = numFrames * blockAlign;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+
+  function writeString(offset, string) {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  }
+
+  /* RIFF chunk descriptor */
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeString(8, 'WAVE');
+  /* "fmt " sub-chunk */
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
+  view.setUint16(20, 1, true); // AudioFormat (1 = PCM)
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bytesPerSample * 8, true); // BitsPerSample
+  /* "data" sub-chunk */
+  writeString(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  // Write interleaved 16-bit samples
+  let offset = 44;
+  for (let i = 0; i < numFrames; i++) {
+    for (let channel = 0; channel < numChannels; channel++) {
+      let sample = audioBuffers[channel][i];
+      sample = Math.max(-1, Math.min(1, sample)); // Clamp
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([view], { type: 'audio/wav' });
+}
+
+/**
+ * Tauri IPC & Audio Buffer Serialization Helpers
+ */
+async function invokeTauri(cmd, args = {}) {
+  try {
+    if (window.__TAURI__ && window.__TAURI__.core && typeof window.__TAURI__.core.invoke === 'function') {
+      return await window.__TAURI__.core.invoke(cmd, args);
+    }
+    if (window.__TAURI_INTERNALS__ && typeof window.__TAURI_INTERNALS__.invoke === 'function') {
+      return await window.__TAURI_INTERNALS__.invoke(cmd, args);
+    }
+  } catch (err) {
+    console.warn(`Tauri command "${cmd}" failed:`, err);
+    throw err;
+  }
+  return null;
+}
+
+async function audioBufferToBase64(audioBuffer) {
+  if (!audioBuffer) return null;
+  const numChannels = audioBuffer.numberOfChannels;
+  const sampleRate = audioBuffer.sampleRate;
+  const numFrames = audioBuffer.length;
+  const bytesPerSample = 2;
+  const blockAlign = numChannels * bytesPerSample;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = numFrames * blockAlign;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+
+  function writeString(offset, string) {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  }
+
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bytesPerSample * 8, true);
+  writeString(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  const channels = [];
+  for (let c = 0; c < numChannels; c++) {
+    channels.push(audioBuffer.getChannelData(c));
+  }
+
+  let offset = 44;
+  for (let i = 0; i < numFrames; i++) {
+    for (let c = 0; c < numChannels; c++) {
+      let sample = Math.max(-1, Math.min(1, channels[c][i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      offset += 2;
+    }
+  }
+
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  const chunk = 0x8000;
+  for (let i = 0; i < len; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunk, len)));
+  }
+  return btoa(binary);
+}
+
+async function base64ToAudioBuffer(base64Str, audioCtx) {
+  const binary = atob(base64Str);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return await new Promise((resolve, reject) => {
+    audioCtx.decodeAudioData(bytes.buffer.slice(0), resolve, reject);
+  });
+}
+
+/**
+ * Main Aether Studio Engine
+ */
+class SpatialStudio {
+  constructor() {
+    this.audioCtx = null;
+    this.masterGain = null;
+    this.masterLimiter = null;
+    this.isPlaying = false;
+    this.activeDragNodeIndex = -1;
+
+    // Master Recording State
+    this.isRecordingMaster = false;
+    this.masterRecorderNode = null;
+    this.masterRecChunksL = [];
+    this.masterRecChunksR = [];
+    this.masterRecStartTime = 0;
+
+    // Theme state
+    this.isDark = (localStorage.getItem('aether_theme') || localStorage.getItem('tetrasphere_theme')) === 'dark';
+
+    const trackColors = ['#FC4037', '#FFEA00', '#8B68B9', '#00D600'];
+    const trackNames = ['Bass Stem', 'Rhythm Beat', 'Synth Pad', 'Melody Lead'];
+    this.tracks = trackColors.map((color, idx) => new AudioTrack(idx, trackNames[idx], color, this));
+    this.tracks.forEach(t => t.updateAudioParamsFromPosition());
+
+    this.pendingLiveTrackIndex = 0;
+
+    this.initDOM();
+    this.initCanvas();
+    this.applyTheme();
+    this.initWebSocket();
+  }
+
+  initDOM() {
+    this.masterPlayBtn = document.getElementById('master-play-btn');
+    this.masterStopBtn = document.getElementById('master-stop-btn');
+    this.masterRecBtn = document.getElementById('master-rec-btn');
+    this.recBtnText = document.getElementById('rec-btn-text');
+
+    this.masterVolumeSlider = document.getElementById('master-volume');
+    this.masterVolVal = document.getElementById('master-vol-val');
+    this.masterTimeEl = document.getElementById('master-time');
+    this.demoBtn = document.getElementById('demo-btn');
+    this.resetAllBtn = document.getElementById('reset-all-btn');
+
+    this.themeToggleBtn = document.getElementById('theme-toggle-btn');
+    this.themeIcon = document.getElementById('theme-icon');
+
+    this.exportSessionBtn = document.getElementById('export-session-btn');
+    this.importSessionBtn = document.getElementById('import-session-btn');
+    this.importSessionFileInput = document.getElementById('import-session-file');
+
+    this.arenaContainer = document.getElementById('arena-container');
+    this.canvas = document.getElementById('spatial-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.arenaDropHint = document.getElementById('arena-drop-hint');
+
+    // Live In Modal
+    this.liveInModal = document.getElementById('live-in-modal');
+    this.audioInputSelect = document.getElementById('audio-input-select');
+    this.modalCancelBtn = document.getElementById('modal-cancel-btn');
+    this.modalConfirmBtn = document.getElementById('modal-confirm-btn');
+
+    // Transport Handlers
+    this.masterPlayBtn.addEventListener('click', () => this.toggleMasterPlay());
+    this.masterStopBtn.addEventListener('click', () => this.stopMaster());
+    this.masterRecBtn.addEventListener('click', () => this.toggleMasterRecording());
+
+    // Volume Slider
+    this.masterVolumeSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      this.masterVolVal.textContent = `${Math.round(val * 100)}%`;
+      if (this.masterGain) this.masterGain.gain.value = val;
+    });
+
+    // Theme Switcher
+    this.themeToggleBtn.addEventListener('click', () => this.toggleTheme());
+
+    // Session Export (Save via Finder) & Import (Load via Finder)
+    this.exportSessionBtn.addEventListener('click', () => this.exportSession());
+    this.importSessionBtn.addEventListener('click', () => this.importSession());
+    this.importSessionFileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const session = JSON.parse(evt.target.result);
+          await this.applySession(session);
+          this.showToast(`✅ Loaded "${file.name}"!`);
+          this.flashButtonSuccess(this.importSessionBtn, 'Loaded!');
+        } catch (err) {
+          console.error('Failed to load session file:', err);
+          this.showToast('Error loading session file. Invalid JSON format.', 'error');
+        }
+        e.target.value = '';
+      };
+      reader.readAsText(file);
+    });
+
+    // Demo & Reset
+    this.demoBtn.addEventListener('click', () => this.loadDemoStems());
+    this.resetAllBtn.addEventListener('click', () => this.resetAll());
+
+    // Modal Events
+    this.modalCancelBtn.addEventListener('click', () => this.hideLiveInModal());
+    this.modalConfirmBtn.addEventListener('click', () => this.confirmLiveInput());
+
+    // Node Inspector Modal & IPC PostMessage Bridge
+    this.activeInspectorTrack = null;
+    this.nodeInspectorModal = document.getElementById('node-inspector-modal');
+    this.nodeModalCloseBtn = document.getElementById('node-modal-close-btn');
+    if (this.nodeModalCloseBtn && this.nodeInspectorModal) {
+      this.nodeModalCloseBtn.addEventListener('click', () => {
+        this.nodeInspectorModal.classList.remove('active');
+      });
+      this.nodeInspectorModal.addEventListener('click', (e) => {
+        if (e.target === this.nodeInspectorModal) {
+          this.nodeInspectorModal.classList.remove('active');
+        }
+      });
+    }
+
+    // Bidirectional window.postMessage bridge from embedded Node UIs
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (event.data.type === 'aether:param-change' || event.data.type === 'PARAMETER_CHANGE') {
+        const paramId = event.data.paramId || event.data.id;
+        const value = event.data.value;
+        if (this.activeInspectorTrack && this.activeInspectorTrack.customNodeDSP) {
+          if (typeof this.activeInspectorTrack.customNodeDSP.setParameter === 'function') {
+            this.activeInspectorTrack.customNodeDSP.setParameter(paramId, value);
+          }
+        }
+      }
+    });
+
+    // Prevent browser default file open behavior on entire window
+    window.addEventListener('dragover', (e) => e.preventDefault());
+    window.addEventListener('drop', (e) => e.preventDefault());
+
+    // Drag and drop onto channel strips
+    document.querySelectorAll('.channel-strip').forEach((strip, idx) => {
+      strip.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        strip.classList.add('drag-over');
+      });
+      strip.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      strip.addEventListener('dragleave', (e) => {
+        // Only remove highlight if we've actually left the strip (not just moved to a child)
+        if (!strip.contains(e.relatedTarget)) {
+          strip.classList.remove('drag-over');
+        }
+      });
+      strip.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        strip.classList.remove('drag-over');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          this.tracks[idx].loadAudioFiles(Array.from(e.dataTransfer.files));
+        }
+      });
+    });
+
+    // Drag and drop onto 2D Canvas Arena
+    const updateArenaHint = (e) => {
+      this.arenaDropHint.classList.add('active');
+      const rect = this.canvas.getBoundingClientRect();
+      const pxX = e.clientX - rect.left;
+      const pxY = e.clientY - rect.top;
+      const hitIdx = this.findHoverNodeIndex(pxX, pxY, 18);
+      const hintBox = this.arenaDropHint.querySelector('.hint-box');
+      if (hintBox) {
+        hintBox.textContent = hitIdx !== -1
+          ? `Drop Audio File onto Track ${hitIdx + 1} (T${hitIdx + 1})`
+          : `Drop Audio File(s) to Assign Track`;
+      }
+    };
+
+    this.arenaContainer.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      updateArenaHint(e);
+    });
+    this.arenaContainer.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      updateArenaHint(e);
+    });
+    this.arenaContainer.addEventListener('dragleave', (e) => {
+      // Only hide hint when leaving the arena entirely (not into a child)
+      if (!this.arenaContainer.contains(e.relatedTarget)) {
+        this.arenaDropHint.classList.remove('active');
+      }
+    });
+    this.arenaContainer.addEventListener('drop', (e) => {
+      e.preventDefault();
+      this.arenaDropHint.classList.remove('active');
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        const rect = this.canvas.getBoundingClientRect();
+        const pxX = e.clientX - rect.left;
+        const pxY = e.clientY - rect.top;
+        const dropX = pxX / rect.width;
+        const dropY = 1.0 - (pxY / rect.height);
+
+        const hitIdx = this.findHoverNodeIndex(pxX, pxY, 18);
+        let targetTrack;
+        if (hitIdx !== -1) {
+          targetTrack = this.tracks[hitIdx];
+        } else {
+          // Find first empty track, or default to track 1
+          targetTrack = this.tracks.find(t => !t.isLoaded) || this.tracks[0];
+        }
+        targetTrack.loadAudioFiles(Array.from(files));
+      }
+    });
+
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        window.location.reload();
+      }
+      if (e.code === 'Space' && e.target === document.body) {
+        e.preventDefault();
+        this.toggleMasterPlay();
+      }
+    });
+
+    // Clear any stale cached sessions from localStorage to ensure pristine default diamond opening layout
+    try {
+      localStorage.removeItem('aether_saved_session');
+    } catch (e) {}
+  }
+
+  applyTheme() {
+    document.body.classList.toggle('theme-dark', this.isDark);
+    this.themeIcon.textContent = this.isDark ? '☀️' : '🌙';
+    localStorage.setItem('aether_theme', this.isDark ? 'dark' : 'light');
+  }
+
+  toggleTheme() {
+    this.isDark = !this.isDark;
+    this.applyTheme();
+  }
+
+  setupAudioContext() {
+    if (this.audioCtx) return;
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    this.audioCtx = new AudioContext();
+    this.reverbBuffer = this.createReverbBuffer(this.audioCtx);
+
+    // Master Gain
+    this.masterGain = this.audioCtx.createGain();
+    this.masterGain.gain.value = parseFloat(this.masterVolumeSlider.value);
+
+    // Audio Graph: Direct bit-perfect transparent master bus
+    this.masterGain.connect(this.audioCtx.destination);
+
+    // Master Limiter Node (available for peak-limiting safety)
+    this.masterLimiter = this.audioCtx.createDynamicsCompressor();
+    this.masterLimiter.threshold.value = -0.5;
+    this.masterLimiter.knee.value = 12.0;
+    this.masterLimiter.ratio.value = 4.0;
+    this.masterLimiter.attack.value = 0.003;
+    this.masterLimiter.release.value = 0.15;
+
+    // Setup ScriptProcessor / Worklet for Master Recording capture (isolated with 0-gain sink to prevent duplicate delayed audio output)
+    const bufferSize = 4096;
+    this.masterRecorderNode = this.audioCtx.createScriptProcessor(bufferSize, 2, 2);
+    this.masterRecorderNode.onaudioprocess = (e) => {
+      if (this.isRecordingMaster) {
+        const inputL = e.inputBuffer.getChannelData(0);
+        const inputR = e.inputBuffer.getChannelData(1);
+        this.masterRecChunksL.push(new Float32Array(inputL));
+        this.masterRecChunksR.push(new Float32Array(inputR));
+      }
+      const outL = e.outputBuffer.getChannelData(0);
+      const outR = e.outputBuffer.getChannelData(1);
+      outL.fill(0);
+      outR.fill(0);
+    };
+
+    this.recorderZeroGain = this.audioCtx.createGain();
+    this.recorderZeroGain.gain.value = 0.0;
+    this.masterGain.connect(this.masterRecorderNode);
+    this.masterRecorderNode.connect(this.recorderZeroGain);
+    this.recorderZeroGain.connect(this.audioCtx.destination);
+
+    this.tracks.forEach(track => track.setupWebAudioNodes(this.audioCtx));
+
+    // Load custom Rust DSP spatializer
+    this.audioCtx.audioWorklet.addModule('/desktop/spatializer-worklet.js')
+      .then(() => {
+        this.workletReady = true;
+        this.tracks.forEach(track => {
+          if (track.audioCtx && track.initSpatializerWorklet) {
+            track.initSpatializerWorklet(this.audioCtx);
+          }
+        });
+      })
+      .catch(e => console.error('Failed to load spatializer worklet:', e));
+  }
+
+  initWebSocket() {
+    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) return;
+    try {
+      const wsHost = window.location.hostname || 'localhost';
+      const ws = new WebSocket(`ws://${wsHost}:8765`);
+      ws.binaryType = 'arraybuffer';
+
+      ws.onopen = () => {
+        console.log('✅ Connected to Aether Telegram Bot Server');
+      };
+
+      ws.onmessage = async (event) => {
+        // 1. Handle JSON Control Messages
+        if (typeof event.data === 'string') {
+          try {
+            const command = JSON.parse(event.data);
+            console.log('🎛️ Command Received:', command);
+            this.applyWebSocketCommand(command);
+          } catch (e) {
+            console.error('Failed to parse command:', e);
+          }
+        } 
+        // 2. Handle Binary Voice Note Buffers
+        else if (event.data instanceof ArrayBuffer) {
+          console.log('🎙️ Voice Note Received! Decoding ArrayBuffer...');
+          this.setupAudioContext();
+          try {
+            const audioBuffer = await this.audioCtx.decodeAudioData(event.data);
+            this.playVoiceNote(audioBuffer);
+            if (typeof playQuantizedVoiceNote === 'function') {
+              playQuantizedVoiceNote(audioBuffer);
+            }
+          } catch (decodeErr) {
+            console.error('Failed to decode incoming voice note ArrayBuffer:', decodeErr);
+          }
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('🔌 WebSocket disconnected. Retrying in 3s...');
+        setTimeout(() => this.initWebSocket(), 3000);
+      };
+
+      this.ws = ws;
+    } catch (e) {
+      console.warn('WebSocket init warning:', e);
+    }
+  }
+
+  playVoiceNote(audioBuffer) {
+    this.setupAudioContext();
+    if (!this.audioCtx || !audioBuffer) return;
+
+    try {
+      const sourceNode = this.audioCtx.createBufferSource();
+      sourceNode.buffer = audioBuffer;
+
+      const voiceGain = this.audioCtx.createGain();
+      voiceGain.gain.setValueAtTime(1.0, this.audioCtx.currentTime);
+
+      sourceNode.connect(voiceGain);
+      voiceGain.connect(this.masterGain || this.audioCtx.destination);
+
+      sourceNode.start(this.audioCtx.currentTime);
+      console.log('🎙️ Voice note playback initiated via Web Audio API.');
+    } catch (err) {
+      console.error('Failed to play decoded voice note:', err);
+    }
+  }
+
+  applyWebSocketCommand(command) {
+    if (!command || !command.action) return;
+    this.setupAudioContext();
+
+    // Normalize action aliases (Gemini may return 'pan' instead of 'set_pan', etc.)
+    let action = String(command.action).toLowerCase();
+    if (action === 'pan' || action === 'set_pan' || action === 'panning') action = 'set_pan';
+    if (action === 'gain' || action === 'volume' || action === 'set_volume' || action === 'set_gain') action = 'set_gain';
+    const rawTarget = String(command.target || '').toLowerCase().trim();
+
+    // Resolve target track or master
+    let targetTrack = null;
+    let isMaster = false;
+
+    if (!rawTarget || rawTarget === 'master' || rawTarget === 'main' || rawTarget === 'background' || rawTarget === 'all') {
+      isMaster = true;
+    } else if (rawTarget === 'track1' || rawTarget === 't1' || rawTarget === 'track 1' || rawTarget === '0' || rawTarget.includes('bass')) {
+      targetTrack = this.tracks[0];
+    } else if (rawTarget === 'track2' || rawTarget === 't2' || rawTarget === 'track 2' || rawTarget === '1' || rawTarget.includes('rhythm') || rawTarget.includes('beat') || rawTarget.includes('drum')) {
+      targetTrack = this.tracks[1];
+    } else if (rawTarget === 'track3' || rawTarget === 't3' || rawTarget === 'track 3' || rawTarget === '2' || rawTarget.includes('synth') || rawTarget.includes('pad')) {
+      targetTrack = this.tracks[2];
+    } else if (rawTarget === 'track4' || rawTarget === 't4' || rawTarget === 'track 4' || rawTarget === '3' || rawTarget.includes('melody') || rawTarget.includes('lead')) {
+      targetTrack = this.tracks[3];
+    }
+
+    const now = this.audioCtx ? this.audioCtx.currentTime : 0;
+
+    if (action === 'set_gain') {
+      let val = parseFloat(command.value);
+      if (isNaN(val)) return;
+      if (val > 1.0) val = val / 100.0;
+      val = Math.max(0.0, Math.min(1.0, val));
+
+      if (isMaster) {
+        if (this.masterGain) {
+          this.masterGain.gain.setTargetAtTime(val, now, 0.1);
+        }
+        if (this.masterVolumeSlider) {
+          this.masterVolumeSlider.value = val;
+          this.masterVolVal.textContent = `${Math.round(val * 100)}%`;
+        }
+      } else if (targetTrack) {
+        targetTrack.y = val;
+        if (targetTrack.gainNode && !targetTrack.isMuted) {
+          targetTrack.gainNode.gain.setTargetAtTime(Math.pow(val, 1.5), now, 0.1);
+        }
+        targetTrack.volTxt.textContent = `${Math.round(val * 100)}%`;
+        this.renderCanvas();
+      }
+    } else if (action === 'mute' || action === 'unmute') {
+      const mute = (action === 'mute');
+      if (isMaster) {
+        if (this.masterGain) {
+          this.masterGain.gain.value = mute ? 0 : parseFloat(this.masterVolumeSlider.value);
+        }
+      } else if (targetTrack) {
+        targetTrack.isMuted = mute;
+        targetTrack.muteBtn.classList.toggle('active', targetTrack.isMuted);
+        if (targetTrack.gainNode) {
+          targetTrack.gainNode.gain.value = targetTrack.isMuted ? 0 : Math.pow(targetTrack.y, 1.5);
+        }
+        this.renderCanvas();
+      }
+    } else if (action === 'set_pan') {
+      let val = parseFloat(command.value);
+      if (isNaN(val)) return;
+      // Normalize: Gemini may return percentage (-100..100) instead of -1..1
+      if (val > 1.0 || val < -1.0) val = val / 100.0;
+      val = Math.max(-1.0, Math.min(1.0, val));
+      // Bot sends -1..1; track.x is 0..1 (0.5 = center)
+      const newX = (val + 1) / 2;
+      if (targetTrack) {
+        targetTrack.x = newX;
+        targetTrack.updateAudioParamsFromPosition();
+        this.renderCanvas();
+      }
+    } else if (action === 'mute_all') {
+      this.tracks.forEach(t => {
+        t.isMuted = true;
+        t.muteBtn.classList.add('active');
+        if (t.gainNode) t.gainNode.gain.value = 0;
+      });
+      if (this.masterGain) this.masterGain.gain.value = 0;
+      this.renderCanvas();
+    } else if (action === 'trigger_sample' || action === 'play') {
+      if (targetTrack) {
+        targetTrack.play();
+      } else {
+        this.playAll();
+      }
+    } else if (action === 'stop') {
+      if (targetTrack) {
+        targetTrack.stop();
+      } else {
+        this.stopAll();
+      }
+    }
+  }
+
+  // --- LIVE INPUT MODAL ---
+  async promptLiveInput(trackIndex) {
+    this.pendingLiveTrackIndex = trackIndex;
+    try {
+      // Request permission once to list audio devices
+      const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      tempStream.getTracks().forEach(t => t.stop()); // close temp
+
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audioInputs = devices.filter(d => d.kind === 'audioinput');
+
+      this.audioInputSelect.innerHTML = audioInputs.map(d => 
+        `<option value="${d.deviceId}">${d.label || `Audio In ${d.deviceId.slice(0,5)}`}</option>`
+      ).join('');
+
+      this.liveInModal.classList.add('active');
+    } catch (err) {
+      console.warn('Microphone permission denied or unsupported:', err);
+      alert('Could not access live audio input. Please check browser microphone permissions.');
+    }
+  }
+
+  hideLiveInModal() {
+    this.liveInModal.classList.remove('active');
+  }
+
+  async confirmLiveInput() {
+    const deviceId = this.audioInputSelect.value;
+    const deviceLabel = this.audioInputSelect.options[this.audioInputSelect.selectedIndex]?.text || 'Live In';
+    this.hideLiveInModal();
+
+    try {
+      const constraints = {
+        audio: {
+          deviceId: deviceId ? { exact: deviceId } : undefined,
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      this.tracks[this.pendingLiveTrackIndex].connectLiveInput(stream, deviceLabel);
+    } catch (err) {
+      console.error('Error connecting live input device:', err);
+      alert('Failed to connect live input: ' + err.message);
+    }
+  }
+
+  // --- MASTER LIVE RECORDING TO WAV ---
+  async toggleMasterRecording() {
+    this.setupAudioContext();
+    if (this.audioCtx.state === 'suspended') await this.audioCtx.resume();
+
+    if (this.isRecordingMaster) {
+      this.stopMasterRecording();
+    } else {
+      this.startMasterRecording();
+    }
+  }
+
+  startMasterRecording() {
+    this.isRecordingMaster = true;
+    this.masterRecChunksL = [];
+    this.masterRecChunksR = [];
+    this.masterRecStartTime = performance.now();
+
+    this.masterRecBtn.classList.add('recording');
+    this.recBtnText.textContent = 'STOP & SAVE WAV';
+
+    // Auto-start playback if not playing
+    if (!this.isPlaying) this.playMaster();
+  }
+
+  stopMasterRecording() {
+    this.isRecordingMaster = false;
+    this.masterRecBtn.classList.remove('recording');
+    this.recBtnText.textContent = 'REC MASTER';
+
+    if (this.masterRecChunksL.length === 0) {
+      alert('No audio recorded.');
+      return;
+    }
+
+    // Merge Float32 chunks
+    const totalFrames = this.masterRecChunksL.reduce((acc, chunk) => acc + chunk.length, 0);
+    const mergedL = new Float32Array(totalFrames);
+    const mergedR = new Float32Array(totalFrames);
+
+    let offset = 0;
+    for (let i = 0; i < this.masterRecChunksL.length; i++) {
+      mergedL.set(this.masterRecChunksL[i], offset);
+      mergedR.set(this.masterRecChunksR[i], offset);
+      offset += this.masterRecChunksL[i].length;
+    }
+
+    // Encode to 16-bit stereo WAV
+    const wavBlob = encodeWAV([mergedL, mergedR], this.audioCtx.sampleRate);
+    const url = URL.createObjectURL(wavBlob);
+
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const filename = `Aether_Master_Jam_${timestamp}.wav`;
+
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 2000);
+  }
+
+  showToast(message, type = 'info') {
+    let toast = document.getElementById('aether-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'aether-toast';
+      toast.style.position = 'fixed';
+      toast.style.bottom = '28px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.padding = '12px 24px';
+      toast.style.borderRadius = '8px';
+      toast.style.fontSize = '14px';
+      toast.style.fontWeight = '600';
+      toast.style.zIndex = '99999';
+      toast.style.boxShadow = '0 8px 24px rgba(0,0,0,0.3)';
+      toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      toast.style.pointerEvents = 'none';
+      document.body.appendChild(toast);
+    }
+    toast.style.background = type === 'error' ? '#ef4444' : '#10b981';
+    toast.style.color = '#ffffff';
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(this._toastTimeout);
+    this._toastTimeout = setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(10px)';
+    }, 2500);
+  }
+
+  // --- DAW PROJECT SAVE & LOAD (MACOS FINDER) ---
+  async getCurrentSessionData(name = 'Untitled Project') {
+    const tracksData = [];
+    for (const t of this.tracks) {
+      let sampleData = null;
+      if (t.audioBuffer) {
+        try {
+          sampleData = await audioBufferToBase64(t.audioBuffer);
+        } catch (e) {
+          console.warn(`Could not serialize audio buffer for track ${t.index + 1}:`, e);
+        }
+      }
+      tracksData.push({
+        index: t.index,
+        name: t.name,
+        sampleName: t.sampleName || t.name,
+        filePath: t.filePath || '',
+        sampleData: sampleData,
+        x: t.x,
+        y: t.y,
+        z: t.z,
+        isMuted: t.isMuted,
+        isSoloed: t.isSoloed,
+        motionSpeed: t.motionSpeed,
+        motionPath: t.motionPath,
+        eq: { ...t.eqValues },
+        isStream: t.isStream,
+        streamUrl: t.streamUrl
+      });
+    }
+
+    return {
+      version: '3.0',
+      type: 'aether_project',
+      name: name,
+      timestamp: new Date().toISOString(),
+      masterVolume: parseFloat(this.masterVolumeSlider.value),
+      tracks: tracksData
+    };
+  }
+
+  flashButtonSuccess(btn, text) {
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = `<span>✅</span> ${text}`;
+    btn.style.borderColor = '#10b981';
+    btn.style.color = '#10b981';
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }, 2000);
+  }
+
+  async exportSession() {
+    this.showToast('💾 Opening Finder Save As...', 'info');
+    const sessionData = await this.getCurrentSessionData('Untitled Project');
+    const jsonString = JSON.stringify(sessionData, null, 2);
+
+    let savedPath = null;
+    // 1. Native macOS Finder Save As Dialog via Tauri backend
+    try {
+      savedPath = await invokeTauri('save_project_dialog', {
+        content: jsonString,
+        defaultName: 'Untitled_Project.aether'
+      });
+    } catch (e) {
+      console.warn('Tauri save_project_dialog error, falling back:', e);
+    }
+
+    // 2. Web File System Access API Fallback (outside Tauri)
+    if (!savedPath && window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: 'Untitled_Project.aether',
+          types: [{
+            description: 'Aether DAW Project (*.aether, *.json)',
+            accept: { 'application/json': ['.aether', '.json'] }
+          }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(jsonString);
+        await writable.close();
+        savedPath = handle.name || 'Untitled_Project.aether';
+      } catch (err) {
+        if (err.name === 'AbortError') return; // User cancelled
+      }
+    }
+
+    // 3. Fallback to browser download
+    if (!savedPath) {
+      try {
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Untitled_Project.aether';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 1000);
+        savedPath = 'Untitled_Project.aether';
+      } catch (e) {
+        console.error('Download fallback error:', e);
+      }
+    }
+
+    if (savedPath) {
+      const displayFilename = typeof savedPath === 'string' ? savedPath.split('/').pop() : 'Project';
+      this.showToast(`✅ Saved project: ${displayFilename}`);
+      this.flashButtonSuccess(this.exportSessionBtn, 'Saved!');
+    }
+  }
+
+  async importSession() {
+    let session = null;
+    let fileName = '';
+
+    // 1. Native macOS Finder Open Dialog via Tauri backend
+    try {
+      const res = await invokeTauri('load_project_dialog');
+      if (res && res.content) {
+        session = JSON.parse(res.content);
+        fileName = res.filename || 'Project';
+      } else if (res === null) {
+        return; // User cancelled Finder dialog
+      }
+    } catch (e) {
+      console.warn('Tauri load_project_dialog error, falling back:', e);
+    }
+
+    // 2. Web File System Access API Fallback
+    if (!session && window.showOpenFilePicker) {
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          types: [{
+            description: 'Aether DAW Project (*.aether, *.json)',
+            accept: { 'application/json': ['.aether', '.json'] }
+          }],
+          multiple: false
+        });
+        const file = await handle.getFile();
+        const text = await file.text();
+        session = JSON.parse(text);
+        fileName = file.name;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+      }
+    }
+
+    // 3. Fallback to hidden file input
+    if (!session) {
+      this.importSessionFileInput.value = '';
+      this.importSessionFileInput.click();
+      return;
+    }
+
+    if (session) {
+      await this.applySession(session);
+      this.showToast(`✅ Loaded "${fileName}" from Finder!`);
+      this.flashButtonSuccess(this.importSessionBtn, 'Loaded!');
+    }
+  }
+
+  async applySession(session) {
+    if (!session) return;
+
+    // 1. Halt active audio & canvas engines
+    this.stopMaster();
+
+    this.setupAudioContext();
+    const ctx = this.audioCtx;
+    if (ctx && ctx.state === 'suspended') await ctx.resume();
+
+    // 2. Display loading state in UI
+    this.showToast('⏳ Hydrating project & loading audio samples...', 'info');
+
+    // 3. Hydrate Master Controls
+    if (session.masterVolume !== undefined) {
+      this.masterVolumeSlider.value = session.masterVolume;
+      this.masterVolVal.textContent = `${Math.round(session.masterVolume * 100)}%`;
+      if (this.masterGain) this.masterGain.gain.value = session.masterVolume;
+    }
+
+    // 4. Hydrate Tracks & Audio Buffers
+    if (session.tracks && Array.isArray(session.tracks)) {
+      for (const saved of session.tracks) {
+        const idx = saved.index !== undefined ? saved.index : 0;
+        const t = this.tracks[idx];
+        if (!t) continue;
+
+        // Clear existing sound sources
+        t.cleanupSources();
+        t.isLoaded = false;
+        t.useMediaElement = false;
+        t.statusEl.textContent = 'Loading sample...';
+
+        // 3D Spatial Position
+        const posX = saved.x !== undefined ? saved.x : 0.5;
+        const posY = saved.y !== undefined ? saved.y : 0.5;
+        const posZ = saved.z !== undefined ? saved.z : 0;
+        t.setPosition(posX, posY, posZ);
+
+        // Track & Sample Name
+        if (saved.name !== undefined) {
+          t.name = saved.name;
+          if (t.nameEl) t.nameEl.textContent = saved.sampleName || saved.name;
+        }
+        t.filePath = saved.filePath || '';
+        t.sampleName = saved.sampleName || saved.name || `Track ${idx + 1}`;
+
+        // Mute State
+        if (saved.isMuted !== undefined) {
+          t.isMuted = !!saved.isMuted;
+          if (t.muteBtn) t.muteBtn.classList.toggle('active', t.isMuted);
+        }
+
+        // Solo State
+        if (saved.isSoloed !== undefined) {
+          t.isSoloed = !!saved.isSoloed;
+          if (t.soloBtn) t.soloBtn.classList.toggle('active', t.isSoloed);
+        }
+
+        // 3-Band Bipolar EQ Knobs
+        if (saved.eq) {
+          if (t.knobLow) t.knobLow.setValue(saved.eq.low ?? 0);
+          if (t.knobMid) t.knobMid.setValue(saved.eq.mid ?? 0);
+          if (t.knobHigh) t.knobHigh.setValue(saved.eq.high ?? 0);
+        }
+
+        // Motion Automation Loop & Speed
+        if (saved.motionPath && saved.motionPath.length > 1) {
+          t.motionPath = saved.motionPath;
+          t.isPlayingMotion = true;
+          if (t.playMotionBtn) t.playMotionBtn.classList.add('active');
+          t.motionPlayStartTime = performance.now();
+        } else {
+          t.motionPath = [];
+          t.isPlayingMotion = false;
+          if (t.playMotionBtn) t.playMotionBtn.classList.remove('active');
+        }
+
+        if (saved.motionSpeed) {
+          t.motionSpeed = saved.motionSpeed;
+          if (t.speedBtns) {
+            t.speedBtns.forEach(b => {
+              b.classList.toggle('active', parseFloat(b.getAttribute('data-speed')) === t.motionSpeed);
+            });
+          }
+        }
+
+        // Asynchronous Audio Sample Buffer Loading
+        try {
+          if (saved.sampleData) {
+            // Case A: Embedded Base64 WAV sample data
+            const decodedBuffer = await base64ToAudioBuffer(saved.sampleData, ctx);
+            t.audioBuffer = decodedBuffer;
+            t.duration = decodedBuffer.duration;
+            t.isLoaded = true;
+            t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
+          } else if (saved.filePath) {
+            // Case B: Local disk file path via Tauri backend read
+            let loaded = false;
+            try {
+              const base64Str = await invokeTauri('read_audio_file', { path: saved.filePath });
+              if (base64Str) {
+                const decodedBuffer = await base64ToAudioBuffer(base64Str, ctx);
+                t.audioBuffer = decodedBuffer;
+                t.duration = decodedBuffer.duration;
+                t.isLoaded = true;
+                t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
+                loaded = true;
+              }
+            } catch (fsErr) {
+              console.warn(`Could not read audio file directly via Tauri for track ${idx + 1}:`, fsErr);
+            }
+
+            // Fallback: Web fetch if it's a URL or server path
+            if (!loaded) {
+              try {
+                const resp = await fetch(saved.filePath);
+                if (resp.ok) {
+                  const arrBuf = await resp.arrayBuffer();
+                  const decoded = await ctx.decodeAudioData(arrBuf);
+                  t.audioBuffer = decoded;
+                  t.duration = decoded.duration;
+                  t.isLoaded = true;
+                  t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
+                  loaded = true;
+                }
+              } catch (fetchErr) {
+                console.warn(`Could not fetch audio file for track ${idx + 1}:`, fetchErr);
+              }
+            }
+
+            if (!loaded) {
+              t.statusEl.textContent = 'Sample missing';
+            }
+          } else if (saved.isStream && saved.streamUrl) {
+            // Case C: Live stream URL
+            t.loadStreamUrl(saved.streamUrl);
+          } else {
+            t.statusEl.textContent = 'No file loaded';
+          }
+        } catch (sampleErr) {
+          console.error(`Error loading sample for track ${idx + 1}:`, sampleErr);
+          t.statusEl.textContent = 'Decode error';
+        }
+
+        // Re-calculate DSP spatial panning & filter nodes
+        t.updateAudioParamsFromPosition();
+      }
+
+      // Refresh master solo bus routing
+      this.updateSoloState();
+    }
+
+    this.showToast('✅ Project hydrated and ready!', 'info');
+  }
+
+  // --- MASTER PLAYBACK ---
+  async toggleMasterPlay() {
+    this.setupAudioContext();
+    if (this.audioCtx.state === 'suspended') await this.audioCtx.resume();
+
+    if (this.isPlaying) this.pauseMaster();
+    else this.playMaster();
+  }
+
+  playMaster() {
+    this.isPlaying = true;
+    this.masterPlayBtn.classList.add('playing');
+    this.masterPlayBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+
+    const nowTime = this.getCurrentPlaybackTime();
+    this.tracks.forEach(t => {
+      if (t.isLiveIn) {
+        t.isPlaying = true;
+      } else if (t.isStream && t.streamAudio) {
+        t.play();
+      } else if (t.isLoaded) {
+        t.play(nowTime);
+      }
+    });
+  }
+
+  pauseMaster() {
+    this.isPlaying = false;
+    this.masterPlayBtn.classList.remove('playing');
+    this.masterPlayBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+
+    this.tracks.forEach(t => {
+      if (t.isStream && t.streamAudio) {
+        t.streamAudio.pause();
+        t.isPlaying = false;
+      } else if (!t.isLiveIn) {
+        t.stopNodeOnly();
+      }
+    });
+  }
+
+  stopMaster() {
+    this.pauseMaster();
+    this.tracks.forEach(t => {
+      if (!t.isLiveIn) t.stop();
+    });
+    this.masterTimeEl.textContent = '00:00.0';
+    if (this.isRecordingMaster) this.stopMasterRecording();
+  }
+
+  getCurrentPlaybackTime() {
+    return this.audioCtx ? this.audioCtx.currentTime : 0;
+  }
+
+  createReverbBuffer(audioCtx, duration = 1.2, decay = 1.2) {
+    const sampleRate = audioCtx.sampleRate;
+    const length = Math.floor(sampleRate * duration);
+    const impulse = audioCtx.createBuffer(2, length, sampleRate);
+    const left = impulse.getChannelData(0);
+    const right = impulse.getChannelData(1);
+
+    for (let i = 0; i < length; i++) {
+      const t = i / sampleRate;
+      const env = Math.exp(-t * (5.0 / decay));
+      left[i] = (Math.random() * 2 - 1) * env;
+      right[i] = (Math.random() * 2 - 1) * env;
+    }
+    return impulse;
+  }
+
+  updateSoloState() {
+    this.tracks.forEach(t => t.updateAudioParamsFromPosition());
+  }
+
+  resetAll() {
+    const defaultPositions = [
+      { x: 0.5, y: 0.80, z: 0 },
+      { x: 0.5, y: 0.30, z: 0 },
+      { x: 0.25, y: 0.50, z: 0 },
+      { x: 0.75, y: 0.50, z: 0 }
+    ];
+    this.tracks.forEach((t, idx) => {
+      t.clearMotion();
+      t.isSpatialized = false;
+      const def = defaultPositions[idx % defaultPositions.length];
+      t.setPosition(def.x, def.y, def.z);
+      if (t.knobLow) t.knobLow.setValue(0);
+      if (t.knobMid) t.knobMid.setValue(0);
+      if (t.knobHigh) t.knobHigh.setValue(0);
+    });
+  }
+
+  // --- SYNTHETIC DEMO STEMS ---
+  async loadDemoStems() {
+    this.setupAudioContext();
+    if (this.audioCtx.state === 'suspended') await this.audioCtx.resume();
+
+    const sampleRate = this.audioCtx.sampleRate;
+    const duration = 4.0;
+    const numFrames = sampleRate * duration;
+
+    for (let trackIdx = 0; trackIdx < 4; trackIdx++) {
+      const buffer = this.audioCtx.createBuffer(2, numFrames, sampleRate);
+      const left = buffer.getChannelData(0);
+      const right = buffer.getChannelData(1);
+
+      for (let i = 0; i < numFrames; i++) {
+        const t = i / sampleRate;
+
+        if (trackIdx === 0) { // Sub Bass Groove
+          const freq = (t % 1 < 0.5) ? 65.41 : 98.00;
+          const val = Math.sin(2 * Math.PI * freq * t) * 0.45;
+          left[i] = val; right[i] = val;
+        } else if (trackIdx === 1) { // Electro Drum Beat
+          const beatTime = t % 0.5;
+          let kick = Math.sin(2 * Math.PI * (130 * Math.exp(-beatTime * 32)) * t) * Math.exp(-beatTime * 16);
+          let snare = (beatTime > 0.25) ? (Math.random() - 0.5) * Math.exp(-(beatTime - 0.25) * 22) : 0;
+          left[i] = (kick + snare) * 0.38;
+          right[i] = (kick + snare) * 0.38;
+        } else if (trackIdx === 2) { // Ambient Chord Pad
+          const val = (Math.sin(2 * Math.PI * 261.63 * t) + Math.sin(2 * Math.PI * 329.63 * t) + Math.sin(2 * Math.PI * 392.00 * t)) * 0.18;
+          left[i] = val; right[i] = val;
+        } else if (trackIdx === 3) { // Arpeggiated Lead
+          const noteIndex = Math.floor((t * 8) % 4);
+          const freqs = [523.25, 659.25, 783.99, 1046.50];
+          const val = Math.sin(2 * Math.PI * freqs[noteIndex] * t) * Math.exp(-((t * 8) % 1) * 8) * 0.28;
+          left[i] = val; right[i] = val;
+        }
+      }
+
+      this.tracks[trackIdx].cleanupSources();
+      this.tracks[trackIdx].useMediaElement = false;
+      this.tracks[trackIdx].audioBuffer = buffer;
+      this.tracks[trackIdx].duration = duration;
+      this.tracks[trackIdx].isLoaded = true;
+      this.tracks[trackIdx].playlist = [];
+      this.tracks[trackIdx].playlistIndex = 0;
+      this.tracks[trackIdx].updatePlaylistUI();
+      this.tracks[trackIdx].nameEl.textContent = `Demo Stem ${trackIdx + 1}`;
+      this.tracks[trackIdx].statusEl.textContent = `4.0s Loop • Synthetic`;
+    }
+
+    this.playMaster();
+  }
+
+  findHoverNodeIndex(pxX, pxY, hitPadding = 10) {
+    for (let i = this.tracks.length - 1; i >= 0; i--) {
+      const t = this.tracks[i];
+      const nodePxX = t.x * this.width;
+      const nodePxY = (1.0 - t.y) * this.height;
+      const r = t.getVisualRadius() + hitPadding;
+      if (Math.hypot(nodePxX - pxX, nodePxY - pxY) <= r) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  findHoverGearNodeIndex(pxX, pxY) {
+    for (let i = this.tracks.length - 1; i >= 0; i--) {
+      const t = this.tracks[i];
+      if (!t.isCustomNode) continue;
+      const nodePxX = t.x * this.width;
+      const nodePxY = (1.0 - t.y) * this.height;
+      const nodeRadius = t.getVisualRadius();
+      const gearX = nodePxX + nodeRadius * 0.72;
+      const gearY = nodePxY - nodeRadius * 0.72;
+      if (Math.hypot(gearX - pxX, gearY - pxY) <= 14) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  // --- 2D SPATIAL CANVAS RENDERING ---
+  initCanvas() {
+    this.resizeCanvas();
+    window.addEventListener('resize', () => this.resizeCanvas());
+
+    let isDragging = false;
+
+    const getCanvasCoords = (e) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      const normX = (clientX - rect.left) / rect.width;
+      const normY = 1.0 - ((clientY - rect.top) / rect.height);
+      return { normX, normY, pxX: clientX - rect.left, pxY: clientY - rect.top };
+    };
+
+    this.canvas.addEventListener('mousemove', (e) => {
+      if (isDragging) return;
+      const coords = getCanvasCoords(e);
+      const gearIdx = this.findHoverGearNodeIndex(coords.pxX, coords.pxY);
+      if (gearIdx !== -1) {
+        this.canvas.style.cursor = 'pointer';
+      } else {
+        const hitIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
+        this.canvas.style.cursor = hitIdx !== -1 ? 'grab' : 'crosshair';
+      }
+    });
+
+    this.canvas.addEventListener('mousedown', (e) => {
+      const coords = getCanvasCoords(e);
+      const gearIdx = this.findHoverGearNodeIndex(coords.pxX, coords.pxY);
+      if (gearIdx !== -1) {
+        this.openNodeInspector(this.tracks[gearIdx]);
+        return;
+      }
+      const hitIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
+      if (hitIdx !== -1) {
+        isDragging = true;
+        this.activeDragNodeIndex = hitIdx;
+        this.canvas.style.cursor = 'grabbing';
+        const track = this.tracks[hitIdx];
+        if (track.isRecordingMotion) {
+          track.motionPath = [];
+          track.recordStartTime = performance.now();
+        }
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging || this.activeDragNodeIndex === -1) return;
+      const coords = getCanvasCoords(e);
+      this.tracks[this.activeDragNodeIndex].setPosition(coords.normX, coords.normY);
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isDragging && this.activeDragNodeIndex !== -1) {
+        const track = this.tracks[this.activeDragNodeIndex];
+        if (track.isRecordingMotion) {
+          track.toggleRecordMotion();
+        }
+      }
+      isDragging = false;
+      this.activeDragNodeIndex = -1;
+      this.canvas.style.cursor = 'crosshair';
+    });
+
+    // Trackpad gesture (Two-Finger Drag / Pinch) to manipulate Z-Axis only within a node's circle
+    this.canvas.addEventListener('wheel', (e) => {
+      const coords = getCanvasCoords(e);
+      let targetIdx = this.activeDragNodeIndex;
+      if (targetIdx === -1) {
+        targetIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
+      }
+
+      if (targetIdx !== -1) {
+        e.preventDefault(); // Stop page zoom / scroll only when within a node circle
+        const targetTrack = this.tracks[targetIdx];
+        const zSensitivity = 0.05;
+        const newZ = Math.min(Math.max(targetTrack.z + (e.deltaY * zSensitivity), 0), 50);
+        targetTrack.setPosition(targetTrack.x, targetTrack.y, newZ);
+      }
+    }, { passive: false });
+
+    // Touch support for tablets/phones
+    this.canvas.addEventListener('touchstart', (e) => {
+      const coords = getCanvasCoords(e);
+      const gearIdx = this.findHoverGearNodeIndex(coords.pxX, coords.pxY);
+      if (gearIdx !== -1) {
+        this.openNodeInspector(this.tracks[gearIdx]);
+        return;
+      }
+      const hitIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
+      if (hitIdx !== -1) {
+        isDragging = true;
+        this.activeDragNodeIndex = hitIdx;
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!isDragging || this.activeDragNodeIndex === -1) return;
+      const coords = getCanvasCoords(e);
+      this.tracks[this.activeDragNodeIndex].setPosition(coords.normX, coords.normY);
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => {
+      isDragging = false;
+      this.activeDragNodeIndex = -1;
+    });
+
+    // Double-click to inspect custom .aethernode DSP and visual controls
+    this.canvas.addEventListener('dblclick', (e) => {
+      const coords = getCanvasCoords(e);
+      const hitIdx = this.findHoverNodeIndex(coords.pxX, coords.pxY);
+      if (hitIdx !== -1) {
+        const track = this.tracks[hitIdx];
+        if (track.isCustomNode) {
+          this.openNodeInspector(track);
+        }
+      }
+    });
+
+    this.startRenderLoop();
+  }
+
+  openNodeInspector(track) {
+    if (!track || !track.customNodeBundle) return;
+    this.activeInspectorTrack = track;
+    const modal = document.getElementById('node-inspector-modal');
+    const title = document.getElementById('node-modal-title');
+    const frame = document.getElementById('node-inspector-frame');
+    if (modal && frame && title) {
+      title.innerHTML = `<span>⚡</span> T${track.index + 1}: ${track.customNodeBundle.manifest.name || 'Aether Node'}`;
+      if (track.customNodeBundle.ui_html) {
+        let uiHtml = track.customNodeBundle.ui_html;
+        const isDark = document.body.classList.contains('theme-dark');
+        
+        try {
+          // Extract and sync all native Aether root CSS variables, fonts, and theme rules
+          let rootStyles = '';
+          for (let sheet of document.styleSheets) {
+            try {
+              for (let rule of sheet.cssRules) {
+                if (rule.selectorText === ':root' || rule.selectorText === 'body.theme-dark' || rule.selectorText === 'body') {
+                  rootStyles += rule.cssText + '\n';
+                }
+              }
+            } catch (_) {}
+          }
+          if (!rootStyles) {
+            rootStyles = Array.from(document.styleSheets[0]?.cssRules || [])
+              .filter(r => r.selectorText === ':root' || r.selectorText === 'body.theme-dark')
+              .map(r => r.cssText).join('\n');
+          }
+            
+          const fontLinks = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">`;
+          const styleTag = `${fontLinks}\n<style id="aether-theme-sync">\n${rootStyles}\n:root { --track-color: var(--track-${track.index + 1}, var(--track-1)); }\n</style>`;
+          if (uiHtml.includes('</head>')) {
+            uiHtml = uiHtml.replace('</head>', styleTag + '\n</head>');
+          } else {
+            uiHtml = styleTag + '\n' + uiHtml;
+          }
+          if (isDark && uiHtml.includes('<body')) {
+            uiHtml = uiHtml.replace('<body', '<body class="theme-dark"');
+          }
+        } catch (e) {
+          console.warn('Failed to inject theme variables into Node UI', e);
+        }
+        
+        frame.srcdoc = uiHtml;
+        frame.onload = () => {
+          if (track.customNodeDSP && track.customNodeDSP.params) {
+            Object.entries(track.customNodeDSP.params).forEach(([paramId, value]) => {
+              try {
+                frame.contentWindow.postMessage({
+                  type: 'aether:param-update',
+                  paramId,
+                  value
+                }, '*');
+              } catch (_) {}
+            });
+          }
+        };
+      }
+      modal.classList.add('active');
+    }
+  }
+
+  resizeCanvas() {
+    const rect = this.canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    this.canvas.width = rect.width * dpr;
+    this.canvas.height = rect.height * dpr;
+    this.ctx.scale(dpr, dpr);
+    this.width = rect.width;
+    this.height = rect.height;
+  }
+
+  startRenderLoop() {
+    const render = () => {
+      requestAnimationFrame(render);
+      this.tracks.forEach(t => t.updateMotionPlayback());
+      this.drawArena();
+    };
+    render();
+  }
+
+  drawArena() {
+    const w = this.width;
+    const h = this.height;
+
+    this.ctx.clearRect(0, 0, w, h);
+
+    if (this.isPlaying && this.audioCtx) {
+      const t = this.audioCtx.currentTime;
+      const secs = (t % 60).toFixed(1).padStart(4, '0');
+      const mins = Math.floor(t / 60).toString().padStart(2, '0');
+      this.masterTimeEl.textContent = `${mins}:${secs}`;
+    }
+
+    // Motion Automation Path Trails
+    this.tracks.forEach((t) => {
+      if (t.motionPath.length > 1) {
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = t.color;
+        this.ctx.globalAlpha = this.isDark ? 0.6 : 0.4;
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([4, 4]);
+
+        t.motionPath.forEach((pt, idx) => {
+          const ptPxX = pt.x * w;
+          const ptPxY = (1.0 - pt.y) * h;
+          if (idx === 0) this.ctx.moveTo(ptPxX, ptPxY);
+          else this.ctx.lineTo(ptPxX, ptPxY);
+        });
+
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+        this.ctx.globalAlpha = 1.0;
+      }
+    });
+
+    // Track Nodes & Rings
+    this.tracks.forEach((t, i) => {
+      const pxX = t.x * w;
+      const pxY = (1.0 - t.y) * h;
+      const nodeRadius = t.getVisualRadius();
+
+      // Projection lines to axes
+      this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
+      this.ctx.lineWidth = 1.5;
+      this.ctx.setLineDash([3, 3]);
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(pxX, pxY);
+      this.ctx.lineTo(pxX, h); // Volume axis
+      this.ctx.stroke();
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(pxX, pxY);
+      this.ctx.lineTo(w / 2, pxY); // Pan center axis
+      this.ctx.stroke();
+
+      this.ctx.setLineDash([]);
+
+      // Visual 3D Depth Rings (when Z > 0)
+      if (t.z > 0.5) {
+        this.ctx.beginPath();
+        this.ctx.arc(pxX, pxY, nodeRadius + (t.z * 0.45), 0, 2 * Math.PI);
+        this.ctx.strokeStyle = t.color;
+        this.ctx.globalAlpha = 0.25;
+        this.ctx.lineWidth = 1.5;
+        this.ctx.stroke();
+        this.ctx.globalAlpha = 1.0;
+      }
+
+      // Outer Progress Ring
+      const progress = t.getProgress();
+      const ringRadius = nodeRadius + 6;
+
+      this.ctx.beginPath();
+      this.ctx.arc(pxX, pxY, ringRadius, 0, 2 * Math.PI);
+      this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
+      this.ctx.lineWidth = 3.5;
+      this.ctx.stroke();
+
+      const rawAnim = t.customNodeBundle?.manifest?.canvas_animation;
+      const animType = typeof rawAnim === 'string' ? rawAnim : rawAnim?.type;
+
+      if (animType === 'interference_wave' && t.isLoaded && (t.isPlaying || progress > 0)) {
+        const nowMs = performance.now();
+        const baseRadius = ringRadius;
+        
+        // Render 5 intersecting harmonic nodal rings reflecting 5-bowl interference
+        for (let j = 0; j < 5; j++) {
+          const angleOffset = (j / 5) * Math.PI * 2 + (nowMs * 0.0008);
+          const orbitDist = 6 + Math.sin(nowMs * 0.003 + j * 1.25) * 3;
+          const cx = pxX + Math.cos(angleOffset) * orbitDist;
+          const cy = pxY + Math.sin(angleOffset) * orbitDist;
+          
+          const expansion = (Math.sin(nowMs * 0.004 + j * 1.6) + 1.0) * 0.5;
+          const currentRadius = baseRadius + 4 + (expansion * 12);
+          const alpha = 0.2 + (0.35 * Math.sin(nowMs * 0.005 + j * 1.4));
+
+          this.ctx.beginPath();
+          this.ctx.arc(cx, cy, currentRadius, 0, 2 * Math.PI);
+          this.ctx.strokeStyle = t.color;
+          this.ctx.globalAlpha = Math.max(0.1, alpha);
+          this.ctx.lineWidth = 1.5;
+          this.ctx.shadowColor = t.color;
+          this.ctx.shadowBlur = 6;
+          this.ctx.stroke();
+        }
+        this.ctx.shadowBlur = 0;
+        this.ctx.globalAlpha = 1.0;
+      } else if (animType === 'ripple' && t.isLoaded && (t.isPlaying || progress > 0)) {
+        const nowMs = performance.now();
+        for (let j = 0; j < 4; j++) {
+          const wavePhase = (nowMs * 0.0025) + (j * 1.57);
+          const rippleExpansion = ((nowMs * 0.018 + j * 6.5) % 22);
+          const jitter = Math.sin(wavePhase) * 3;
+          const currentRadius = ringRadius + rippleExpansion + jitter;
+          const alpha = Math.max(0, (1.0 - (rippleExpansion / 22)) * 0.5);
+
+          this.ctx.beginPath();
+          this.ctx.arc(pxX, pxY, currentRadius, 0, 2 * Math.PI);
+          this.ctx.strokeStyle = t.color;
+          this.ctx.globalAlpha = alpha;
+          this.ctx.lineWidth = 2.0;
+          this.ctx.shadowColor = t.color;
+          this.ctx.shadowBlur = 8;
+          this.ctx.stroke();
+        }
+        this.ctx.shadowBlur = 0;
+        this.ctx.globalAlpha = 1.0;
+      } else if (animType === 'pulse' && t.isLoaded && (t.isPlaying || progress > 0)) {
+        const nowMs = performance.now();
+        const pulse = (Math.sin(nowMs * 0.006) + 1.0) * 0.5;
+        const currentRadius = ringRadius + (pulse * 8);
+        this.ctx.beginPath();
+        this.ctx.arc(pxX, pxY, currentRadius, 0, 2 * Math.PI);
+        this.ctx.strokeStyle = t.color;
+        this.ctx.globalAlpha = 0.35 + (pulse * 0.45);
+        this.ctx.lineWidth = 3.0;
+        this.ctx.shadowColor = t.color;
+        this.ctx.shadowBlur = 10;
+        this.ctx.stroke();
+        this.ctx.shadowBlur = 0;
+        this.ctx.globalAlpha = 1.0;
+      } else if (progress > 0 || (t.isLiveIn && t.isPlaying) || (t.isLoaded && t.isPlaying)) {
+        const startAngle = -Math.PI / 2;
+        const endAngle = startAngle + ((t.isLiveIn || t.isCustomNode ? 1.0 : progress) * 2 * Math.PI);
+
+        this.ctx.beginPath();
+        this.ctx.arc(pxX, pxY, ringRadius, startAngle, endAngle);
+        this.ctx.strokeStyle = t.color;
+        this.ctx.lineWidth = 4;
+        this.ctx.stroke();
+      }
+
+      // Center Node Orb
+      this.ctx.beginPath();
+      this.ctx.arc(pxX, pxY, nodeRadius, 0, 2 * Math.PI);
+      this.ctx.fillStyle = t.color;
+      this.ctx.shadowColor = t.color;
+      this.ctx.shadowBlur = (this.activeDragNodeIndex === i || t.isRecordingMotion) ? 16 : 6;
+      this.ctx.fill();
+      this.ctx.shadowBlur = 0;
+
+      // Dedicated Gear Icon Badge on Canvas Node
+      if (t.isCustomNode) {
+        const gearX = pxX + nodeRadius * 0.72;
+        const gearY = pxY - nodeRadius * 0.72;
+        const gearR = 9;
+        this.ctx.beginPath();
+        this.ctx.arc(gearX, gearY, gearR, 0, 2 * Math.PI);
+        this.ctx.fillStyle = this.isDark ? '#0d1117' : '#ffffff';
+        this.ctx.strokeStyle = t.color;
+        this.ctx.lineWidth = 1.5;
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        this.ctx.fillStyle = t.color;
+        this.ctx.font = 'bold 9px sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText('⚙', gearX, gearY);
+      }
+
+      // Track Label
+      this.ctx.fillStyle = (i === 1 || i === 3) ? '#000000' : '#FFFFFF';
+      this.ctx.font = 'bold 11px "Space Grotesk", sans-serif';
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+      this.ctx.fillText(`T${i + 1}`, pxX, pxY);
+
+      // Coordinate telemetry text (X, Y, Z Depth)
+      this.ctx.fillStyle = this.isDark ? '#FFFFFF' : '#000000';
+      this.ctx.font = 'bold 9px monospace';
+      const volPct = Math.round(t.y * 100);
+      const panPct = Math.round((t.x - 0.5) * 200);
+      const panStr = panPct === 0 ? 'C' : (panPct < 0 ? `L${Math.abs(panPct)}` : `R${panPct}`);
+
+      let statusExtra = '';
+      if (t.isRecordingMotion) statusExtra = ' [REC...]';
+      else if (t.isPlayingMotion) statusExtra = ` [${t.motionSpeed}x]`;
+      else if (t.isLiveIn) statusExtra = ' [LIVE]';
+
+      this.ctx.fillText(`V:${volPct}% P:${panStr} Z:${t.z.toFixed(1)}${statusExtra}`, pxX, pxY + nodeRadius + 16);
+    });
+  }
+}
+
+// Instantiate on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+  window.studio = new SpatialStudio();
+});
+  </script>
+</body>
+</html>

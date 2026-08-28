@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Aether - 3D Spatialization Test</title>
+  <style>
+    body {
+      margin: 0;
+      background: #121212;
+      color: #fff;
+      font-family: system-ui, sans-serif;
+      overflow: hidden;
+    }
+    #canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+    #ui {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      pointer-events: none;
+    }
+    button {
+      pointer-events: auto;
+      padding: 10px 16px;
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .info {
+      margin-top: 10px;
+      font-size: 14px;
+      opacity: 0.8;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="ui">
+    <button id="startAudio">Start Audio Engine</button>
+    <div class="info">
+      • <b>Left Click + Drag:</b> Move X / Y Position<br>
+      • <b>Ctrl + Two-Finger Swipe / Pinch:</b> Adjust Z Depth & Audio Attenuation
+    </div>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Resize canvas
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Spatial Node State
+    const node = {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+      z: 0,           // Depth (0 = close, 50 = far)
+      baseRadius: 40,
+      isDragging: false
+    };
+
+    // Web Audio Variables
+    let audioCtx, panner, filter, oscillator;
+
+    function initAudio() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Create Audio Nodes
+      oscillator = audioCtx.createOscillator();
+      filter = audioCtx.createBiquadFilter();
+      panner = audioCtx.createPanner();
+
+      // Configure Oscillator (Tone for testing spatial sound)
+      oscillator.type = 'sawtooth';
+      oscillator.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+
+      // Configure Panner Node
+      panner.panningModel = 'HRTF';
+      panner.distanceModel = 'inverse';
+      panner.refDistance = 1;
+      panner.maxDistance = 1000;
+      panner.rolloffFactor = 1;
+
+      // Configure Low-Pass Filter
+      filter.type = 'lowpass';
+
+      // Connect Graph: Osc -> Filter -> Panner -> Output
+      oscillator.connect(filter);
+      filter.connect(panner);
+      panner.connect(audioCtx.destination);
+
+      oscillator.start();
+      updateAudioSpatialization();
+    }
+
+    function updateAudioSpatialization() {
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+
+      // Map canvas 2D space to Web Audio listener space (-10 to 10 scale)
+      const audioX = (node.x - canvas.width / 2) / 50;
+      const audioY = -(node.y - canvas.height / 2) / 50; // Invert Y for standard 3D cartesian
+      const audioZ = -node.z; // Negative Z represents distance in front of listener
+
+      // Update Panner Position
+      panner.positionX.setValueAtTime(audioX, now);
+      panner.positionY.setValueAtTime(audioY, now);
+      panner.positionZ.setValueAtTime(audioZ, now);
+
+      // Lowpass cutoff decreases with depth (20kHz down to ~800Hz)
+      const cutoff = Math.max(20000 - (node.z * 380), 800);
+      filter.frequency.setValueAtTime(cutoff, now);
+    }
+
+    // --- Interaction Listeners ---
+
+    // 1. Pinch / Ctrl + Swipe for Z-Axis Depth
+    canvas.addEventListener('wheel', (e) => {
+      if (e.ctrlKey) {
+        e.preventDefault(); // Stop browser page zoom
+
+        const zSensitivity = 0.05;
+        // Scroll down increases depth/distance (0 to 50)
+        node.z = Math.min(Math.max(node.z + e.deltaY * zSensitivity, 0), 50);
+
+        updateAudioSpatialization();
+      }
+    }, { passive: false });
+
+    // 2. Dragging for X/Y Position
+    canvas.addEventListener('mousedown', (e) => {
+      const dist = Math.hypot(e.clientX - node.x, e.clientY - node.y);
+      if (dist < getVisualRadius()) {
+        node.isDragging = true;
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (node.isDragging) {
+        node.x = e.clientX;
+        node.y = e.clientY;
+        updateAudioSpatialization();
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => node.isDragging = false);
+
+    function getVisualRadius() {
+      // Scale visual radius based on Z depth
+      return Math.max(node.baseRadius - (node.z * 0.6), 8);
+    }
+
+    // --- Render Loop ---
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const radius = getVisualRadius();
+
+      // Render Visual Depth Rings
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, radius + (node.z * 0.5), 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0, 122, 255, 0.15)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Render Core Node
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = node.isDragging ? '#34c759' : '#007aff';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+
+      // Label Stats
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '12px monospace';
+      ctx.fillText(`X: ${Math.round(node.x)} | Y: ${Math.round(node.y)} | Z: ${node.z.toFixed(1)}`, node.x - 50, node.y + radius + 20);
+
+      requestAnimationFrame(render);
+    }
+    render();
+
+    // Start Button Audio Unlock
+    document.getElementById('startAudio').addEventListener('click', (e) => {
+      if (!audioCtx) {
+        initAudio();
+        e.target.innerText = 'Audio Active';
+        e.target.style.background = '#34c759';
+      }
+    });
+  </script>
+</body>
+</html>
