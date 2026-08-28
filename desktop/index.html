@@ -4038,9 +4038,36 @@ class SpatialStudio {
       this.ctx.lineWidth = 3.5;
       this.ctx.stroke();
 
-      const animType = t.customNodeBundle?.manifest?.canvas_animation?.type;
+      const rawAnim = t.customNodeBundle?.manifest?.canvas_animation;
+      const animType = typeof rawAnim === 'string' ? rawAnim : rawAnim?.type;
 
-      if (animType === 'ripple' && t.isLoaded && (t.isPlaying || progress > 0)) {
+      if (animType === 'interference_wave' && t.isLoaded && (t.isPlaying || progress > 0)) {
+        const nowMs = performance.now();
+        const baseRadius = ringRadius;
+        
+        // Render 5 intersecting harmonic nodal rings reflecting 5-bowl interference
+        for (let j = 0; j < 5; j++) {
+          const angleOffset = (j / 5) * Math.PI * 2 + (nowMs * 0.0008);
+          const orbitDist = 6 + Math.sin(nowMs * 0.003 + j * 1.25) * 3;
+          const cx = pxX + Math.cos(angleOffset) * orbitDist;
+          const cy = pxY + Math.sin(angleOffset) * orbitDist;
+          
+          const expansion = (Math.sin(nowMs * 0.004 + j * 1.6) + 1.0) * 0.5;
+          const currentRadius = baseRadius + 4 + (expansion * 12);
+          const alpha = 0.2 + (0.35 * Math.sin(nowMs * 0.005 + j * 1.4));
+
+          this.ctx.beginPath();
+          this.ctx.arc(cx, cy, currentRadius, 0, 2 * Math.PI);
+          this.ctx.strokeStyle = t.color;
+          this.ctx.globalAlpha = Math.max(0.1, alpha);
+          this.ctx.lineWidth = 1.5;
+          this.ctx.shadowColor = t.color;
+          this.ctx.shadowBlur = 6;
+          this.ctx.stroke();
+        }
+        this.ctx.shadowBlur = 0;
+        this.ctx.globalAlpha = 1.0;
+      } else if (animType === 'ripple' && t.isLoaded && (t.isPlaying || progress > 0)) {
         const nowMs = performance.now();
         for (let j = 0; j < 4; j++) {
           const wavePhase = (nowMs * 0.0025) + (j * 1.57);

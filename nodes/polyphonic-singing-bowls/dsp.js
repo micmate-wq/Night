@@ -1,6 +1,6 @@
 /**
  * Polyphonic Singing Bowls DSP Engine
- * 5-voice generative additive synthesis with stochastic strikes and acoustic beating.
+ * 5-voice generative additive synthesis with stochastic strikes, acoustic beating, and per-voice tone filtering.
  */
 
 class PolyphonicSingingBowlsDSP extends (typeof AudioWorkletProcessor !== 'undefined' ? AudioWorkletProcessor : Object) {
@@ -11,7 +11,12 @@ class PolyphonicSingingBowlsDSP extends (typeof AudioWorkletProcessor !== 'undef
       rootPitch: 120.0,
       activity: 0.5,
       resonance: 0.7,
-      beatingMix: 0.6
+      beatingMix: 0.6,
+      tone_1: 0.8,
+      tone_2: 0.8,
+      tone_3: 0.8,
+      tone_4: 0.8,
+      tone_5: 0.8
     };
 
     // Minor Pentatonic tuning ratios
@@ -31,12 +36,14 @@ class PolyphonicSingingBowlsDSP extends (typeof AudioWorkletProcessor !== 'undef
         env: 0.0,
         targetEnv: 0.0,
         envSpeed: 0.0005,
-        stage: 'idle' // 'attack', 'decay', 'idle'
+        attackRate: 0.0001,
+        decayRate: 0.00005,
+        stage: 'idle', // 'attack', 'decay', 'idle'
+        lpState: 0.0
       });
     }
 
     this.sampleCount = 0;
-    this.triggerInterval = 22050;
 
     if (this.port) {
       this.port.onmessage = (event) => {
@@ -87,6 +94,17 @@ class PolyphonicSingingBowlsDSP extends (typeof AudioWorkletProcessor !== 'undef
     const channelL = output[0];
     const channelR = output[1] || output[0];
 
+    // Pre-calculate per-voice filter coefficients
+    const alphaPerVoice = new Float32Array(this.numVoices);
+    const minCutoff = 180.0;
+    const maxCutoff = 14000.0;
+
+    for (let k = 0; k < this.numVoices; ++k) {
+      const toneVal = Math.max(0.0, Math.min(1.0, this.params[`tone_${k + 1}`] ?? 0.8));
+      const cutoff = minCutoff * Math.pow(maxCutoff / minCutoff, toneVal);
+      alphaPerVoice[k] = Math.min(1.0, 1.0 - Math.exp(-2.0 * Math.PI * cutoff * invSampleRate));
+    }
+
     for (let i = 0; i < blockSize; ++i) {
       let mixL = 0.0;
       let mixR = 0.0;
@@ -109,7 +127,11 @@ class PolyphonicSingingBowlsDSP extends (typeof AudioWorkletProcessor !== 'undef
           }
         }
 
-        if (v.env <= 0.00001) continue;
+        if (v.env <= 0.00001) {
+          // Slowly decay any filter residue when idle
+          v.lpState *= 0.99;
+          continue;
+        }
 
         // Frequencies for voice k
         const f1 = this.params.rootPitch * this.ratios[k];
@@ -131,7 +153,12 @@ class PolyphonicSingingBowlsDSP extends (typeof AudioWorkletProcessor !== 'undef
         const fundamental = Math.sin(v.phaseF1) + Math.sin(v.phaseF2) * this.params.beatingMix;
         const overtone = (Math.sin(v.phaseO1) + Math.sin(v.phaseO2) * this.params.beatingMix) * 0.45;
         
-        const voiceSignal = (fundamental + overtone) * v.env * swell * 0.35;
+        const rawSignal = (fundamental + overtone) * v.env * swell * 0.35;
+
+        // Dedicated per-voice low-pass tone filter
+        const alpha = alphaPerVoice[k];
+        v.lpState += alpha * (rawSignal - v.lpState);
+        const voiceSignal = v.lpState;
         
         // Spatial stereo distribution across the 5 bowls
         const pan = (k / (this.numVoices - 1)) * 1.4 - 0.7; // -0.7 to +0.7
