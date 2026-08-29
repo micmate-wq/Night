@@ -959,7 +959,7 @@ body {
               <button class="btn-src btn-node-inspect" id="t0-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-cyan); font-weight: bold;">⚙ UI</button>
               <button class="btn-src" onclick="document.getElementById('t0-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t0-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
-              <button class="btn-src" id="t0-stream" title="Live Stream / URL Receiver">Stream</button>
+              <button class="btn-src" id="t0-stream" title="Icecast URL. Default Hitchhiker: https://finsburypark.tv/stream  Marvin: https://finsburypark.tv/marvin">Stream</button>
             </div>
           </div>
           <div class="channel-controls">
@@ -1034,7 +1034,7 @@ body {
               <button class="btn-src btn-node-inspect" id="t1-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-magenta); font-weight: bold;">⚙ UI</button>
               <button class="btn-src" onclick="document.getElementById('t1-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t1-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
-              <button class="btn-src" id="t1-stream" title="Live Stream / URL Receiver">Stream</button>
+              <button class="btn-src" id="t1-stream" title="Icecast URL. Default Hitchhiker: https://finsburypark.tv/stream  Marvin: https://finsburypark.tv/marvin">Stream</button>
             </div>
           </div>
           <div class="channel-controls">
@@ -1106,7 +1106,7 @@ body {
               <button class="btn-src btn-node-inspect" id="t2-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-orange); font-weight: bold;">⚙ UI</button>
               <button class="btn-src" onclick="document.getElementById('t2-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t2-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
-              <button class="btn-src" id="t2-stream" title="Live Stream / URL Receiver">Stream</button>
+              <button class="btn-src" id="t2-stream" title="Icecast URL. Default Hitchhiker: https://finsburypark.tv/stream  Marvin: https://finsburypark.tv/marvin">Stream</button>
             </div>
           </div>
           <div class="channel-controls">
@@ -1178,7 +1178,7 @@ body {
               <button class="btn-src btn-node-inspect" id="t3-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-lime); font-weight: bold;">⚙ UI</button>
               <button class="btn-src" onclick="document.getElementById('t3-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t3-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
-              <button class="btn-src" id="t3-stream" title="Live Stream / URL Receiver">Stream</button>
+              <button class="btn-src" id="t3-stream" title="Icecast URL. Default Hitchhiker: https://finsburypark.tv/stream  Marvin: https://finsburypark.tv/marvin">Stream</button>
             </div>
           </div>
           <div class="channel-controls">
@@ -1481,6 +1481,9 @@ class AudioTrack {
     this.isStream = false;
     this.streamUrl = '';
     this.streamAudio = null;
+    this._streamWantsLive = false;
+    this._streamRetry = 0;
+    this._streamReconnectTimer = null;
     this.streamMediaSource = null;
 
     // Default opening coordinates for the 4 tracks on 2D canvas:
@@ -1851,25 +1854,39 @@ class AudioTrack {
     if (this.liveInBtn) this.liveInBtn.classList.remove('active');
   }
 
-  // --- STREAM URL ---
+  // --- STREAM URL (Icecast ingest) ---
   async promptStreamUrl() {
     await this.studio.ensureAudioRunning();
-    const ctx = this.studio.audioCtx;
 
-    const defaultUrl = this.streamUrl || '';
-    const url = prompt(`Track ${this.index + 1} — Enter Live Audio Stream URL (e.g. http://server:8000/stream.mp3):`, defaultUrl);
+    const hitchhiker = 'https://finsburypark.tv/stream';
+    const marvin = 'https://finsburypark.tv/marvin';
+    const defaultUrl = this.streamUrl || hitchhiker;
+    const url = prompt(
+      `Track ${this.index + 1} — Icecast URL\nHitchhiker: ${hitchhiker}\nMarvin: ${marvin}\n(tailnet: http://macmini:4250/stream or /marvin)`,
+      defaultUrl
+    );
     if (url !== null && url.trim() !== '') {
       await this.loadStreamUrl(url.trim());
     }
   }
 
   cleanupStream() {
+    this._streamWantsLive = false;
+    if (this._streamReconnectTimer) {
+      clearTimeout(this._streamReconnectTimer);
+      this._streamReconnectTimer = null;
+    }
     if (this.streamAudio) {
       try {
         this.streamAudio.oncanplay = null;
+        this.streamAudio.onplaying = null;
         this.streamAudio.onerror = null;
+        this.streamAudio.onstalled = null;
+        this.streamAudio.onwaiting = null;
+        this.streamAudio.onended = null;
         this.streamAudio.pause();
-        this.streamAudio.src = '';
+        this.streamAudio.removeAttribute('src');
+        this.streamAudio.load();
       } catch (e) {}
       this.streamAudio = null;
     }
@@ -1878,8 +1895,42 @@ class AudioTrack {
       this.streamMediaSource = null;
     }
     this.isStream = false;
-    this.streamUrl = '';
     if (this.streamBtn) this.streamBtn.classList.remove('active');
+  }
+
+  _bindIcecastElementHandlers(el) {
+    el.onplaying = () => {
+      this._streamRetry = 0;
+      if (this.statusEl) this.statusEl.textContent = 'LIVE STREAMING';
+    };
+    el.onerror = () => this._scheduleStreamReconnect('error');
+    el.onstalled = () => this._scheduleStreamReconnect('stalled');
+    el.onended = () => this._scheduleStreamReconnect('ended');
+    el.onwaiting = () => {
+      if (this.statusEl) this.statusEl.textContent = 'Stream buffering…';
+    };
+  }
+
+  _scheduleStreamReconnect(reason) {
+    if (!this._streamWantsLive || !this.isStream || !this.streamUrl) return;
+    if (this._streamReconnectTimer) return;
+    this._streamRetry = (this._streamRetry || 0) + 1;
+    const delay = Math.min(1500 * this._streamRetry, 8000);
+    if (this.statusEl) this.statusEl.textContent = `Stream ${reason}, retry ${this._streamRetry}…`;
+    this._streamReconnectTimer = setTimeout(() => {
+      this._streamReconnectTimer = null;
+      if (!this._streamWantsLive || !this.streamAudio || !this.streamUrl) return;
+      const el = this.streamAudio;
+      const url = this.streamUrl;
+      try { el.pause(); } catch (e) {}
+      // Reassign src on the SAME element so createMediaElementSource stays valid.
+      el.crossOrigin = 'anonymous';
+      el.src = url;
+      el.load();
+      if (this.studio.isPlaying || this.isPlaying) {
+        el.play().catch(() => {});
+      }
+    }, delay);
   }
 
   async loadStreamUrl(url) {
@@ -1889,6 +1940,8 @@ class AudioTrack {
 
     this.cleanupSources();
     this.isStream = true;
+    this._streamWantsLive = true;
+    this._streamRetry = 0;
     this.streamUrl = url;
     if (this.streamBtn) this.streamBtn.classList.add('active');
 
@@ -1897,18 +1950,15 @@ class AudioTrack {
     this.statusEl.textContent = 'Connecting stream...';
 
     try {
-      this.streamAudio = new Audio();
-      this.streamAudio.crossOrigin = 'anonymous';
-      this.streamAudio.src = url;
+      const el = new Audio();
+      // crossOrigin MUST be set before src or the Web Audio graph is silently tainted.
+      el.crossOrigin = 'anonymous';
+      el.preload = 'none';
+      this._bindIcecastElementHandlers(el);
+      el.src = url;
+      this.streamAudio = el;
 
-      this.streamAudio.onerror = () => {
-        this.statusEl.textContent = '[STREAM ERROR]';
-      };
-      this.streamAudio.onplaying = () => {
-        this.statusEl.textContent = 'LIVE STREAMING';
-      };
-
-      this.streamMediaSource = ctx.createMediaElementSource(this.streamAudio);
+      this.streamMediaSource = ctx.createMediaElementSource(el);
       this.streamMediaSource.connect(this.eqLowNode);
 
       this.isLoaded = true;
