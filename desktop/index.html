@@ -959,7 +959,7 @@ body {
               <button class="btn-src btn-node-inspect" id="t0-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-cyan); font-weight: bold;">⚙ UI</button>
               <button class="btn-src" onclick="document.getElementById('t0-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t0-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
-              <button class="btn-src" id="t0-stream" title="Icecast URL. Default Hitchhiker: https://finsburypark.tv/stream  Marvin: https://finsburypark.tv/marvin">Stream</button>
+              <button class="btn-src" id="t0-stream" title="Icecast URL. Default Hitchhiker: https://dontpanic.fm/listen/stream  Marvin: https://dontpanic.fm/listen/marvin">Stream</button>
             </div>
           </div>
           <div class="channel-controls">
@@ -1034,7 +1034,7 @@ body {
               <button class="btn-src btn-node-inspect" id="t1-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-magenta); font-weight: bold;">⚙ UI</button>
               <button class="btn-src" onclick="document.getElementById('t1-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t1-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
-              <button class="btn-src" id="t1-stream" title="Icecast URL. Default Hitchhiker: https://finsburypark.tv/stream  Marvin: https://finsburypark.tv/marvin">Stream</button>
+              <button class="btn-src" id="t1-stream" title="Icecast URL. Default Hitchhiker: https://dontpanic.fm/listen/stream  Marvin: https://dontpanic.fm/listen/marvin">Stream</button>
             </div>
           </div>
           <div class="channel-controls">
@@ -1106,7 +1106,7 @@ body {
               <button class="btn-src btn-node-inspect" id="t2-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-orange); font-weight: bold;">⚙ UI</button>
               <button class="btn-src" onclick="document.getElementById('t2-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t2-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
-              <button class="btn-src" id="t2-stream" title="Icecast URL. Default Hitchhiker: https://finsburypark.tv/stream  Marvin: https://finsburypark.tv/marvin">Stream</button>
+              <button class="btn-src" id="t2-stream" title="Icecast URL. Default Hitchhiker: https://dontpanic.fm/listen/stream  Marvin: https://dontpanic.fm/listen/marvin">Stream</button>
             </div>
           </div>
           <div class="channel-controls">
@@ -1178,7 +1178,7 @@ body {
               <button class="btn-src btn-node-inspect" id="t3-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-lime); font-weight: bold;">⚙ UI</button>
               <button class="btn-src" onclick="document.getElementById('t3-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t3-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
-              <button class="btn-src" id="t3-stream" title="Icecast URL. Default Hitchhiker: https://finsburypark.tv/stream  Marvin: https://finsburypark.tv/marvin">Stream</button>
+              <button class="btn-src" id="t3-stream" title="Icecast URL. Default Hitchhiker: https://dontpanic.fm/listen/stream  Marvin: https://dontpanic.fm/listen/marvin">Stream</button>
             </div>
           </div>
           <div class="channel-controls">
@@ -1858,11 +1858,11 @@ class AudioTrack {
   async promptStreamUrl() {
     await this.studio.ensureAudioRunning();
 
-    const hitchhiker = 'https://finsburypark.tv/stream';
-    const marvin = 'https://finsburypark.tv/marvin';
+    const hitchhiker = 'https://dontpanic.fm/listen/stream';
+    const marvin = 'https://dontpanic.fm/listen/marvin';
     const defaultUrl = this.streamUrl || hitchhiker;
     const url = prompt(
-      `Track ${this.index + 1} — Icecast URL\nHitchhiker: ${hitchhiker}\nMarvin: ${marvin}\n(tailnet: http://macmini:4250/stream or /marvin)`,
+      `Track ${this.index + 1} — Icecast URL\nHitchhiker: ${hitchhiker}\nMarvin: ${marvin}\n(tailnet: http://macmini.tail32e87c.ts.net:4250/stream or /marvin)`,
       defaultUrl
     );
     if (url !== null && url.trim() !== '') {
