@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AETHER 3D — Standalone 4-Track Spatial Audio Studio</title>
+  <link rel="icon" type="image/svg+xml" href="app-icon.svg">
   <meta name="description" content="Standalone 4-track 3D spatial audio player & live performance workstation with HRTF 3D spatial canvas, trackpad depth pinch, motion automation, Ableton-style bipolar EQ, live input, and master WAV recording.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,6 +29,11 @@
   --canvas-grid: rgba(0, 0, 0, 0.12);
   --canvas-axis: #000000;
   
+  --shadow-flat-sm: 0 2px 5px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-flat-md: 0 6px 16px -2px rgba(0, 0, 0, 0.16), 0 3px 6px -1px rgba(0, 0, 0, 0.10);
+  --shadow-flat-elevated: 0 16px 36px -6px rgba(0, 0, 0, 0.22), 0 6px 14px -3px rgba(0, 0, 0, 0.12);
+  --shadow-inset-soft: inset 0 2px 6px rgba(0, 0, 0, 0.12);
+
   --track-1: #FC4037; /* Poppy Coral */
   --track-2: #FFEA00; /* Canary Yellow */
   --track-3: #8B68B9; /* Slate Lavender */
@@ -60,6 +66,11 @@ body.theme-dark {
   --accent-soft: rgba(255, 255, 255, 0.12);
   --canvas-grid: rgba(255, 255, 255, 0.15);
   --canvas-axis: #FFFFFF;
+
+  --shadow-flat-sm: 0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-flat-md: 0 8px 20px rgba(0, 0, 0, 0.7), 0 3px 8px rgba(0, 0, 0, 0.5);
+  --shadow-flat-elevated: 0 20px 40px rgba(0, 0, 0, 0.85), 0 8px 16px rgba(0, 0, 0, 0.6);
+  --shadow-inset-soft: inset 0 2px 8px rgba(0, 0, 0, 0.8);
 
   --track-1: #FC4037; /* Poppy Coral */
   --track-2: #FFEA00; /* Canary Yellow */
@@ -98,42 +109,48 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 18px;
+  padding: 5px 12px;
   background: var(--bg-card);
-  border: 2px solid var(--border-accent);
+  border: 1.5px solid var(--border-accent);
   border-radius: var(--radius-sm);
-  gap: 12px;
-  flex-wrap: wrap;
+  box-shadow: var(--shadow-flat-sm);
+  gap: 8px;
 }
 
-.header-left, .header-center, .header-right {
+.header-left, .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .transport-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 .btn-transport {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-sm);
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
   background: var(--bg-main);
-  border: 1.5px solid var(--border-accent);
+  border: 1px solid var(--border-accent);
   color: var(--text-accent);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: var(--shadow-flat-sm);
   transition: all 0.15s ease;
+  padding: 0;
 }
 .btn-transport:hover {
   background: var(--accent-primary);
   color: var(--bg-main);
+}
+.btn-transport:active {
+  box-shadow: var(--shadow-inset-soft);
+  transform: translateY(1px);
 }
 .btn-transport.playing {
   background: var(--accent-primary);
@@ -142,21 +159,27 @@ body {
 
 .btn-rec-master {
   background: var(--bg-main);
-  border: 1.5px solid var(--border-accent);
+  border: 1px solid var(--border-accent);
   color: var(--text-accent);
   font-family: var(--font-heading);
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  padding: 7px 12px;
-  border-radius: var(--radius-sm);
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 3px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  box-shadow: var(--shadow-flat-sm);
   transition: all 0.15s ease;
 }
 .btn-rec-master:hover {
   background: var(--accent-soft);
+}
+.btn-rec-master:active {
+  box-shadow: var(--shadow-inset-soft);
+  transform: translateY(1px);
 }
 .btn-rec-master.recording {
   background: var(--text-main);
@@ -168,74 +191,54 @@ body {
   100% { box-shadow: 0 0 10px 3px rgba(128, 128, 128, 0.7); }
 }
 
-.app-title-group {
-  display: flex;
-  flex-direction: column;
-}
-.app-title {
-  font-family: var(--font-heading);
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--text-accent);
-  letter-spacing: -0.02em;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-.app-title .version-tag {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-}
-.app-subtitle {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-
 .master-time-display {
   font-family: var(--font-mono);
-  font-size: 1.25rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--text-accent);
   background: var(--bg-main);
-  border: 1.5px solid var(--border-accent);
-  padding: 4px 12px;
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-accent);
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 3px;
+  box-shadow: var(--shadow-inset-soft);
   letter-spacing: 0.05em;
-  min-width: 96px;
-  text-align: center;
+  min-width: 68px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header-btn {
   background: var(--bg-main);
-  border: 1.5px solid var(--border-accent);
+  border: 1px solid var(--border-accent);
   color: var(--text-accent);
   font-family: var(--font-heading);
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 7px 12px;
-  border-radius: var(--radius-sm);
+  font-size: 0.68rem;
+  font-weight: 700;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 3px;
   cursor: pointer;
+  box-shadow: var(--shadow-flat-sm);
   transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 .header-btn:hover {
   background: var(--accent-soft);
 }
-
+.header-btn:active {
+  box-shadow: var(--shadow-inset-soft);
+  transform: translateY(1px);
+}
 
 .master-vol-control {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.75rem;
+  gap: 5px;
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--text-accent);
   font-family: var(--font-heading);
@@ -243,8 +246,8 @@ body {
 .header-slider {
   -webkit-appearance: none;
   appearance: none;
-  width: 80px;
-  height: 4px;
+  width: 60px;
+  height: 3px;
   background: var(--border-light);
   outline: none;
   border-radius: 2px;
@@ -252,16 +255,17 @@ body {
 .header-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 13px;
-  height: 13px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--text-main);
   cursor: pointer;
 }
 
 .theme-toggle-btn {
-  padding: 6px 10px;
-  font-size: 0.78rem;
+  height: 24px;
+  padding: 0 6px;
+  font-size: 0.70rem;
 }
 
 /* ==========================================================================
@@ -270,51 +274,21 @@ body {
 .spatial-workspace-section {
   background: var(--bg-card);
   border: 2px solid var(--border-accent);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-flat-md);
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.workspace-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.workspace-title {
-  font-family: var(--font-heading);
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-accent);
-  letter-spacing: 0.05em;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.dot-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-primary);
-}
-.workspace-instructions {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-.workspace-instructions strong {
-  color: var(--text-accent);
 }
 
 .canvas-arena-container {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 500px;
   background: var(--bg-canvas);
   border: 1.5px solid var(--border-accent);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.14), var(--shadow-flat-sm);
   overflow: hidden;
   user-select: none;
 }
@@ -381,6 +355,7 @@ body {
   background: var(--bg-card);
   border: 2px solid var(--border-accent);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-flat-md);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -431,14 +406,19 @@ body {
   background: var(--bg-main);
   border: 1.5px solid var(--border-accent);
   border-top: 3px solid var(--strip-color, var(--border-accent));
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-flat-sm);
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   min-width: 0; /* CRITICAL: Prevent grid child overflow */
   overflow: hidden;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.channel-strip:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-flat-elevated);
 }
 .channel-strip.drag-over {
   border-color: var(--strip-color, var(--accent-primary)) !important;
@@ -523,7 +503,7 @@ body {
 .channel-controls {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .playlist-bar {
@@ -535,6 +515,7 @@ body {
   border-radius: var(--radius-sm);
   padding: 3px 6px;
   gap: 4px;
+  box-shadow: var(--shadow-inset-soft);
 }
 .btn-playlist {
   background: var(--bg-main);
@@ -566,21 +547,34 @@ body {
   text-align: center;
 }
 
-.mute-solo-group {
+.strip-status-bar {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 3px 6px;
+  box-shadow: var(--shadow-inset-soft);
   gap: 6px;
 }
+
+.mute-solo-group {
+  display: flex;
+  gap: 4px;
+}
 .btn-toggle {
-  flex: 1;
-  background: transparent;
+  background: var(--bg-main);
   border: 1px solid var(--border-accent);
   color: var(--text-accent);
   font-family: var(--font-heading);
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  padding: 4px 0;
-  border-radius: 3px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 2px;
   cursor: pointer;
+  box-shadow: var(--shadow-flat-sm);
   transition: all 0.15s ease;
 }
 .btn-toggle:hover { background: var(--accent-soft); }
@@ -590,49 +584,48 @@ body {
   border-color: var(--strip-color, var(--accent-primary));
 }
 
-.gauges-row {
+.gauges-group {
   display: flex;
-  justify-content: space-between;
-  background: var(--bg-card);
-  padding: 4px 8px;
-  border-radius: 3px;
-  border: 1px solid var(--border-light);
-  font-size: 0.7rem;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-accent);
 }
-.gauge-item { display: flex; gap: 4px; }
-.g-label { font-weight: 700; color: var(--text-muted); }
-.g-val { font-weight: 700; color: var(--text-accent); font-family: var(--font-mono); }
+.g-sep { color: var(--text-muted); font-size: 0.6rem; }
 
 /* Motion Automation Container */
 .motion-box {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
-  padding: 6px 8px;
+  padding: 4px 6px;
+  box-shadow: var(--shadow-inset-soft);
+}
+.motion-toolbar {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  flex-wrap: wrap;
 }
-.motion-header {
-  font-family: var(--font-heading);
-  font-size: 0.62rem;
-  font-weight: 700;
-  color: var(--text-accent);
-  letter-spacing: 0.05em;
-  text-align: center;
+.motion-actions {
+  display: flex;
+  gap: 3px;
 }
-.motion-buttons-row { display: flex; gap: 4px; }
 .btn-motion {
-  flex: 1;
   background: var(--bg-main);
   border: 1px solid var(--border-accent);
   color: var(--text-accent);
   font-family: var(--font-heading);
-  font-size: 0.65rem;
+  font-size: 0.60rem;
   font-weight: 700;
-  padding: 3px 0;
-  border-radius: 3px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 2px;
   cursor: pointer;
+  box-shadow: var(--shadow-flat-sm);
   transition: all 0.15s ease;
 }
 .btn-motion:hover { background: var(--accent-soft); }
@@ -648,25 +641,17 @@ body {
   color: #FFF;
   border-color: var(--strip-color, var(--accent-primary));
 }
-.motion-speed-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.speed-label {
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: var(--text-muted);
-}
+
 .speed-btn-group { display: flex; gap: 2px; }
 .btn-speed {
   background: var(--bg-main);
   border: 1px solid var(--border-light);
   color: var(--text-muted);
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-family: var(--font-mono);
   font-weight: 700;
-  padding: 1px 4px;
+  height: 20px;
+  padding: 0 3px;
   border-radius: 2px;
   cursor: pointer;
 }
@@ -703,23 +688,15 @@ body {
 .eq-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
-  padding: 8px 6px;
-}
-.eq-title {
-  font-family: var(--font-heading);
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text-accent);
-  letter-spacing: 0.06em;
-  text-align: center;
+  padding: 4px 6px;
+  box-shadow: var(--shadow-inset-soft);
 }
 .eq-knobs-row {
   display: flex;
-  justify-content: space-evenly; /* Evenly spaced */
+  justify-content: space-evenly;
   align-items: center;
   width: 100%;
 }
@@ -727,14 +704,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 1px;
   user-select: none;
 }
 
 .rotary-knob-container {
   position: relative;
-  width: 46px;
-  height: 46px;
+  width: 36px;
+  height: 36px;
   cursor: ns-resize;
   touch-action: none;
 }
@@ -831,7 +808,53 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-flat-elevated);
+}
+
+#node-inspector-modal .modal-card {
+  width: 540px;
+  max-width: 94vw;
+  padding: 0;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 2px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-flat-elevated);
+  transform: scale(0.96);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+#node-inspector-modal.active .modal-card {
+  transform: scale(1);
+}
+.node-inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--bg-main);
+  border-bottom: 1.5px solid var(--border-accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.node-inspector-close-btn {
+  background: var(--bg-main);
+  border: 1.5px solid var(--border-accent);
+  color: var(--text-accent);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  box-shadow: var(--shadow-flat-sm);
+  transition: all 0.15s ease;
+}
+.node-inspector-close-btn:hover {
+  background: var(--accent-primary);
+  color: var(--bg-main);
+}
+.node-inspector-close-btn:active {
+  box-shadow: var(--shadow-inset-soft);
+  transform: translateY(1px);
 }
 .modal-title {
   font-family: var(--font-heading);
@@ -868,29 +891,22 @@ body {
       <div class="header-left">
         <div class="transport-brand">
           <button id="master-play-btn" class="btn-transport" title="Play / Pause All (Space)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </button>
           <button id="master-stop-btn" class="btn-transport" title="Stop All & Rewind">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
           </button>
           <button id="master-rec-btn" class="btn-rec-master" title="Record Master Live Output to WAV">
-            <span id="rec-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;"></span>
-            <span id="rec-btn-text">REC MASTER</span>
+            <span id="rec-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
+            <span id="rec-btn-text">REC</span>
           </button>
         </div>
-        <div class="app-title-group">
-          <h1 class="app-title">AETHER 3D <span class="version-tag">v3.0 3D</span></h1>
-          <span class="app-subtitle">4-Track 3D Spatial Audio Studio &amp; Motion Automation</span>
-        </div>
-      </div>
-
-      <div class="header-center">
         <div class="master-time-display" id="master-time">00:00.0</div>
       </div>
 
       <div class="header-right">
         <button id="demo-btn" class="header-btn" title="Load 4 synthetic demo stems">
-          <span class="icon">∿</span> Demo Stems
+          <span class="icon">∿</span> Demo
         </button>
         <button id="export-session-btn" class="header-btn" title="Save DAW Project to disk (Finder)">
           <span>💾</span> Save
@@ -901,12 +917,12 @@ body {
         <input type="file" id="import-session-file" accept=".aether,.json,application/json" style="display:none;">
 
         <div class="master-vol-control">
-          <span>MASTER</span>
+          <span>VOL</span>
           <input type="range" id="master-volume" min="0" max="1" step="0.01" value="1.0" class="header-slider">
-          <span id="master-vol-val" style="min-width:32px;font-family:var(--font-mono);">100%</span>
+          <span id="master-vol-val" style="font-family:var(--font-mono);font-size:0.68rem;min-width:28px;">100%</span>
         </div>
 
-        <button id="theme-toggle-btn" class="header-btn theme-toggle-btn" title="Toggle Dark / Light Theme">
+        <button id="theme-toggle-btn" class="header-btn theme-toggle-btn" title="Toggle Minimal / Dark Theme">
           <span id="theme-icon">🌙</span>
         </button>
       </div>
@@ -914,14 +930,6 @@ body {
 
     <!-- 2D SPATIAL CANVAS WORKSPACE -->
     <section class="spatial-workspace-section">
-      <div class="workspace-header">
-        <div class="workspace-title">
-          <span class="dot-indicator"></span> 3D SPATIAL CANVAS &amp; MOTION AUTOMATION
-        </div>
-        <div class="workspace-instructions">
-          Drag nodes for <strong>X/Y</strong> • <strong>Ctrl + Two-Finger Scroll / Pinch</strong> for <strong>Z Depth (Air Absorption)</strong> • Ableton EQ • Live In • Rec Master
-        </div>
-      </div>
       <div class="canvas-arena-container" id="arena-container">
         <div class="axis-label axis-top">+100% VOLUME</div>
         <div class="axis-label axis-bottom">0% VOLUME</div>
@@ -969,48 +977,45 @@ body {
               <button class="btn-playlist" id="t0-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t0-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
             </div>
-            <div class="mute-solo-group">
-              <button class="btn-toggle mute-btn" id="t0-mute">MUTE</button>
-              <button class="btn-toggle solo-btn" id="t0-solo">SOLO</button>
-            </div>
-            <div class="gauges-row">
-              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t0-vol-txt">80%</span></div>
-              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t0-pan-txt">C</span></div>
+            <div class="strip-status-bar">
+              <div class="mute-solo-group">
+                <button class="btn-toggle mute-btn" id="t0-mute">MUTE</button>
+                <button class="btn-toggle solo-btn" id="t0-solo">SOLO</button>
+              </div>
+              <div class="gauges-group">
+                <span class="g-val" id="t0-vol-txt">80%</span>
+                <span class="g-sep">•</span>
+                <span class="g-val" id="t0-pan-txt">C</span>
+              </div>
             </div>
             <div class="motion-box">
-              <div class="motion-header">MOTION AUTOMATION</div>
-              <div class="motion-buttons-row">
-                <button class="btn-motion rec-btn" id="t0-rec">● REC</button>
-                <button class="btn-motion play-motion-btn" id="t0-play-motion">▶ PLAY</button>
-                <button class="btn-motion clear-btn" id="t0-clear-motion">CLR</button>
-              </div>
-              <div class="motion-speed-row">
-                <span class="speed-label">SPEED</span>
+              <div class="motion-toolbar">
+                <div class="motion-actions">
+                  <button class="btn-motion rec-btn" id="t0-rec">● REC</button>
+                  <button class="btn-motion play-motion-btn" id="t0-play-motion">▶ PLAY</button>
+                  <button class="btn-motion clear-btn" id="t0-clear-motion">CLR</button>
+                </div>
                 <div class="speed-btn-group">
-                  <button class="btn-speed" data-track="0" data-speed="0.01">0.01x</button>
-                  <button class="btn-speed" data-track="0" data-speed="0.1">0.1x</button>
-                  <button class="btn-speed" data-track="0" data-speed="0.5">0.5x</button>
-                  <button class="btn-speed active" data-track="0" data-speed="1.0">1.0x</button>
-                  <button class="btn-speed" data-track="0" data-speed="2.0">2.0x</button>
+                  <button class="btn-speed" data-track="0" data-speed="0.01">.01</button>
+                  <button class="btn-speed" data-track="0" data-speed="0.1">.1x</button>
+                  <button class="btn-speed" data-track="0" data-speed="0.5">.5x</button>
+                  <button class="btn-speed active" data-track="0" data-speed="1.0">1x</button>
+                  <button class="btn-speed" data-track="0" data-speed="2.0">2x</button>
                 </div>
               </div>
             </div>
             <div class="eq-section">
-              <div class="eq-title">3-BAND BIPOLAR EQ</div>
               <div class="eq-knobs-row">
-                <!-- Ableton style rotary dial LOW -->
                 <div class="eq-knob-group">
                   <div class="rotary-knob-container" id="t0-knob-low" data-track="0" data-band="low" title="Low Shelf (150Hz) • Drag vertical, Shift for fine, Double-click to reset"></div>
                   <span class="knob-val-badge" id="t0-eq-low-val">0dB</span>
                   <span class="knob-label">BASS</span>
                 </div>
-                <!-- MID -->
                 <div class="eq-knob-group">
                   <div class="rotary-knob-container" id="t0-knob-mid" data-track="0" data-band="mid" title="Mid Peak (1kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
                   <span class="knob-val-badge" id="t0-eq-mid-val">0dB</span>
                   <span class="knob-label">MID</span>
                 </div>
-                <!-- HIGH -->
                 <div class="eq-knob-group">
                   <div class="rotary-knob-container" id="t0-knob-high" data-track="0" data-band="high" title="High Shelf (6kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
                   <span class="knob-val-badge" id="t0-eq-high-val">0dB</span>
@@ -1044,34 +1049,34 @@ body {
               <button class="btn-playlist" id="t1-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t1-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
             </div>
-            <div class="mute-solo-group">
-              <button class="btn-toggle mute-btn" id="t1-mute">MUTE</button>
-              <button class="btn-toggle solo-btn" id="t1-solo">SOLO</button>
-            </div>
-            <div class="gauges-row">
-              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t1-vol-txt">30%</span></div>
-              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t1-pan-txt">C</span></div>
+            <div class="strip-status-bar">
+              <div class="mute-solo-group">
+                <button class="btn-toggle mute-btn" id="t1-mute">MUTE</button>
+                <button class="btn-toggle solo-btn" id="t1-solo">SOLO</button>
+              </div>
+              <div class="gauges-group">
+                <span class="g-val" id="t1-vol-txt">30%</span>
+                <span class="g-sep">•</span>
+                <span class="g-val" id="t1-pan-txt">C</span>
+              </div>
             </div>
             <div class="motion-box">
-              <div class="motion-header">MOTION AUTOMATION</div>
-              <div class="motion-buttons-row">
-                <button class="btn-motion rec-btn" id="t1-rec">● REC</button>
-                <button class="btn-motion play-motion-btn" id="t1-play-motion">▶ PLAY</button>
-                <button class="btn-motion clear-btn" id="t1-clear-motion">CLR</button>
-              </div>
-              <div class="motion-speed-row">
-                <span class="speed-label">SPEED</span>
+              <div class="motion-toolbar">
+                <div class="motion-actions">
+                  <button class="btn-motion rec-btn" id="t1-rec">● REC</button>
+                  <button class="btn-motion play-motion-btn" id="t1-play-motion">▶ PLAY</button>
+                  <button class="btn-motion clear-btn" id="t1-clear-motion">CLR</button>
+                </div>
                 <div class="speed-btn-group">
-                  <button class="btn-speed" data-track="1" data-speed="0.01">0.01x</button>
-                  <button class="btn-speed" data-track="1" data-speed="0.1">0.1x</button>
-                  <button class="btn-speed" data-track="1" data-speed="0.5">0.5x</button>
-                  <button class="btn-speed active" data-track="1" data-speed="1.0">1.0x</button>
-                  <button class="btn-speed" data-track="1" data-speed="2.0">2.0x</button>
+                  <button class="btn-speed" data-track="1" data-speed="0.01">.01</button>
+                  <button class="btn-speed" data-track="1" data-speed="0.1">.1x</button>
+                  <button class="btn-speed" data-track="1" data-speed="0.5">.5x</button>
+                  <button class="btn-speed active" data-track="1" data-speed="1.0">1x</button>
+                  <button class="btn-speed" data-track="1" data-speed="2.0">2x</button>
                 </div>
               </div>
             </div>
             <div class="eq-section">
-              <div class="eq-title">3-BAND BIPOLAR EQ</div>
               <div class="eq-knobs-row">
                 <div class="eq-knob-group">
                   <div class="rotary-knob-container" id="t1-knob-low" data-track="1" data-band="low" title="Low Shelf (150Hz) • Drag vertical, Shift for fine, Double-click to reset"></div>
@@ -1116,34 +1121,34 @@ body {
               <button class="btn-playlist" id="t2-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t2-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
             </div>
-            <div class="mute-solo-group">
-              <button class="btn-toggle mute-btn" id="t2-mute">MUTE</button>
-              <button class="btn-toggle solo-btn" id="t2-solo">SOLO</button>
-            </div>
-            <div class="gauges-row">
-              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t2-vol-txt">50%</span></div>
-              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t2-pan-txt">L50</span></div>
+            <div class="strip-status-bar">
+              <div class="mute-solo-group">
+                <button class="btn-toggle mute-btn" id="t2-mute">MUTE</button>
+                <button class="btn-toggle solo-btn" id="t2-solo">SOLO</button>
+              </div>
+              <div class="gauges-group">
+                <span class="g-val" id="t2-vol-txt">50%</span>
+                <span class="g-sep">•</span>
+                <span class="g-val" id="t2-pan-txt">L50</span>
+              </div>
             </div>
             <div class="motion-box">
-              <div class="motion-header">MOTION AUTOMATION</div>
-              <div class="motion-buttons-row">
-                <button class="btn-motion rec-btn" id="t2-rec">● REC</button>
-                <button class="btn-motion play-motion-btn" id="t2-play-motion">▶ PLAY</button>
-                <button class="btn-motion clear-btn" id="t2-clear-motion">CLR</button>
-              </div>
-              <div class="motion-speed-row">
-                <span class="speed-label">SPEED</span>
+              <div class="motion-toolbar">
+                <div class="motion-actions">
+                  <button class="btn-motion rec-btn" id="t2-rec">● REC</button>
+                  <button class="btn-motion play-motion-btn" id="t2-play-motion">▶ PLAY</button>
+                  <button class="btn-motion clear-btn" id="t2-clear-motion">CLR</button>
+                </div>
                 <div class="speed-btn-group">
-                  <button class="btn-speed" data-track="2" data-speed="0.01">0.01x</button>
-                  <button class="btn-speed" data-track="2" data-speed="0.1">0.1x</button>
-                  <button class="btn-speed" data-track="2" data-speed="0.5">0.5x</button>
-                  <button class="btn-speed active" data-track="2" data-speed="1.0">1.0x</button>
-                  <button class="btn-speed" data-track="2" data-speed="2.0">2.0x</button>
+                  <button class="btn-speed" data-track="2" data-speed="0.01">.01</button>
+                  <button class="btn-speed" data-track="2" data-speed="0.1">.1x</button>
+                  <button class="btn-speed" data-track="2" data-speed="0.5">.5x</button>
+                  <button class="btn-speed active" data-track="2" data-speed="1.0">1x</button>
+                  <button class="btn-speed" data-track="2" data-speed="2.0">2x</button>
                 </div>
               </div>
             </div>
             <div class="eq-section">
-              <div class="eq-title">3-BAND BIPOLAR EQ</div>
               <div class="eq-knobs-row">
                 <div class="eq-knob-group">
                   <div class="rotary-knob-container" id="t2-knob-low" data-track="2" data-band="low" title="Low Shelf (150Hz) • Drag vertical, Shift for fine, Double-click to reset"></div>
@@ -1188,34 +1193,34 @@ body {
               <button class="btn-playlist" id="t3-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t3-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
             </div>
-            <div class="mute-solo-group">
-              <button class="btn-toggle mute-btn" id="t3-mute">MUTE</button>
-              <button class="btn-toggle solo-btn" id="t3-solo">SOLO</button>
-            </div>
-            <div class="gauges-row">
-              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t3-vol-txt">50%</span></div>
-              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t3-pan-txt">R50</span></div>
+            <div class="strip-status-bar">
+              <div class="mute-solo-group">
+                <button class="btn-toggle mute-btn" id="t3-mute">MUTE</button>
+                <button class="btn-toggle solo-btn" id="t3-solo">SOLO</button>
+              </div>
+              <div class="gauges-group">
+                <span class="g-val" id="t3-vol-txt">50%</span>
+                <span class="g-sep">•</span>
+                <span class="g-val" id="t3-pan-txt">R50</span>
+              </div>
             </div>
             <div class="motion-box">
-              <div class="motion-header">MOTION AUTOMATION</div>
-              <div class="motion-buttons-row">
-                <button class="btn-motion rec-btn" id="t3-rec">● REC</button>
-                <button class="btn-motion play-motion-btn" id="t3-play-motion">▶ PLAY</button>
-                <button class="btn-motion clear-btn" id="t3-clear-motion">CLR</button>
-              </div>
-              <div class="motion-speed-row">
-                <span class="speed-label">SPEED</span>
+              <div class="motion-toolbar">
+                <div class="motion-actions">
+                  <button class="btn-motion rec-btn" id="t3-rec">● REC</button>
+                  <button class="btn-motion play-motion-btn" id="t3-play-motion">▶ PLAY</button>
+                  <button class="btn-motion clear-btn" id="t3-clear-motion">CLR</button>
+                </div>
                 <div class="speed-btn-group">
-                  <button class="btn-speed" data-track="3" data-speed="0.01">0.01x</button>
-                  <button class="btn-speed" data-track="3" data-speed="0.1">0.1x</button>
-                  <button class="btn-speed" data-track="3" data-speed="0.5">0.5x</button>
-                  <button class="btn-speed active" data-track="3" data-speed="1.0">1.0x</button>
-                  <button class="btn-speed" data-track="3" data-speed="2.0">2.0x</button>
+                  <button class="btn-speed" data-track="3" data-speed="0.01">.01</button>
+                  <button class="btn-speed" data-track="3" data-speed="0.1">.1x</button>
+                  <button class="btn-speed" data-track="3" data-speed="0.5">.5x</button>
+                  <button class="btn-speed active" data-track="3" data-speed="1.0">1x</button>
+                  <button class="btn-speed" data-track="3" data-speed="2.0">2x</button>
                 </div>
               </div>
             </div>
             <div class="eq-section">
-              <div class="eq-title">3-BAND BIPOLAR EQ</div>
               <div class="eq-knobs-row">
                 <div class="eq-knob-group">
                   <div class="rotary-knob-container" id="t3-knob-low" data-track="3" data-band="low" title="Low Shelf (150Hz) • Drag vertical, Shift for fine, Double-click to reset"></div>
@@ -1242,7 +1247,7 @@ body {
 
     <!-- FOOTER -->
     <footer class="app-footer">
-      <p>AETHER v3.0 • Ableton-Style Bipolar EQ • Live Input (Mic/DAW) • Master WAV Recorder • Session Export • Web Audio 2D Spatial Engine</p>
+      <p>AETHER v4.0 • Ableton-Style Bipolar EQ • Live Input (Mic/DAW) • Master WAV Recorder • Session Export • Web Audio 2D Spatial Engine</p>
     </footer>
   </div>
 
@@ -1263,12 +1268,12 @@ body {
 
   <!-- AETHER NODE INSPECTOR MODAL -->
   <div class="modal-overlay" id="node-inspector-modal">
-    <div class="modal-card" style="width: 520px; max-width: 92vw; padding: 0; overflow: hidden; background: var(--bg-card);">
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: var(--bg-main); border-bottom: 1px solid var(--border-light);">
+    <div class="modal-card">
+      <div class="node-inspector-header">
         <h3 id="node-modal-title" style="font-family: var(--font-heading); font-size: 12px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; text-transform: uppercase; margin: 0; display: flex; align-items: center; gap: 8px;">
           <span>⚡</span> Aether Node Inspector
         </h3>
-        <button class="header-btn" id="node-modal-close-btn" style="padding: 3px 10px; font-size: 11px;">✕ Close</button>
+        <button class="node-inspector-close-btn" id="node-modal-close-btn">✕ Close</button>
       </div>
       <iframe id="node-inspector-frame" style="width: 100%; height: 340px; border: none; display: block; background: var(--bg-canvas);"></iframe>
     </div>
@@ -1290,9 +1295,7 @@ window.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && (e.key === 'r' || e.key === 'R' || e.code === 'KeyR')) {
     e.preventDefault();
     closeStudioAudioForUnload();
-    const u = new URL(window.location.href);
-    u.searchParams.set('_r', String(Date.now()));
-    window.location.replace(u.toString());
+    window.location.reload();
   }
 }, true);
 
@@ -1496,7 +1499,7 @@ class AudioTrack {
     this.x = defPos.x;
     this.y = defPos.y;
     this.z = defPos.z;
-    this.baseRadius = 24;
+    this.baseRadius = 29;
 
     this.motionPath = [];
     this.isRecordingMotion = false;
@@ -2798,6 +2801,17 @@ async function base64ToAudioBuffer(base64Str, audioCtx) {
   });
 }
 
+function arrayBufferToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  const chunk = 0x8000;
+  for (let i = 0; i < len; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunk, len)));
+  }
+  return btoa(binary);
+}
+
 /**
  * Main Aether Studio Engine
  */
@@ -3026,12 +3040,10 @@ class SpatialStudio {
 
     // Keyboard shortcuts
     window.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'r') {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'r' || e.key === 'R' || e.code === 'KeyR')) {
         e.preventDefault();
         this.closeAudioContext(true);
-        const u = new URL(window.location.href);
-        u.searchParams.set('_r', String(Date.now()));
-        window.location.replace(u.toString());
+        window.location.reload();
       }
       if (e.code === 'Space') {
         const tag = (e.target && e.target.tagName) || '';
@@ -3973,7 +3985,8 @@ class SpatialStudio {
         }
 
         // Check if Track is a Custom Node or Audio File/Stream
-        const pathLooksLikeNode = (saved.filePath || '').toLowerCase().endsWith('.aethernode');
+        const rawFileName = (saved.filePath || saved.sampleName || saved.name || '').split('/').pop() || '';
+        const pathLooksLikeNode = (saved.filePath || '').toLowerCase().endsWith('.aethernode') || rawFileName.toLowerCase().endsWith('.aethernode');
         const wantsCustomNode = !!(saved.isCustomNode || saved.customNodeBundle || saved.customNodeZipBase64 || pathLooksLikeNode);
         if (wantsCustomNode) {
           try {
@@ -3989,10 +4002,10 @@ class SpatialStudio {
                 console.warn('Session zip unpack failed for track ' + (idx + 1) + ':', zipErr);
               }
             }
-            if (!bundle && pathLooksLikeNode) {
+            if (!bundle && (pathLooksLikeNode || saved.filePath)) {
               try {
-                bundle = await invokeTauri('load_node_bundle_from_path', { path: saved.filePath });
-                if (!zipBase64) {
+                bundle = await invokeTauri('load_node_bundle_from_path', { path: saved.filePath || rawFileName });
+                if (!zipBase64 && saved.filePath) {
                   try { zipBase64 = await invokeTauri('read_audio_file', { path: saved.filePath }); } catch (e) {}
                 }
               } catch (pathErr) {
@@ -4001,6 +4014,32 @@ class SpatialStudio {
             }
             if (!bundle && saved.customNodeBundle) {
               bundle = saved.customNodeBundle;
+            }
+            // Fallback: Fetch bundle via HTTP server
+            if (!bundle) {
+              const nodeFileName = rawFileName.toLowerCase().endsWith('.aethernode') ? rawFileName : `${rawFileName}.aethernode`;
+              const candidateUrls = [
+                `/nodes/${nodeFileName}`,
+                `/Aether%204.0%20UI/nodes/${nodeFileName}`,
+                `../nodes/${nodeFileName}`
+              ];
+              for (const url of candidateUrls) {
+                try {
+                  const resp = await fetch(url);
+                  if (resp.ok) {
+                    const buf = await resp.arrayBuffer();
+                    const b64 = arrayBufferToBase64(buf);
+                    bundle = await invokeTauri('load_node_bundle_from_base64', {
+                      base64: b64,
+                      filename: nodeFileName
+                    });
+                    if (bundle) {
+                      zipBase64 = b64;
+                      break;
+                    }
+                  }
+                } catch (_) {}
+              }
             }
             if (!bundle) throw new Error('No custom node bundle, zip, or path available');
             await t.loadNodeBundle(bundle, false);
@@ -4506,6 +4545,23 @@ class SpatialStudio {
 
     this.ctx.clearRect(0, 0, w, h);
 
+    // Concentric Graduated Polar/Spatial Depth Reference Rings
+    const cx = w / 2;
+    const cy = h / 2;
+    const maxRadius = Math.min(w, h) * 0.46;
+    const ringFractions = [0.28, 0.56, 0.85];
+    this.ctx.save();
+    ringFractions.forEach((frac) => {
+      const radius = maxRadius * frac;
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+      this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.07)';
+      this.ctx.lineWidth = 1;
+      this.ctx.setLineDash([3, 5]);
+      this.ctx.stroke();
+    });
+    this.ctx.restore();
+
     if (this.isPlaying && this.audioCtx) {
       const t = this.audioCtx.currentTime;
       const secs = (t % 60).toFixed(1).padStart(4, '0');
@@ -4760,14 +4816,25 @@ class SpatialStudio {
         this.ctx.stroke();
       }
 
-      // Center Node Orb
+      // Center Node Orb with Flat Elevation Shadow
+      this.ctx.save();
+      this.ctx.shadowColor = this.isDark ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.45)';
+      this.ctx.shadowBlur = (this.activeDragNodeIndex === i || t.isRecordingMotion) ? 22 : 12;
+      this.ctx.shadowOffsetX = 0;
+      this.ctx.shadowOffsetY = (this.activeDragNodeIndex === i || t.isRecordingMotion) ? 8 : 4;
+
       this.ctx.beginPath();
       this.ctx.arc(pxX, pxY, nodeRadius, 0, 2 * Math.PI);
       this.ctx.fillStyle = t.color;
-      this.ctx.shadowColor = t.color;
-      this.ctx.shadowBlur = (this.activeDragNodeIndex === i || t.isRecordingMotion) ? 16 : 6;
       this.ctx.fill();
-      this.ctx.shadowBlur = 0;
+      this.ctx.restore();
+
+      // Tactile Specular Micro-Rim
+      this.ctx.beginPath();
+      this.ctx.arc(pxX, pxY, nodeRadius, 0, 2 * Math.PI);
+      this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.12)';
+      this.ctx.lineWidth = 1;
+      this.ctx.stroke();
 
       // Dedicated Gear Icon Badge on Canvas Node
       if (t.isCustomNode) {
