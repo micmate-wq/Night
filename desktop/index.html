@@ -133,11 +133,11 @@ body {
 }
 .btn-transport:hover {
   background: var(--accent-primary);
-  color: #FFF;
+  color: var(--bg-main);
 }
 .btn-transport.playing {
   background: var(--accent-primary);
-  color: #FFF;
+  color: var(--bg-main);
 }
 
 .btn-rec-master {
@@ -1256,7 +1256,7 @@ body {
       </select>
       <div class="modal-actions">
         <button class="header-btn" id="modal-cancel-btn">Cancel</button>
-        <button class="header-btn" id="modal-confirm-btn" style="background:var(--accent-primary);color:#FFF;">Connect Live In</button>
+        <button class="header-btn" id="modal-confirm-btn" style="background:var(--accent-primary);color:var(--bg-main);">Connect Live In</button>
       </div>
     </div>
   </div>
@@ -1279,10 +1279,20 @@ body {
        ========================================================================== -->
   <script>
 // Top-level reload shortcut for Tauri Desktop Webview
+function closeStudioAudioForUnload() {
+  try {
+    if (window.studio && typeof window.studio.closeAudioContext === 'function') {
+      window.studio.closeAudioContext(true);
+    }
+  } catch (e) {}
+}
 window.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && (e.key === 'r' || e.key === 'R' || e.code === 'KeyR')) {
     e.preventDefault();
-    window.location.reload();
+    closeStudioAudioForUnload();
+    const u = new URL(window.location.href);
+    u.searchParams.set('_r', String(Date.now()));
+    window.location.replace(u.toString());
   }
 }, true);
 
@@ -1520,6 +1530,9 @@ class AudioTrack {
     this.isCustomNode = false;
     this.customNodeBundle = null;
     this.customNodeDSP = null;
+    this.customNodeZipBase64 = null;
+    this._nodeTapeSource = null;
+    this._nodeTapeStarted = false;
 
     this.initDOM();
   }
@@ -1564,6 +1577,7 @@ class AudioTrack {
     this.fileInput.addEventListener('change', (e) => {
       if (e.target.files && e.target.files.length > 0) {
         this.loadAudioFiles(Array.from(e.target.files));
+        e.target.value = '';
       }
     });
 
@@ -1710,6 +1724,26 @@ class AudioTrack {
     this.updateAudioParamsFromPosition();
   }
 
+  resetWebAudioGraph() {
+    this.eqLowNode = null;
+    this.eqMidNode = null;
+    this.eqHighNode = null;
+    this.depthFilterNode = null;
+    this.reverbSendFilterNode = null;
+    this.reverbSendGain = null;
+    this.reverbConvolver = null;
+    this.reverbDampingFilter = null;
+    this.reverbPanNode = null;
+    this.gainNode = null;
+    this.trackSumNode = null;
+    this.stereoPanNode = null;
+    this.directPanGain = null;
+    this.pannerNode = null;
+    this.spatialGainNode = null;
+    this.spatializerNode = null;
+    this.bufferSource = null;
+  }
+
   initSpatializerWorklet(audioCtx) {
     if (this.spatializerNode) return;
     try {
@@ -1757,11 +1791,14 @@ class AudioTrack {
   }
 
   cleanupCustomNode() {
+    this._stopNodeTape();
+    this._stopInsertDry();
     if (this.customNodeDSP && typeof this.customNodeDSP.dispose === 'function') {
       try { this.customNodeDSP.dispose(); } catch(e){}
     }
     this.customNodeDSP = null;
     this.customNodeBundle = null;
+    this.customNodeZipBase64 = null;
     this.isCustomNode = false;
     if (this.nodeInspectBtn) this.nodeInspectBtn.style.display = 'none';
   }
@@ -1772,13 +1809,13 @@ class AudioTrack {
     this.cleanupCustomNode();
     this.stopNodeOnly();
     this.audioBuffer = null;
+    this._pcmCopy = null;
   }
 
   // --- LIVE INPUT (MIC / INSTRUMENT / DAW) ---
   async connectLiveInput(stream, deviceLabel = 'Microphone / Line In') {
-    this.studio.setupAudioContext();
+    await this.studio.ensureAudioRunning();
     const ctx = this.studio.audioCtx;
-    if (ctx && ctx.state === 'suspended') await ctx.resume();
 
     this.cleanupSources();
     this.isLiveIn = true;
@@ -1816,9 +1853,8 @@ class AudioTrack {
 
   // --- STREAM URL ---
   async promptStreamUrl() {
-    this.studio.setupAudioContext();
+    await this.studio.ensureAudioRunning();
     const ctx = this.studio.audioCtx;
-    if (ctx && ctx.state === 'suspended') await ctx.resume();
 
     const defaultUrl = this.streamUrl || '';
     const url = prompt(`Track ${this.index + 1} — Enter Live Audio Stream URL (e.g. http://server:8000/stream.mp3):`, defaultUrl);
@@ -1848,9 +1884,8 @@ class AudioTrack {
 
   async loadStreamUrl(url) {
     if (!url) return;
-    this.studio.setupAudioContext();
+    await this.studio.ensureAudioRunning();
     const ctx = this.studio.audioCtx;
-    if (ctx && ctx.state === 'suspended') await ctx.resume();
 
     this.cleanupSources();
     this.isStream = true;
@@ -1891,6 +1926,15 @@ class AudioTrack {
   // --- LOCAL FILE LOADING ---
   loadAudioFiles(files) {
     if (!files || files.length === 0) return;
+    const nodeFile = files.find((f) => {
+      const n = (f.name || '').toLowerCase();
+      return n.endsWith('.aethernode') || (n.endsWith('.zip') && !(f.type || '').startsWith('audio/'));
+    });
+    if (nodeFile) {
+      // Do not cleanupSources: that nulls audioBuffer and Mix has no tape to pass.
+      this.loadAudioFile(nodeFile);
+      return;
+    }
     this.cleanupSources();
     this.playlist = files;
     this.playlistIndex = 0;
@@ -1959,29 +2003,34 @@ class AudioTrack {
       this.statusEl.textContent = 'Unpacking node...';
       try {
         let bundle = null;
+        let zipBase64 = null;
         if (file.path) {
           try {
             bundle = await invokeTauri('load_node_bundle_from_path', { path: file.path });
+            try { zipBase64 = await invokeTauri('read_audio_file', { path: file.path }); } catch (e) {}
           } catch(e) {
             console.warn('Path unpack failed, trying base64 fallback:', e);
           }
         }
         if (!bundle) {
-          bundle = await new Promise((resolve, reject) => {
+          const loaded = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = async () => {
               try {
                 const base64Data = reader.result.split(',')[1];
                 const res = await invokeTauri('load_node_bundle_from_base64', { base64: base64Data, filename: file.name });
-                resolve(res);
+                resolve({ bundle: res, zipBase64: base64Data });
               } catch(e) { reject(e); }
             };
             reader.onerror = reject;
             reader.readAsDataURL(file);
           });
+          bundle = loaded && loaded.bundle;
+          if (loaded && loaded.zipBase64) zipBase64 = loaded.zipBase64;
         }
         if (bundle) {
           await this.loadNodeBundle(bundle);
+          if (zipBase64) this.customNodeZipBase64 = zipBase64;
           this.studio.showToast(`Loaded node: ${bundle.manifest.name || bundle.file_name}`, 'success');
           return;
         } else {
@@ -1999,9 +2048,8 @@ class AudioTrack {
     this.filePath = file.path || '';
     this.statusEl.textContent = 'Decoding...';
 
-    this.studio.setupAudioContext();
+    await this.studio.ensureAudioRunning();
     const ctx = this.studio.audioCtx;
-    if (ctx.state === 'suspended') await ctx.resume();
 
     this.stopNodeOnly();
     this.useMediaElement = false;
@@ -2057,21 +2105,22 @@ class AudioTrack {
     }
   }
 
-  async loadNodeBundle(bundle) {
+  async loadNodeBundle(bundle, autoOpenInspector = true) {
     if (!bundle || !bundle.manifest) return;
     this.nameEl.textContent = bundle.manifest.name || bundle.file_name || 'Aether Node';
     this.sampleName = bundle.manifest.name || bundle.file_name;
     this.filePath = bundle.file_path || '';
     this.statusEl.textContent = 'Node Ready';
 
-    this.studio.setupAudioContext();
+    await this.studio.ensureAudioRunning();
     const ctx = this.studio.audioCtx;
-    if (ctx.state === 'suspended') await ctx.resume();
 
     this.stopNodeOnly();
     this.useMediaElement = false;
     this.isLiveIn = false;
     this.isStream = false;
+    const insertNode = !!(bundle.manifest && Number(bundle.manifest.inputs) > 0);
+    const keepTape = insertNode ? this.audioBuffer : null;
     this.audioBuffer = null;
     this.playlist = [];
 
@@ -2106,6 +2155,8 @@ class AudioTrack {
           this.customNodeDSP = {
             workletNode,
             gainNode,
+            input: workletNode,
+            inputNode: workletNode,
             params: defaultParams,
             setParameter(paramId, value) {
               this.params[paramId] = value;
@@ -2138,34 +2189,129 @@ class AudioTrack {
           };
           this.customNodeDSP.connect(this.eqLowNode);
         } else {
-          const fn = new Function('window', 'module', 'exports', `${bundle.dsp_js}\nreturn (typeof GranularAtmosphericCloudDSP !== 'undefined' ? GranularAtmosphericCloudDSP : (typeof window !== 'undefined' ? (window.GranularAtmosphericCloudDSP || window.CustomNodeDSP) : null));`);
-          const DSPClass = fn(window, {}, {}) || window.GranularAtmosphericCloudDSP;
+          const classMatch = bundle.dsp_js.match(/class\s+(\w+DSP)\b/);
+          const className = classMatch ? classMatch[1] : 'CustomNodeDSP';
+          const fn = new Function('window', 'module', 'exports', bundle.dsp_js + '\nreturn (typeof ' + className + ' !== "undefined" ? ' + className + ' : (window && (window.' + className + ' || window.CustomNodeDSP))) ;');
+          const DSPClass = fn(window, {}, {}) || window.CustomNodeDSP || window[className];
           if (DSPClass) {
             this.customNodeDSP = new DSPClass();
             this.customNodeDSP.init(ctx);
             this.customNodeDSP.connect(this.eqLowNode);
+            const dsp = this.customNodeDSP;
+            if (dsp && typeof dsp.setParameter === 'function') {
+              const origSet = dsp.setParameter.bind(dsp);
+              const track = this;
+              dsp.setParameter = function(paramId, value) {
+                origSet(paramId, value);
+                if (paramId === 'mix') track._applyInsertMix(value);
+              };
+            }
+          }
+        }
+      }
+      // Insert-style nodes (manifest.inputs > 0 or type: effect) keep the track tape
+      // and feed it into the DSP. Generators (inputs === 0, e.g. granular) stay empty.
+      if (keepTape) {
+        this.audioBuffer = keepTape;
+        if (this.customNodeDSP) {
+          if (typeof this.customNodeDSP.injectAudioBuffer === 'function') {
+            this.customNodeDSP.injectAudioBuffer(keepTape);
+          } else if (this.customNodeDSP.input) {
+            this._armNodeTape(keepTape);
           }
         }
       }
       this.isCustomNode = true;
       this.isLoaded = true;
-      this.duration = Infinity;
+      this.duration = keepTape ? (keepTape.duration || 10) : Infinity;
       this.customNodeBundle = bundle;
       this.statusEl.textContent = '⚡ Aether Node Active';
       if (this.nodeInspectBtn) this.nodeInspectBtn.style.display = 'inline-block';
 
-      // Open interactive UI view
-      this.studio.openNodeInspector(this);
+      // Open interactive UI view if triggered by user action
+      if (autoOpenInspector) {
+        this.studio.openNodeInspector(this);
+      }
 
       if (this.studio.isPlaying) {
         this.play();
       }
-      this.studio.showToast(`✨ Loaded node: ${bundle.manifest.name}`, 'success');
+      if (autoOpenInspector) {
+        this.studio.showToast(`✨ Loaded node: ${bundle.manifest.name}`, 'success');
+      }
     } catch (err) {
+      if (keepTape && !this.audioBuffer) this.audioBuffer = keepTape;
       console.error('Failed to instantiate node DSP:', err);
       this.statusEl.textContent = 'Node DSP Error';
       this.studio.showToast(`Node DSP error: ${err.message || err}`, 'error');
     }
+  }
+
+  _armNodeTape(buffer) {
+    this._stopNodeTape();
+    const ctx = this.studio.audioCtx;
+    if (!ctx || !buffer || !this.customNodeDSP || !this.customNodeDSP.input) return;
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.loop = true;
+    src.connect(this.customNodeDSP.input);
+    this._nodeTapeSource = src;
+    this._nodeTapeStarted = false;
+  }
+
+  _stopNodeTape() {
+    if (this._nodeTapeSource) {
+      try { this._nodeTapeSource.onended = null; } catch(e) {}
+      try { this._nodeTapeSource.stop(); } catch(e) {}
+      try { this._nodeTapeSource.disconnect(); } catch(e) {}
+      this._nodeTapeSource = null;
+    }
+    this._nodeTapeStarted = false;
+  }
+
+  _stopInsertDry() {
+    if (this._insertDrySource) {
+      try { this._insertDrySource.stop(); } catch(e) {}
+      try { this._insertDrySource.disconnect(); } catch(e) {}
+      this._insertDrySource = null;
+    }
+    if (this._insertDryGain) {
+      try { this._insertDryGain.disconnect(); } catch(e) {}
+      this._insertDryGain = null;
+    }
+  }
+
+  _mixDryWet(m) {
+    const x = Math.max(0, Math.min(1, Number(m) || 0));
+    if (x >= 0.995) return { dry: 0, wet: 1 };
+    if (x <= 0.005) return { dry: 1, wet: 0 };
+    return { dry: 1 - x, wet: x };
+  }
+
+  _applyInsertMix(m) {
+    const { dry } = this._mixDryWet(m);
+    const ctx = this.studio && this.studio.audioCtx;
+    if (this._insertDryGain && ctx) {
+      this._insertDryGain.gain.cancelScheduledValues(ctx.currentTime);
+      this._insertDryGain.gain.setValueAtTime(dry, ctx.currentTime);
+    }
+  }
+
+  _armInsertDry(buffer) {
+    this._stopInsertDry();
+    const ctx = this.studio.audioCtx;
+    if (!ctx || !buffer || !this.eqLowNode) return;
+    this._insertDryGain = ctx.createGain();
+    const mix = (this.customNodeDSP && this.customNodeDSP.params && this.customNodeDSP.params.mix != null)
+      ? this.customNodeDSP.params.mix : 0.62;
+    this._insertDryGain.gain.setValueAtTime(this._mixDryWet(mix).dry, ctx.currentTime);
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.loop = true;
+    src.connect(this._insertDryGain);
+    this._insertDryGain.connect(this.eqLowNode);
+    try { src.start(0); } catch (e) {}
+    this._insertDrySource = src;
   }
 
   play(startTimeOffset = 0) {
@@ -2178,6 +2324,20 @@ class AudioTrack {
       if (typeof this.customNodeDSP.start === 'function') {
         this.customNodeDSP.start();
       }
+      if (this.audioBuffer && this.customNodeDSP) {
+        if (typeof this.customNodeDSP.injectAudioBuffer === 'function') {
+          if (!this.customNodeDSP._tapeSource) {
+            this.customNodeDSP.injectAudioBuffer(this.audioBuffer);
+          }
+        } else if (this.customNodeDSP.input) {
+          if (this._nodeTapeStarted) this._stopNodeTape();
+          if (!this._nodeTapeSource) this._armNodeTape(this.audioBuffer);
+          if (this._nodeTapeSource && !this._nodeTapeStarted) {
+            try { this._nodeTapeSource.start(0); this._nodeTapeStarted = true; } catch(e) {}
+          }
+        }
+        this._armInsertDry(this.audioBuffer);
+      }
       this.isPlaying = true;
       return;
     }
@@ -2186,6 +2346,8 @@ class AudioTrack {
       this.isPlaying = true;
       return;
     }
+
+    if (!ctx) return;
 
     if (this.isStream && this.streamAudio) {
       this.streamAudio.play().catch(e => console.warn('Stream play error:', e));
@@ -2225,6 +2387,8 @@ class AudioTrack {
   }
 
   stopNodeOnly() {
+    this._stopNodeTape();
+    this._stopInsertDry();
     if (this.isCustomNode && this.customNodeDSP) {
       if (typeof this.customNodeDSP.stop === 'function') {
         this.customNodeDSP.stop();
@@ -2553,6 +2717,9 @@ async function invokeTauri(cmd, args = {}) {
     if (window.__TAURI__ && window.__TAURI__.core && typeof window.__TAURI__.core.invoke === 'function') {
       return await window.__TAURI__.core.invoke(cmd, args);
     }
+    if (window.__TAURI__ && typeof window.__TAURI__.invoke === 'function') {
+      return await window.__TAURI__.invoke(cmd, args);
+    }
     if (window.__TAURI_INTERNALS__ && typeof window.__TAURI_INTERNALS__.invoke === 'function') {
       return await window.__TAURI_INTERNALS__.invoke(cmd, args);
     }
@@ -2637,6 +2804,10 @@ async function base64ToAudioBuffer(base64Str, audioCtx) {
 class SpatialStudio {
   constructor() {
     this.audioCtx = null;
+    this._audioRecovering = false;
+    this._audioUnloading = false;
+    this._audioHasRun = false;
+    this._lastAudioRebuildAt = 0;
     this.masterGain = null;
     this.masterLimiter = null;
     this.isPlaying = false;
@@ -2765,6 +2936,7 @@ class SpatialStudio {
           if (typeof this.activeInspectorTrack.customNodeDSP.setParameter === 'function') {
             this.activeInspectorTrack.customNodeDSP.setParameter(paramId, value);
           }
+          if (paramId === 'mix') this.activeInspectorTrack._applyInsertMix(value);
         }
       }
     });
@@ -2856,13 +3028,29 @@ class SpatialStudio {
     window.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'r') {
         e.preventDefault();
-        window.location.reload();
+        this.closeAudioContext(true);
+        const u = new URL(window.location.href);
+        u.searchParams.set('_r', String(Date.now()));
+        window.location.replace(u.toString());
       }
-      if (e.code === 'Space' && e.target === document.body) {
+      if (e.code === 'Space') {
+        const tag = (e.target && e.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
         e.preventDefault();
         this.toggleMasterPlay();
       }
     });
+
+    document.addEventListener('visibilitychange', () => {
+      // Don't resume here: WKWebView rejects resume() without a user gesture.
+    });
+    window.addEventListener('pagehide', () => this.closeAudioContext(false));
+    window.addEventListener('beforeunload', () => this.closeAudioContext(true));
+    window.addEventListener('pointerdown', () => {
+      if (this.audioCtx && this.audioCtx.state !== 'running' && this.audioCtx.state !== 'closed') {
+        this.ensureAudioRunning();
+      }
+    }, true);
 
     // Clear any stale cached sessions from localStorage to ensure pristine default diamond opening layout
     try {
@@ -2882,6 +3070,10 @@ class SpatialStudio {
   }
 
   setupAudioContext() {
+    if (this.audioCtx && (this.audioCtx.state === 'closed' || this.audioCtx.state === 'interrupted')) {
+      try { this.audioCtx.close(); } catch (e) {}
+      this.audioCtx = null;
+    }
     if (this.audioCtx) return;
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -2921,11 +3113,18 @@ class SpatialStudio {
 
     this.recorderZeroGain = this.audioCtx.createGain();
     this.recorderZeroGain.gain.value = 0.0;
-    this.masterGain.connect(this.masterRecorderNode);
-    this.masterRecorderNode.connect(this.recorderZeroGain);
-    this.recorderZeroGain.connect(this.audioCtx.destination);
+    // Do not connect ScriptProcessor until REC MASTER. WKWebView parks it after idle and the whole graph dies.
+    this._masterRecorderArmed = false;
 
     this.tracks.forEach(track => track.setupWebAudioNodes(this.audioCtx));
+
+    this.audioCtx.addEventListener('statechange', () => {
+      if (!this.audioCtx) return;
+      if (this.audioCtx.state === 'running') this._audioHasRun = true;
+      if (this._audioRecovering || this._audioUnloading) return;
+      if (this.audioCtx.state === 'running' || this.audioCtx.state === 'closed') return;
+      this.ensureAudioRunning();
+    });
 
     // Load custom Rust DSP spatializer
     this.audioCtx.audioWorklet.addModule('/desktop/spatializer-worklet.js')
@@ -2938,6 +3137,236 @@ class SpatialStudio {
         });
       })
       .catch(e => console.error('Failed to load spatializer worklet:', e));
+  }
+
+  closeAudioContext(unloading = false) {
+    if (unloading) this._audioUnloading = true;
+    if (this.audioCtx && this.audioCtx.state !== 'closed') {
+      if (!unloading) this.snapshotTrackPcm();
+      try { this.audioCtx.close(); } catch (e) {}
+    }
+    this.audioCtx = null;
+  }
+
+  snapshotTrackPcm() {
+    this.tracks.forEach(t => {
+      if (!t.audioBuffer) return;
+      try {
+        const channels = [];
+        for (let c = 0; c < t.audioBuffer.numberOfChannels; c++) {
+          channels.push(new Float32Array(t.audioBuffer.getChannelData(c)));
+        }
+        t._pcmCopy = {
+          channels,
+          length: t.audioBuffer.length,
+          sampleRate: t.audioBuffer.sampleRate,
+          numberOfChannels: t.audioBuffer.numberOfChannels
+        };
+      } catch (e) {}
+    });
+  }
+
+  async ensureAudioRunning() {
+    if (this._audioRecovering || this._audioUnloading) return;
+
+    if ((this.audioCtx && this.audioCtx.state === 'closed') || (!this.audioCtx && this._audioHasRun)) {
+      await this.rebuildAudioGraph();
+      return;
+    }
+
+    this.setupAudioContext();
+    if (!this.audioCtx) return;
+    if (this.audioCtx.state === 'running') {
+      this._audioHasRun = true;
+      try { window.__aetherClockBpm = this.getClockBpm(); } catch (e) {}
+      return;
+    }
+
+    try { await this.audioCtx.resume(); } catch (e) {}
+    if (!this.audioCtx || this.audioCtx.state === 'running') {
+      if (this.audioCtx && this.audioCtx.state === 'running') this._audioHasRun = true;
+      return;
+    }
+
+    const state = this.audioCtx.state;
+    const cooldownOk = !this._lastAudioRebuildAt || (Date.now() - this._lastAudioRebuildAt > 1500);
+    const shouldRebuild = (state === 'interrupted' || state === 'closed') || (this._audioHasRun && cooldownOk);
+    if (shouldRebuild) {
+      await this.rebuildAudioGraph();
+      if (this.audioCtx && this.audioCtx.state !== 'running') {
+        try { await this.audioCtx.resume(); } catch (e) {}
+      }
+      if (this.audioCtx && this.audioCtx.state === 'running') this._audioHasRun = true;
+    }
+  }
+
+  async rebuildAudioGraph() {
+    if (this._audioRecovering || this._audioUnloading) return;
+    this._audioRecovering = true;
+    this._lastAudioRebuildAt = Date.now();
+    try {
+      const wasMasterPlaying = this.isPlaying;
+      this.snapshotTrackPcm();
+      const snapshots = this.tracks.map(t => {
+        let bufferData = t._pcmCopy || null;
+        if (!bufferData && t.audioBuffer) {
+          try {
+            const channels = [];
+            for (let c = 0; c < t.audioBuffer.numberOfChannels; c++) {
+              channels.push(new Float32Array(t.audioBuffer.getChannelData(c)));
+            }
+            bufferData = {
+              channels,
+              length: t.audioBuffer.length,
+              sampleRate: t.audioBuffer.sampleRate,
+              numberOfChannels: t.audioBuffer.numberOfChannels
+            };
+            t._pcmCopy = bufferData;
+          } catch (e) {}
+        }
+        const customParams = (t.customNodeDSP && t.customNodeDSP.params) ? { ...t.customNodeDSP.params } : null;
+        return {
+          wasPlaying: !!t.isPlaying,
+          isCustomNode: !!t.isCustomNode,
+          customNodeBundle: t.customNodeBundle,
+          customNodeZipBase64: t.customNodeZipBase64,
+          customParams,
+          isLiveIn: !!t.isLiveIn,
+          liveStream: t.liveStream,
+          isStream: !!t.isStream,
+          streamUrl: t.streamUrl || '',
+          useMediaElement: !!t.useMediaElement,
+          htmlSrc: t.htmlAudio ? t.htmlAudio.src : null,
+          htmlTime: t.htmlAudio ? t.htmlAudio.currentTime : 0,
+          bufferData,
+          duration: t.duration,
+          isLoaded: !!t.isLoaded
+        };
+      });
+
+      this.tracks.forEach(t => {
+        if (t.bufferSource) {
+          t.bufferSource.onended = null;
+          try { t.bufferSource.stop(); } catch (e) {}
+          try { t.bufferSource.disconnect(); } catch (e) {}
+          t.bufferSource = null;
+        }
+        if (t.customNodeDSP && typeof t.customNodeDSP.dispose === 'function') {
+          try { t.customNodeDSP.dispose(); } catch (e) {}
+        }
+        t.customNodeDSP = null;
+        if (t.liveMediaSource) {
+          try { t.liveMediaSource.disconnect(); } catch (e) {}
+          t.liveMediaSource = null;
+        }
+        if (t.streamMediaSource) {
+          try { t.streamMediaSource.disconnect(); } catch (e) {}
+          t.streamMediaSource = null;
+        }
+        if (t.mediaElementSource) {
+          try { t.mediaElementSource.disconnect(); } catch (e) {}
+          t.mediaElementSource = null;
+        }
+        if (t.htmlAudio) {
+          try { t.htmlAudio.pause(); } catch (e) {}
+        }
+        if (t.streamAudio) {
+          try { t.streamAudio.pause(); } catch (e) {}
+        }
+        t.resetWebAudioGraph();
+      });
+
+      const oldCtx = this.audioCtx;
+      this.audioCtx = null;
+      this.masterGain = null;
+      this.masterLimiter = null;
+      this.masterRecorderNode = null;
+      this.recorderZeroGain = null;
+      this.reverbBuffer = null;
+      this.workletReady = false;
+      if (oldCtx && oldCtx.state !== 'closed') {
+        try { await oldCtx.close(); } catch (e) {}
+      }
+
+      this.setupAudioContext();
+      if (this.audioCtx && this.audioCtx.state !== 'running') {
+        try { await this.audioCtx.resume(); } catch (e) {}
+      }
+      const ctx = this.audioCtx;
+      if (!ctx) return;
+
+      for (let i = 0; i < this.tracks.length; i++) {
+        const t = this.tracks[i];
+        const s = snapshots[i];
+        if (!s) continue;
+
+        if (s.bufferData) {
+          try {
+            const buf = ctx.createBuffer(s.bufferData.numberOfChannels, s.bufferData.length, s.bufferData.sampleRate);
+            for (let c = 0; c < s.bufferData.numberOfChannels; c++) {
+              buf.copyToChannel(s.bufferData.channels[c], c);
+            }
+            t.audioBuffer = buf;
+            t.duration = s.duration;
+            t.isLoaded = true;
+          } catch (e) {
+            console.warn('Failed to restore audio buffer after rebuild', e);
+          }
+        }
+
+        if (s.isCustomNode && s.customNodeBundle) {
+          await t.loadNodeBundle(s.customNodeBundle, false);
+          if (s.customNodeZipBase64) t.customNodeZipBase64 = s.customNodeZipBase64;
+          if (s.customParams && t.customNodeDSP) {
+            for (const [paramId, val] of Object.entries(s.customParams)) {
+              if (typeof t.customNodeDSP.setParameter === 'function') {
+                t.customNodeDSP.setParameter(paramId, val);
+              } else if (t.customNodeDSP.params) {
+                t.customNodeDSP.params[paramId] = val;
+              }
+            }
+          }
+          if (!wasMasterPlaying && t.customNodeDSP && typeof t.customNodeDSP.stop === 'function') {
+            t.customNodeDSP.stop();
+          }
+        } else if (s.isLiveIn && s.liveStream) {
+          try {
+            t.liveStream = s.liveStream;
+            t.isLiveIn = true;
+            t.liveMediaSource = ctx.createMediaStreamSource(s.liveStream);
+            t.liveMediaSource.connect(t.eqLowNode);
+            t.isLoaded = true;
+          } catch (e) {
+            console.warn('Failed to reattach live input after rebuild', e);
+          }
+        } else if (s.isStream && s.streamUrl) {
+          await t.loadStreamUrl(s.streamUrl);
+        } else if (s.useMediaElement && s.htmlSrc) {
+          try {
+            t.htmlAudio = new Audio();
+            t.mediaElementSource = ctx.createMediaElementSource(t.htmlAudio);
+            t.mediaElementSource.connect(t.eqLowNode);
+            t.htmlAudio.src = s.htmlSrc;
+            t.useMediaElement = true;
+            t.isLoaded = s.isLoaded;
+            t.duration = s.duration;
+            if (s.htmlTime) t.htmlAudio.currentTime = s.htmlTime;
+          } catch (e) {
+            console.warn('Failed to reattach media element after rebuild', e);
+          }
+        }
+
+        t.updateAudioParamsFromPosition();
+      }
+
+      this.updateSoloState();
+
+      if (wasMasterPlaying) {
+        this.playMaster();
+      }
+    } finally {
+      this._audioRecovering = false;
+    }
   }
 
   initWebSocket() {
@@ -2979,8 +3408,11 @@ class SpatialStudio {
       };
 
       ws.onclose = () => {
-        console.log('🔌 WebSocket disconnected. Retrying in 3s...');
-        setTimeout(() => this.initWebSocket(), 3000);
+        if (!this._wsDisconnectLogged) {
+          this._wsDisconnectLogged = true;
+          console.log('🔌 WebSocket disconnected (server optional). Retrying in background.');
+        }
+        setTimeout(() => this.initWebSocket(), 8000);
       };
 
       this.ws = ws;
@@ -3160,8 +3592,7 @@ class SpatialStudio {
 
   // --- MASTER LIVE RECORDING TO WAV ---
   async toggleMasterRecording() {
-    this.setupAudioContext();
-    if (this.audioCtx.state === 'suspended') await this.audioCtx.resume();
+    await this.ensureAudioRunning();
 
     if (this.isRecordingMaster) {
       this.stopMasterRecording();
@@ -3170,11 +3601,30 @@ class SpatialStudio {
     }
   }
 
+  _armMasterRecorder() {
+    if (this._masterRecorderArmed || !this.masterGain || !this.masterRecorderNode || !this.recorderZeroGain || !this.audioCtx) return;
+    try {
+      this.masterGain.connect(this.masterRecorderNode);
+      this.masterRecorderNode.connect(this.recorderZeroGain);
+      this.recorderZeroGain.connect(this.audioCtx.destination);
+      this._masterRecorderArmed = true;
+    } catch (e) {}
+  }
+
+  _disarmMasterRecorder() {
+    if (!this._masterRecorderArmed) return;
+    try { this.masterGain.disconnect(this.masterRecorderNode); } catch (e) {}
+    try { this.masterRecorderNode.disconnect(); } catch (e) {}
+    try { this.recorderZeroGain.disconnect(); } catch (e) {}
+    this._masterRecorderArmed = false;
+  }
+
   startMasterRecording() {
     this.isRecordingMaster = true;
     this.masterRecChunksL = [];
     this.masterRecChunksR = [];
     this.masterRecStartTime = performance.now();
+    this._armMasterRecorder();
 
     this.masterRecBtn.classList.add('recording');
     this.recBtnText.textContent = 'STOP & SAVE WAV';
@@ -3185,6 +3635,7 @@ class SpatialStudio {
 
   stopMasterRecording() {
     this.isRecordingMaster = false;
+    this._disarmMasterRecorder();
     this.masterRecBtn.classList.remove('recording');
     this.recBtnText.textContent = 'REC MASTER';
 
@@ -3261,7 +3712,15 @@ class SpatialStudio {
     const tracksData = [];
     for (const t of this.tracks) {
       let sampleData = null;
-      if (t.audioBuffer) {
+      let customNodeZipBase64 = t.customNodeZipBase64 || null;
+      if (t.isCustomNode) {
+        if (!customNodeZipBase64 && t.filePath) {
+          try {
+            customNodeZipBase64 = await invokeTauri('read_audio_file', { path: t.filePath });
+            if (customNodeZipBase64) t.customNodeZipBase64 = customNodeZipBase64;
+          } catch (e) {}
+        }
+      } else if (t.audioBuffer) {
         try {
           sampleData = await audioBufferToBase64(t.audioBuffer);
         } catch (e) {
@@ -3274,6 +3733,11 @@ class SpatialStudio {
         sampleName: t.sampleName || t.name,
         filePath: t.filePath || '',
         sampleData: sampleData,
+        isCustomNode: !!t.isCustomNode,
+        customNodeBundle: t.customNodeBundle || null,
+        customNodeParams: (t.customNodeDSP && t.customNodeDSP.params) ? { ...t.customNodeDSP.params } : null,
+        customNodeZipBase64: customNodeZipBase64,
+        isLiveIn: !!t.isLiveIn,
         x: t.x,
         y: t.y,
         z: t.z,
@@ -3428,9 +3892,8 @@ class SpatialStudio {
     // 1. Halt active audio & canvas engines
     this.stopMaster();
 
-    this.setupAudioContext();
+    await this.ensureAudioRunning();
     const ctx = this.audioCtx;
-    if (ctx && ctx.state === 'suspended') await ctx.resume();
 
     // 2. Display loading state in UI
     this.showToast('⏳ Hydrating project & loading audio samples...', 'info');
@@ -3509,62 +3972,115 @@ class SpatialStudio {
           }
         }
 
-        // Asynchronous Audio Sample Buffer Loading
-        try {
-          if (saved.sampleData) {
-            // Case A: Embedded Base64 WAV sample data
-            const decodedBuffer = await base64ToAudioBuffer(saved.sampleData, ctx);
-            t.audioBuffer = decodedBuffer;
-            t.duration = decodedBuffer.duration;
-            t.isLoaded = true;
-            t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
-          } else if (saved.filePath) {
-            // Case B: Local disk file path via Tauri backend read
-            let loaded = false;
-            try {
-              const base64Str = await invokeTauri('read_audio_file', { path: saved.filePath });
-              if (base64Str) {
-                const decodedBuffer = await base64ToAudioBuffer(base64Str, ctx);
-                t.audioBuffer = decodedBuffer;
-                t.duration = decodedBuffer.duration;
-                t.isLoaded = true;
-                t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
-                loaded = true;
-              }
-            } catch (fsErr) {
-              console.warn(`Could not read audio file directly via Tauri for track ${idx + 1}:`, fsErr);
-            }
-
-            // Fallback: Web fetch if it's a URL or server path
-            if (!loaded) {
+        // Check if Track is a Custom Node or Audio File/Stream
+        const pathLooksLikeNode = (saved.filePath || '').toLowerCase().endsWith('.aethernode');
+        const wantsCustomNode = !!(saved.isCustomNode || saved.customNodeBundle || saved.customNodeZipBase64 || pathLooksLikeNode);
+        if (wantsCustomNode) {
+          try {
+            let bundle = null;
+            let zipBase64 = saved.customNodeZipBase64 || null;
+            if (zipBase64) {
               try {
-                const resp = await fetch(saved.filePath);
-                if (resp.ok) {
-                  const arrBuf = await resp.arrayBuffer();
-                  const decoded = await ctx.decodeAudioData(arrBuf);
-                  t.audioBuffer = decoded;
-                  t.duration = decoded.duration;
+                bundle = await invokeTauri('load_node_bundle_from_base64', {
+                  base64: zipBase64,
+                  filename: saved.sampleName || 'custom.aethernode'
+                });
+              } catch (zipErr) {
+                console.warn('Session zip unpack failed for track ' + (idx + 1) + ':', zipErr);
+              }
+            }
+            if (!bundle && pathLooksLikeNode) {
+              try {
+                bundle = await invokeTauri('load_node_bundle_from_path', { path: saved.filePath });
+                if (!zipBase64) {
+                  try { zipBase64 = await invokeTauri('read_audio_file', { path: saved.filePath }); } catch (e) {}
+                }
+              } catch (pathErr) {
+                console.warn('Session path unpack failed for track ' + (idx + 1) + ':', pathErr);
+              }
+            }
+            if (!bundle && saved.customNodeBundle) {
+              bundle = saved.customNodeBundle;
+            }
+            if (!bundle) throw new Error('No custom node bundle, zip, or path available');
+            await t.loadNodeBundle(bundle, false);
+            if (zipBase64) t.customNodeZipBase64 = zipBase64;
+            if (saved.customNodeParams && t.customNodeDSP) {
+              for (const [paramId, val] of Object.entries(saved.customNodeParams)) {
+                if (typeof t.customNodeDSP.setParameter === 'function') {
+                  t.customNodeDSP.setParameter(paramId, val);
+                } else if (t.customNodeDSP.params) {
+                  t.customNodeDSP.params[paramId] = val;
+                }
+              }
+            }
+            if (!this.isPlaying && t.customNodeDSP && typeof t.customNodeDSP.stop === 'function') {
+              t.customNodeDSP.stop();
+            }
+            t.isLoaded = true;
+            t.statusEl.textContent = '⚡ Aether Node Active';
+          } catch (nodeErr) {
+            console.error('Error hydrating custom node on track ' + (idx + 1) + ':', nodeErr);
+            t.statusEl.textContent = 'Node Load Error';
+          }
+        } else {
+          // Asynchronous Audio Sample Buffer Loading
+          try {
+            if (saved.sampleData) {
+              // Case A: Embedded Base64 WAV sample data
+              const decodedBuffer = await base64ToAudioBuffer(saved.sampleData, ctx);
+              t.audioBuffer = decodedBuffer;
+              t.duration = decodedBuffer.duration;
+              t.isLoaded = true;
+              t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
+            } else if (saved.filePath) {
+              // Case B: Local disk file path via Tauri backend read
+              let loaded = false;
+              try {
+                const base64Str = await invokeTauri('read_audio_file', { path: saved.filePath });
+                if (base64Str) {
+                  const decodedBuffer = await base64ToAudioBuffer(base64Str, ctx);
+                  t.audioBuffer = decodedBuffer;
+                  t.duration = decodedBuffer.duration;
                   t.isLoaded = true;
                   t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
                   loaded = true;
                 }
-              } catch (fetchErr) {
-                console.warn(`Could not fetch audio file for track ${idx + 1}:`, fetchErr);
+              } catch (fsErr) {
+                console.warn(`Could not read audio file directly via Tauri for track ${idx + 1}:`, fsErr);
               }
-            }
 
-            if (!loaded) {
-              t.statusEl.textContent = 'Sample missing';
+              // Fallback: Web fetch if it's a URL or server path
+              if (!loaded) {
+                try {
+                  const resp = await fetch(saved.filePath);
+                  if (resp.ok) {
+                    const arrBuf = await resp.arrayBuffer();
+                    const decoded = await ctx.decodeAudioData(arrBuf);
+                    t.audioBuffer = decoded;
+                    t.duration = decoded.duration;
+                    t.isLoaded = true;
+                    t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
+                    loaded = true;
+                  }
+                } catch (fetchErr) {
+                  console.warn(`Could not fetch audio file for track ${idx + 1}:`, fetchErr);
+                }
+              }
+
+              if (!loaded) {
+                t.statusEl.textContent = 'Sample missing';
+              }
+            } else if (saved.isStream && saved.streamUrl) {
+              // Case C: Live stream URL
+              t.loadStreamUrl(saved.streamUrl);
+            } else {
+              t.statusEl.textContent = 'No file loaded';
             }
-          } else if (saved.isStream && saved.streamUrl) {
-            // Case C: Live stream URL
-            t.loadStreamUrl(saved.streamUrl);
-          } else {
-            t.statusEl.textContent = 'No file loaded';
+          } catch (sampleErr) {
+            console.error(`Error loading sample for track ${idx + 1}:`, sampleErr);
+            t.statusEl.textContent = 'Decode error';
           }
-        } catch (sampleErr) {
-          console.error(`Error loading sample for track ${idx + 1}:`, sampleErr);
-          t.statusEl.textContent = 'Decode error';
         }
 
         // Re-calculate DSP spatial panning & filter nodes
@@ -3580,8 +4096,13 @@ class SpatialStudio {
 
   // --- MASTER PLAYBACK ---
   async toggleMasterPlay() {
-    this.setupAudioContext();
-    if (this.audioCtx.state === 'suspended') await this.audioCtx.resume();
+    const ctxDead = !this.audioCtx || this.audioCtx.state !== 'running';
+    await this.ensureAudioRunning();
+
+    if (ctxDead && this.isPlaying) {
+      this.playMaster();
+      return;
+    }
 
     if (this.isPlaying) this.pauseMaster();
     else this.playMaster();
@@ -3632,6 +4153,26 @@ class SpatialStudio {
     return this.audioCtx ? this.audioCtx.currentTime : 0;
   }
 
+  getClockBpm() {
+    if (!this.tracks) return 120;
+    for (let i = 0; i < this.tracks.length; i++) {
+      const p = this.tracks[i].customNodeDSP && this.tracks[i].customNodeDSP.params;
+      if (!p || p.bpm == null) continue;
+      const b = Number(p.bpm);
+      const r = p.rate;
+      if (!(b >= 40 && b <= 240)) continue;
+      if (r != null && Number(r) <= 1.5) continue; // follower (Halo copies bpm, rate is 0..1)
+      return Math.max(60, Math.min(180, b));
+    }
+    for (let i = 0; i < this.tracks.length; i++) {
+      const p = this.tracks[i].customNodeDSP && this.tracks[i].customNodeDSP.params;
+      if (!p || p.rate == null) continue;
+      const r = Number(p.rate);
+      if (r >= 60 && r <= 180) return r;
+    }
+    return 120;
+  }
+
   createReverbBuffer(audioCtx, duration = 1.2, decay = 1.2) {
     const sampleRate = audioCtx.sampleRate;
     const length = Math.floor(sampleRate * duration);
@@ -3672,12 +4213,11 @@ class SpatialStudio {
 
   // --- SYNTHETIC DEMO STEMS ---
   async loadDemoStems() {
-    this.setupAudioContext();
-    if (this.audioCtx.state === 'suspended') await this.audioCtx.resume();
+    await this.ensureAudioRunning();
 
     const sampleRate = this.audioCtx.sampleRate;
     const duration = 4.0;
-    const numFrames = sampleRate * duration;
+    const numFrames = Math.floor(sampleRate * duration);
 
     for (let trackIdx = 0; trackIdx < 4; trackIdx++) {
       const buffer = this.audioCtx.createBuffer(2, numFrames, sampleRate);
@@ -3953,6 +4493,7 @@ class SpatialStudio {
   startRenderLoop() {
     const render = () => {
       requestAnimationFrame(render);
+      try { window.__aetherClockBpm = this.getClockBpm(); } catch (e) {}
       this.tracks.forEach(t => t.updateMotionPlayback());
       this.drawArena();
     };
@@ -4088,8 +4629,21 @@ class SpatialStudio {
         this.ctx.shadowBlur = 0;
         this.ctx.globalAlpha = 1.0;
       } else if (animType === 'pulse' && t.isLoaded && (t.isPlaying || progress > 0)) {
-        const nowMs = performance.now();
-        const pulse = (Math.sin(nowMs * 0.006) + 1.0) * 0.5;
+        const dsp = t.customNodeDSP;
+        const params = dsp && dsp.params;
+        const rawBpm = params && (params.bpm != null ? params.bpm : params.rate);
+        const bpm = Math.max(40, Math.min(240, Number(rawBpm) || 120));
+        let beatFrac;
+        if (dsp && dsp.ctx && typeof dsp.nextStepTime === 'number' && typeof dsp.step === 'number') {
+          const stepDur = (typeof dsp._stepDur === 'function') ? dsp._stepDur() : (60 / bpm / 4);
+          const ahead = (dsp.nextStepTime - dsp.ctx.currentTime) / Math.max(1e-4, stepDur);
+          let pos16 = dsp.step - ahead;
+          pos16 = ((pos16 % 16) + 16) % 16;
+          beatFrac = (pos16 / 4) % 1;
+        } else {
+          beatFrac = ((performance.now() / 1000) * (bpm / 60)) % 1;
+        }
+        const pulse = Math.pow(1 - beatFrac, 2.2);
         const currentRadius = ringRadius + (pulse * 8);
         this.ctx.beginPath();
         this.ctx.arc(pxX, pxY, currentRadius, 0, 2 * Math.PI);
@@ -4099,6 +4653,100 @@ class SpatialStudio {
         this.ctx.shadowColor = t.color;
         this.ctx.shadowBlur = 10;
         this.ctx.stroke();
+        this.ctx.shadowBlur = 0;
+        this.ctx.globalAlpha = 1.0;
+      } else if (animType === 'halo' && t.isLoaded && (t.isPlaying || progress > 0)) {
+        const dsp = t.customNodeDSP;
+        const params = (dsp && dsp.params) || {};
+        const zoneN = Number(params.zone);
+        const zone = Number.isFinite(zoneN) ? Math.max(0, Math.min(1, zoneN)) : 0;
+        const zoneF = zone * 7;
+        const repeatsN = Number(params.repeats);
+        const repeats = Number.isFinite(repeatsN) ? Math.max(0, Math.min(1, repeatsN)) : 0.55;
+        const holdOn = (Number(params.hold) || 0) > 0.5;
+        const rateN = Number(params.rate);
+        const rate = Number.isFinite(rateN) ? Math.max(0, Math.min(1, rateN)) : 0.18;
+        let bloom = 0;
+        if (!holdOn) {
+          if (dsp && dsp.ctx && typeof dsp.ctx.currentTime === 'number' && dsp._loopTime) {
+            const T = Math.max(0.004, Number(dsp._loopTime) || 1);
+            const phase = (dsp.ctx.currentTime / T) % 1;
+            bloom = 0.5 + 0.5 * Math.sin(phase * Math.PI * 2);
+          } else {
+            const period = 0.25 + (1 - rate) * 7.75;
+            const phase = ((performance.now() / 1000) / period) % 1;
+            bloom = 0.5 + 0.5 * Math.sin(phase * Math.PI * 2);
+          }
+        }
+        for (let j = 0; j < 8; j++) {
+          const nest = (7 - j) / 7;
+          const rad = ringRadius + 3 + nest * 18 + (holdOn ? 0 : bloom * (2 + nest * 4));
+          const dist = Math.abs(j - zoneF);
+          const focus = Math.max(0, 1 - dist * 0.7);
+          const alpha = (0.07 + focus * 0.5) * (0.55 + repeats * 0.45);
+          this.ctx.beginPath();
+          this.ctx.arc(pxX, pxY, rad, 0, 2 * Math.PI);
+          this.ctx.strokeStyle = t.color;
+          this.ctx.globalAlpha = alpha;
+          this.ctx.lineWidth = 0.7 + focus * 2.4;
+          this.ctx.stroke();
+        }
+        const ghosts = Math.round(repeats * 3);
+        for (let g = 0; g < ghosts; g++) {
+          const nest = (7 - zoneF) / 7;
+          const rad = ringRadius + 3 + nest * 18 + 6 + g * 5 + (holdOn ? 0 : bloom * 3);
+          this.ctx.beginPath();
+          this.ctx.arc(pxX, pxY, rad, 0, 2 * Math.PI);
+          this.ctx.strokeStyle = t.color;
+          this.ctx.globalAlpha = 0.05 + repeats * 0.07;
+          this.ctx.lineWidth = 1;
+          this.ctx.stroke();
+        }
+        this.ctx.globalAlpha = 1.0;
+      } else if (animType === 'glow_random' && t.isLoaded && (t.isPlaying || progress > 0)) {
+        const nowMs = performance.now();
+        const numSparks = 6;
+        for (let j = 0; j < numSparks; j++) {
+          const sparkAngle = (j / numSparks) * Math.PI * 2 + Math.sin(nowMs * 0.005 + j * 2.3) * 0.5;
+          const sparkDist = ringRadius + 4 + (Math.sin(nowMs * 0.012 + j * 3.7) + 1.0) * 4;
+          const sx = pxX + Math.cos(sparkAngle) * sparkDist;
+          const sy = pxY + Math.sin(sparkAngle) * sparkDist;
+          const sparkSize = 1.5 + (Math.sin(nowMs * 0.02 + j * 1.5) + 1.0) * 1.5;
+
+          this.ctx.beginPath();
+          this.ctx.arc(sx, sy, sparkSize, 0, 2 * Math.PI);
+          this.ctx.fillStyle = t.color;
+          this.ctx.shadowColor = t.color;
+          this.ctx.shadowBlur = 8;
+          this.ctx.globalAlpha = 0.5 + (Math.sin(nowMs * 0.015 + j * 1.8) + 1.0) * 0.25;
+          this.ctx.fill();
+        }
+        this.ctx.shadowBlur = 0;
+        this.ctx.globalAlpha = 1.0;
+      } else if (animType === 'spectral_bleed' && t.isLoaded && (t.isPlaying || progress > 0)) {
+        const nowMs = performance.now();
+        const dsp = t.customNodeDSP;
+        const smear = Number(dsp?.params?.smear_length) || 0.6;
+        const wet = Number(dsp?.params?.dry_wet) || 0.5;
+        
+        // Multi-layered blurred chromatic gradient halo reacting to amplitude/progress
+        const numHalos = 5;
+        for (let j = 0; j < numHalos; j++) {
+          const slowPhase = (nowMs * 0.0012) + (j * (Math.PI * 2 / numHalos));
+          const expansion = (Math.sin(slowPhase * 1.5) + 1.0) * 0.5;
+          const currentRadius = ringRadius + 3 + (j * 4.5) + (expansion * 10 * smear);
+          const hueShift = (j * 55 + (nowMs * 0.045)) % 360;
+          const strokeColor = `hsla(${hueShift}, 85%, 65%, ${0.25 * wet + 0.15})`;
+
+          this.ctx.beginPath();
+          this.ctx.arc(pxX, pxY, currentRadius, 0, 2 * Math.PI);
+          this.ctx.strokeStyle = strokeColor;
+          this.ctx.shadowColor = strokeColor;
+          this.ctx.shadowBlur = 12 + (smear * 14);
+          this.ctx.lineWidth = 2.5;
+          this.ctx.globalAlpha = Math.max(0.15, (1.0 - (j / numHalos)) * (0.4 + wet * 0.5));
+          this.ctx.stroke();
+        }
         this.ctx.shadowBlur = 0;
         this.ctx.globalAlpha = 1.0;
       } else if (progress > 0 || (t.isLiveIn && t.isPlaying) || (t.isLoaded && t.isPlaying)) {

@@ -1,0 +1,53 @@
+{
+  "id": "com.aether.node.tick",
+  "name": "Tick",
+  "version": "1.0.0",
+  "author": "Aether",
+  "description": "Small lockable rhythm voice: click, splat, hat. Complements bowls and granular.",
+  "category": "Rhythm / Generator",
+  "inputs": 0,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "rate",
+      "name": "Rate",
+      "type": "float",
+      "min": 60,
+      "max": 180,
+      "default": 108,
+      "unit": "bpm"
+    },
+    {
+      "id": "density",
+      "name": "Density",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.55,
+      "unit": "norm"
+    },
+    {
+      "id": "lock",
+      "name": "Lock",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.72,
+      "unit": "norm"
+    },
+    {
+      "id": "color",
+      "name": "Color",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.42,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": "pulse"
+}

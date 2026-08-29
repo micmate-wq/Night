@@ -1,0 +1,71 @@
+{
+  "id": "com.aether.node.halo",
+  "name": "Halo",
+  "version": "1.0.0",
+  "author": "Aether",
+  "description": "Nested-zone color delay. Mimeophon grammar, not a clone. Always writing. Hold stops the write. Clockable.",
+  "category": "Delay / Memory",
+  "inputs": 1,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "rate",
+      "name": "Rate",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.12,
+      "unit": "norm"
+    },
+    {
+      "id": "zone",
+      "name": "Zone",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "unit": "norm"
+    },
+    {
+      "id": "repeats",
+      "name": "Repeats",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.55,
+      "unit": "norm"
+    },
+    {
+      "id": "color",
+      "name": "Color",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.4,
+      "unit": "norm"
+    },
+    {
+      "id": "mix",
+      "name": "Mix",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.62,
+      "unit": "norm"
+    },
+    {
+      "id": "hold",
+      "name": "Hold",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": "halo"
+}
