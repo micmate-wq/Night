@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prism Polar Cloud</title>
+  <style>
+    :root {
+      --bg: #f2f2f4;
+      --panel: #e5e5ea;
+      --panel-border: #d1d1d6;
+      --text: #1c1c1e;
+      --text-muted: #636366;
+      --track-bg: #d1d1d6;
+      --thumb-color: #ffffff;
+      --track-color: #ff4b4b;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .node-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 14px 18px;
+      gap: 12px;
+    }
+
+    .node-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--panel-border);
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .node-symbol {
+      font-size: 1.1rem;
+      color: var(--track-color, #ff4b4b);
+      filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.15));
+    }
+
+    .node-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .tag-badge {
+      font-size: 0.62rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #ffffff;
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px 16px;
+      background: var(--panel);
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+    }
+
+    .control-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .control-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .value-display {
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--track-bg);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--thumb-color);
+      border: 1px solid #c7c7cc;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+    }
+
+    select {
+      background: #ffffff;
+      color: var(--text);
+      border: 1px solid var(--panel-border);
+      border-radius: 5px;
+      font-size: 0.7rem;
+      padding: 4px 6px;
+      outline: none;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    select:focus {
+      border-color: #8e8e93;
+    }
+
+    .visualizer-card {
+      flex: 1;
+      min-height: 80px;
+      background: var(--panel);
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .visualizer-overlay {
+      position: absolute;
+      bottom: 6px;
+      right: 10px;
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      opacity: 0.65;
+      font-family: var(--font-mono);
+      letter-spacing: 0.06em;
+      pointer-events: none;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="node-container">
+  <div class="node-header">
+    <div class="title-group">
+      <span class="node-symbol">❄</span>
+      <span class="node-title">Prism Polar Cloud</span>
+    </div>
+    <span class="tag-badge">Doppler Shifter • Cascade</span>
+  </div>
+
+  <div class="controls-grid">
+    <!-- Cascade Interval -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-interval">Cascade Interval</label>
+      </div>
+      <select id="param-interval">
+        <option value="0">Octave Up (+12 st)</option>
+        <option value="1">Perfect Fifth (+7 st)</option>
+        <option value="2">Octave + Fifth (+19 st)</option>
+        <option value="3">Perfect Fourth (+5 st)</option>
+        <option value="4">Octave Down (-12 st)</option>
+      </select>
+    </div>
+
+    <!-- Harmonic Voicing -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-chord">Voicing</label>
+      </div>
+      <select id="param-chord">
+        <option value="0">Maj9 (C-G-B-D-E-G-B)</option>
+        <option value="1">Min11 (C-Eb-G-Bb-D-F)</option>
+        <option value="2">Sus2 (C-D-G-C-D-G)</option>
+        <option value="3">Lydian Add9 (C-E-F#-G-D)</option>
+      </select>
+    </div>
+
+    <!-- Delay Time -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-delayTime">Delay Time</label>
+        <span class="value-display" id="val-delayTime">0.42 s</span>
+      </div>
+      <input type="range" id="param-delayTime" min="0.2" max="1.0" step="0.01" value="0.42">
+    </div>
+
+    <!-- Feedback Amount -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-feedback">Feedback</label>
+        <span class="value-display" id="val-feedback">60%</span>
+      </div>
+      <input type="range" id="param-feedback" min="0.0" max="0.85" step="0.01" value="0.60">
+    </div>
+
+    <!-- Master Wash -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-wash">Master Wash</label>
+        <span class="value-display" id="val-wash">65%</span>
+      </div>
+      <input type="range" id="param-wash" min="0.0" max="1.0" step="0.01" value="0.65">
+    </div>
+
+    <!-- Cloud Density -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-density">Density</label>
+        <span class="value-display" id="val-density">0.45</span>
+      </div>
+      <input type="range" id="param-density" min="0.1" max="1.0" step="0.01" value="0.45">
+    </div>
+
+    <!-- Master Pitch -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-rootPitch">Master Pitch</label>
+        <span class="value-display" id="val-rootPitch">0 st (C)</span>
+      </div>
+      <input type="range" id="param-rootPitch" min="-12" max="12" step="1" value="0">
+    </div>
+
+    <!-- Breathing Speed -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-swellRate">Breathing Speed</label>
+        <span class="value-display" id="val-swellRate">0.22 Hz</span>
+      </div>
+      <input type="range" id="param-swellRate" min="0.08" max="0.55" step="0.01" value="0.22">
+    </div>
+  </div>
+
+  <div class="visualizer-card">
+    <canvas id="polarCanvas"></canvas>
+    <div class="visualizer-overlay">Doppler Wave Cascade</div>
+  </div>
+</div>
+
+<script>
+  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+  const state = {
+    chord: 0,
+    interval: 0,
+    rootPitch: 0,
+    density: 0.45,
+    delayTime: 0.42,
+    feedback: 0.60,
+    wash: 0.65,
+    swellRate: 0.22,
+    gain: 0.75
+  };
+
+  const canvas = document.getElementById('polarCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function formatPitch(st) {
+    const noteIdx = ((Math.round(st) % 12) + 12) % 12;
+    const name = noteNames[noteIdx];
+    const sign = st > 0 ? '+' : '';
+    return `${sign}${st} st (${name})`;
+  }
+
+  function notifyHost(paramId, value) {
+    state[paramId] = value;
+
+    if (window.aetherNode && typeof window.aetherNode.setParam === 'function') {
+      window.aetherNode.setParam(paramId, value);
+    }
+    if (window.aetherNode && typeof window.aetherNode.setParameter === 'function') {
+      window.aetherNode.setParameter(paramId, value);
+    }
+
+    window.parent.postMessage({
+      type: 'aether:param-change',
+      paramId: paramId,
+      value: value
+    }, '*');
+  }
+
+  function bindSlider(id, paramKey, formatFn) {
+    const el = document.getElementById(id);
+    const valEl = document.getElementById('val-' + paramKey);
+    el.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      state[paramKey] = val;
+      if (valEl) valEl.textContent = formatFn(val);
+      notifyHost(paramKey, val);
+    });
+  }
+
+  bindSlider('param-delayTime', 'delayTime', v => `${v.toFixed(2)} s`);
+  bindSlider('param-feedback', 'feedback', v => `${Math.round(v * 100)}%`);
+  bindSlider('param-wash', 'wash', v => `${Math.round(v * 100)}%`);
+  bindSlider('param-density', 'density', v => v.toFixed(2));
+  bindSlider('param-rootPitch', 'rootPitch', v => formatPitch(v));
+  bindSlider('param-swellRate', 'swellRate', v => `${v.toFixed(2)} Hz`);
+
+  const intervalEl = document.getElementById('param-interval');
+  intervalEl.addEventListener('change', (e) => {
+    const val = parseInt(e.target.value, 10);
+    state.interval = val;
+    notifyHost('interval', val);
+  });
+
+  const chordEl = document.getElementById('param-chord');
+  chordEl.addEventListener('change', (e) => {
+    const val = parseInt(e.target.value, 10);
+    state.chord = val;
+    notifyHost('chord', val);
+  });
+
+  // Inbound Host IPC Sync
+  window.addEventListener('message', (event) => {
+    if (!event.data || typeof event.data !== 'object') return;
+    if (event.data.type === 'aether:param-update') {
+      const { paramId, value } = event.data;
+      if (state[paramId] !== undefined) {
+        state[paramId] = value;
+        const input = document.getElementById('param-' + paramId);
+        if (input) input.value = value;
+        const valEl = document.getElementById('val-' + paramId);
+        if (valEl && typeof value === 'number') {
+          if (paramId === 'delayTime') valEl.textContent = `${value.toFixed(2)} s`;
+          else if (paramId === 'feedback' || paramId === 'wash') valEl.textContent = `${Math.round(value * 100)}%`;
+          else if (paramId === 'rootPitch') valEl.textContent = formatPitch(value);
+          else if (paramId === 'swellRate') valEl.textContent = `${value.toFixed(2)} Hz`;
+          else valEl.textContent = value.toFixed(2);
+        }
+      }
+    }
+  });
+
+  // Wobbly Shimmering Ribbon Wave Engine (No particles, no circles, light background)
+  let waveTime = 0;
+
+  function getActiveTrackColor() {
+    const rootStyle = getComputedStyle(document.documentElement);
+    const color = rootStyle.getPropertyValue('--track-color').trim();
+    return color && color.length > 2 ? color : '#ff4b4b';
+  }
+
+  function render() {
+    const w = canvas.offsetWidth;
+    const h = canvas.offsetHeight;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+
+    const trackColor = getActiveTrackColor();
+
+    // Clean light grey canvas background
+    ctx.fillStyle = '#e5e5ea';
+    ctx.fillRect(0, 0, w, h);
+
+    waveTime += 0.018;
+
+    const numRibbons = 4;
+    const centerY = h * 0.52;
+    const baseAmp = (h * 0.22) * (0.4 + state.wash * 0.6);
+
+    for (let r = 0; r < numRibbons; r++) {
+      const speedMult = 0.8 + (r * 0.45);
+      const t = waveTime * speedMult + (r * 1.7);
+      
+      // Breathing shimmer fade envelope (waves periodically faint and re-emerge)
+      const swell = Math.sin(t * (state.swellRate * 3.5 + 0.3) + r * 1.2);
+      const alpha = Math.max(0, (swell * 0.5 + 0.5) * (0.2 + state.wash * 0.6));
+
+      if (alpha < 0.02) continue;
+
+      ctx.beginPath();
+      for (let x = 0; x <= w; x += 3) {
+        const normX = x / w;
+        // Multi-harmonic wobbly wave equation matching canvas outer ring
+        const w1 = Math.sin((x * 0.022) + t * 2.2) * baseAmp;
+        const w2 = Math.cos((x * 0.045) - t * 1.5) * (baseAmp * 0.5);
+        const w3 = Math.sin((x * 0.08) + t * 3.1) * (baseAmp * 0.25 * (1 + state.feedback));
+        
+        // Edge dampening so waves tuck neatly into borders
+        const taper = Math.sin(normX * Math.PI);
+        const y = centerY + (w1 + w2 + w3) * taper + ((r - 1.5) * 5);
+
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+
+      ctx.strokeStyle = trackColor;
+      ctx.lineWidth = r === 0 ? 2.2 : 1.4;
+      ctx.globalAlpha = alpha;
+      ctx.shadowColor = trackColor;
+      ctx.shadowBlur = 4;
+      ctx.stroke();
+    }
+
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1.0;
+    requestAnimationFrame(render);
+  }
+  render();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prism Sparkle Node UI</title>
+  <style>
+    :root {
+      --bg: var(--aether-bg, #0b0d13);
+      --panel: var(--aether-panel, #121826);
+      --accent: var(--aether-accent, #6ee7b7);
+      --accent-glow: rgba(110, 231, 183, 0.4);
+      --text: var(--aether-text, #f1f5f9);
+      --text-muted: var(--aether-text-muted, #94a3b8);
+      --border: var(--aether-border, rgba(255, 255, 255, 0.08));
+      --border-focus: rgba(110, 231, 183, 0.5);
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .node-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 16px 20px;
+      gap: 14px;
+    }
+
+    .node-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .node-icon {
+      font-size: 1.1rem;
+      color: var(--accent);
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+
+    .node-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .tag-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: rgba(110, 231, 183, 0.12);
+      border: 1px solid var(--border-focus);
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px 18px;
+      background: var(--panel);
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .control-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .control-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .value-display {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 3px;
+      background: #1e293b;
+      outline: none;
+      transition: background 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      box-shadow: 0 0 14px var(--accent);
+    }
+
+    select {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.72rem;
+      padding: 5px 8px;
+      outline: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: border-color 0.2s ease;
+    }
+
+    select:focus {
+      border-color: var(--border-focus);
+    }
+
+    .visualizer-card {
+      flex: 1;
+      min-height: 90px;
+      background: #05070a;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      position: relative;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .visualizer-overlay {
+      position: absolute;
+      bottom: 8px;
+      right: 12px;
+      font-size: 0.6rem;
+      color: rgba(255, 255, 255, 0.3);
+      font-family: var(--font-mono);
+      letter-spacing: 0.08em;
+      pointer-events: none;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="node-container">
+  <div class="node-header">
+    <div class="title-group">
+      <span class="node-icon">✧</span>
+      <span class="node-title">Prism Sparkle</span>
+    </div>
+    <span class="tag-badge">Modal FM & Granular Shimmer</span>
+  </div>
+
+  <div class="controls-grid">
+    <!-- Density -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-density">Density</label>
+        <span class="value-display" id="val-density">0.40</span>
+      </div>
+      <input type="range" id="param-density" min="0" max="1" step="0.01" value="0.4">
+    </div>
+
+    <!-- Pitch Jitter -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-scatter">Scatter</label>
+        <span class="value-display" id="val-scatter">0.50</span>
+      </div>
+      <input type="range" id="param-scatter" min="0" max="1" step="0.01" value="0.5">
+    </div>
+
+    <!-- Root Pitch -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-rootPitch">Root Pitch</label>
+        <span class="value-display" id="val-rootPitch">0 st</span>
+      </div>
+      <input type="range" id="param-rootPitch" min="-12" max="12" step="1" value="0">
+    </div>
+
+    <!-- Modal Decay -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-decay">Decay</label>
+        <span class="value-display" id="val-decay">0.35 s</span>
+      </div>
+      <input type="range" id="param-decay" min="0.05" max="1.2" step="0.01" value="0.35">
+    </div>
+
+    <!-- Shimmer Decay -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-shimmer">Shimmer</label>
+        <span class="value-display" id="val-shimmer">0.45</span>
+      </div>
+      <input type="range" id="param-shimmer" min="0" max="0.85" step="0.01" value="0.45">
+    </div>
+
+    <!-- HPF Cutoff -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-cutoff">HPF Cutoff</label>
+        <span class="value-display" id="val-cutoff">6500 Hz</span>
+      </div>
+      <input type="range" id="param-cutoff" min="3000" max="16000" step="100" value="6500">
+    </div>
+
+    <!-- Scale Quantization -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-scale">Scale</label>
+      </div>
+      <select id="param-scale">
+        <option value="0">C Major Pentatonic</option>
+        <option value="1">Lydian High Mode</option>
+        <option value="2">Just Intonation Harmonics</option>
+        <option value="3">Chromatic Micro-Cluster</option>
+      </select>
+    </div>
+
+    <!-- Master Gain -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-gain">Master Gain</label>
+        <span class="value-display" id="val-gain">0.70</span>
+      </div>
+      <input type="range" id="param-gain" min="0" max="1" step="0.01" value="0.7">
+    </div>
+  </div>
+
+  <div class="visualizer-card">
+    <canvas id="sparkleCanvas"></canvas>
+    <div class="visualizer-overlay">Granular Spectrum • 5kHz+</div>
+  </div>
+</div>
+
+<script>
+  const state = {
+    density: 0.4,
+    scatter: 0.5,
+    shimmer: 0.45,
+    cutoff: 6500,
+    rootPitch: 0,
+    decay: 0.35,
+    scale: 0,
+    gain: 0.7
+  };
+
+  const canvas = document.getElementById('sparkleCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function notifyHost(paramId, value) {
+    state[paramId] = value;
+
+    if (window.aetherNode && typeof window.aetherNode.setParam === 'function') {
+      window.aetherNode.setParam(paramId, value);
+    }
+    if (window.aetherNode && typeof window.aetherNode.setParameter === 'function') {
+      window.aetherNode.setParameter(paramId, value);
+    }
+
+    window.parent.postMessage({
+      type: 'aether:param-change',
+      paramId: paramId,
+      value: value
+    }, '*');
+  }
+
+  function bindSlider(id, paramKey, formatFn) {
+    const el = document.getElementById(id);
+    const valEl = document.getElementById('val-' + paramKey);
+    el.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      state[paramKey] = val;
+      if (valEl) valEl.textContent = formatFn(val);
+      notifyHost(paramKey, val);
+    });
+  }
+
+  bindSlider('param-density', 'density', v => v.toFixed(2));
+  bindSlider('param-scatter', 'scatter', v => v.toFixed(2));
+  bindSlider('param-shimmer', 'shimmer', v => v.toFixed(2));
+  bindSlider('param-cutoff', 'cutoff', v => `${Math.round(v)} Hz`);
+  bindSlider('param-rootPitch', 'rootPitch', v => `${v > 0 ? '+' : ''}${v} st`);
+  bindSlider('param-decay', 'decay', v => `${v.toFixed(2)} s`);
+  bindSlider('param-gain', 'gain', v => v.toFixed(2));
+
+  const scaleEl = document.getElementById('param-scale');
+  scaleEl.addEventListener('change', (e) => {
+    const val = parseInt(e.target.value, 10);
+    state.scale = val;
+    notifyHost('scale', val);
+  });
+
+  // Inbound Host Sync
+  window.addEventListener('message', (event) => {
+    if (!event.data || typeof event.data !== 'object') return;
+    if (event.data.type === 'aether:param-update') {
+      const { paramId, value } = event.data;
+      if (state[paramId] !== undefined) {
+        state[paramId] = value;
+        const input = document.getElementById('param-' + paramId);
+        if (input) input.value = value;
+        const valEl = document.getElementById('val-' + paramId);
+        if (valEl && typeof value === 'number') {
+          if (paramId === 'cutoff') valEl.textContent = `${Math.round(value)} Hz`;
+          else if (paramId === 'rootPitch') valEl.textContent = `${value > 0 ? '+' : ''}${value} st`;
+          else if (paramId === 'decay') valEl.textContent = `${value.toFixed(2)} s`;
+          else valEl.textContent = value.toFixed(2);
+        }
+      }
+    }
+  });
+
+  // Particle Visualizer Engine
+  let particles = [];
+  function render() {
+    const w = canvas.offsetWidth;
+    const h = canvas.offsetHeight;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+
+    ctx.fillStyle = 'rgba(5, 7, 10, 0.22)';
+    ctx.fillRect(0, 0, w, h);
+
+    const currentDensity = (window.aetherNode && window.aetherNode.params)
+      ? window.aetherNode.params.density
+      : state.density;
+
+    if (Math.random() < currentDensity * 0.55) {
+      const numSparks = 1 + Math.floor(Math.random() * 3);
+      for (let s = 0; s < numSparks; s++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          size: Math.random() * 3.5 + 1.2,
+          alpha: 1.0,
+          vx: (Math.random() - 0.5) * 1.6,
+          vy: (Math.random() - 0.5) * 1.6,
+          hue: 150 + Math.random() * 40
+        });
+      }
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha -= 0.022;
+
+      if (p.alpha <= 0 || p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      ctx.save();
+      ctx.fillStyle = `hsla(${p.hue}, 85%, 72%, ${p.alpha})`;
+      ctx.shadowColor = `hsla(${p.hue}, 85%, 70%, 0.8)`;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Delicate 4-point star flare on larger particles
+      if (p.size > 2.5 && p.alpha > 0.4) {
+        ctx.strokeStyle = `hsla(${p.hue}, 90%, 90%, ${p.alpha * 0.8})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(p.x - p.size * 2, p.y);
+        ctx.lineTo(p.x + p.size * 2, p.y);
+        ctx.moveTo(p.x, p.y - p.size * 2);
+        ctx.lineTo(p.x, p.y + p.size * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    requestAnimationFrame(render);
+  }
+  render();
+</script>
+
+</body>
+</html>

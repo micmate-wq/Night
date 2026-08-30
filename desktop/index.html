@@ -5629,6 +5629,170 @@ class SpatialStudio {
         }
         this.ctx.shadowBlur = 0;
         this.ctx.globalAlpha = 1.0;
+      } else if (animType === 'polar_cascade' && t.isLoaded && (t.isPlaying || progress > 0)) {
+        const nowMs = performance.now();
+        const dsp = t.customNodeDSP;
+        const feedback = Number(dsp?.params?.feedback) || 0.6;
+        const delayTime = Number(dsp?.params?.delayTime) || 0.42;
+        const wash = Number(dsp?.params?.wash) || 0.65;
+        const timeSec = nowMs * 0.001;
+
+        // Polar logarithmic spiral cascade arms
+        const numArms = 3;
+        const spiralSpeed = (1.5 / Math.max(0.2, delayTime));
+
+        for (let a = 0; a < numArms; a++) {
+          const armBaseAngle = (a / numArms) * Math.PI * 2 + (timeSec * spiralSpeed * 0.4);
+          this.ctx.beginPath();
+          for (let step = 0; step < 24; step++) {
+            const progressRatio = step / 24;
+            const curAngle = armBaseAngle + (progressRatio * Math.PI * 1.5);
+            const curRadius = ringRadius + 2 + (progressRatio * (18 + feedback * 14));
+            const sx = pxX + Math.cos(curAngle) * curRadius;
+            const sy = pxY + Math.sin(curAngle) * curRadius;
+
+            if (step === 0) this.ctx.moveTo(sx, sy);
+            else this.ctx.lineTo(sx, sy);
+          }
+          this.ctx.strokeStyle = t.color;
+          this.ctx.shadowColor = t.color;
+          this.ctx.shadowBlur = 8 + (wash * 6);
+          this.ctx.lineWidth = 1.6;
+          this.ctx.globalAlpha = 0.4 + (wash * 0.4);
+          this.ctx.stroke();
+        }
+
+        // Concentric Doppler ring markers
+        for (let rIdx = 0; rIdx < 3; rIdx++) {
+          const ringExpansion = ((timeSec * 8 + rIdx * 8) % 24);
+          const rRad = ringRadius + 3 + ringExpansion;
+          const rAlpha = Math.max(0, (1.0 - ringExpansion / 24) * (0.35 + feedback * 0.4));
+
+          this.ctx.beginPath();
+          this.ctx.arc(pxX, pxY, rRad, 0, 2 * Math.PI);
+          this.ctx.strokeStyle = t.color;
+          this.ctx.lineWidth = 1.2;
+          this.ctx.globalAlpha = rAlpha;
+          this.ctx.stroke();
+        }
+
+        this.ctx.shadowBlur = 0;
+        this.ctx.globalAlpha = 1.0;
+      } else if (animType === 'wobbly_shimmer' && t.isLoaded && (t.isPlaying || progress > 0)) {
+        const nowMs = performance.now();
+        const dsp = t.customNodeDSP;
+        const wash = Number(dsp?.params?.wash) || 0.7;
+        const swellRate = Number(dsp?.params?.swellRate) || 0.22;
+        const density = Number(dsp?.params?.density) || 0.45;
+
+        const baseRad = ringRadius + 4;
+        const numPoints = 48;
+        const timeSec = nowMs * 0.001;
+
+        // Multi-layered wobbly shimmer contour
+        for (let layer = 0; layer < 2; layer++) {
+          const layerOffset = layer * 3.5;
+          const layerAlpha = layer === 0 ? (0.45 + wash * 0.35) : (0.2 + wash * 0.2);
+          const layerWidth = layer === 0 ? 2.0 : 1.2;
+
+          this.ctx.beginPath();
+          for (let i = 0; i <= numPoints; i++) {
+            const angle = (i / numPoints) * Math.PI * 2;
+            // 3-harmonic harmonic wobble equation
+            const wobble1 = Math.sin(angle * 5 + timeSec * (swellRate * 8 + 1.2)) * (2.5 + wash * 3.5);
+            const wobble2 = Math.cos(angle * 3 - timeSec * 2.1) * (1.5 + density * 2.0);
+            const wobble3 = Math.sin(angle * 7 + timeSec * 3.7) * 1.0;
+            const r = baseRad + layerOffset + wobble1 + wobble2 + wobble3;
+
+            const wx = pxX + Math.cos(angle) * r;
+            const wy = pxY + Math.sin(angle) * r;
+
+            if (i === 0) this.ctx.moveTo(wx, wy);
+            else this.ctx.lineTo(wx, wy);
+          }
+          this.ctx.closePath();
+          this.ctx.strokeStyle = t.color;
+          this.ctx.shadowColor = t.color;
+          this.ctx.shadowBlur = 8 + (wash * 6);
+          this.ctx.lineWidth = layerWidth;
+          this.ctx.globalAlpha = Math.max(0.1, Math.min(1.0, layerAlpha));
+          this.ctx.stroke();
+        }
+
+        // Shimmering apex glints along the wobbly perimeter
+        const numPebbles = 6;
+        for (let p = 0; p < numPebbles; p++) {
+          const pAngle = (p / numPebbles) * Math.PI * 2 + (timeSec * 0.4);
+          const pWobble = Math.sin(pAngle * 5 + timeSec * (swellRate * 8 + 1.2)) * (2.5 + wash * 3.5);
+          const pDist = baseRad + pWobble + 2;
+          const px = pxX + Math.cos(pAngle) * pDist;
+          const py = pxY + Math.sin(pAngle) * pDist;
+
+          this.ctx.beginPath();
+          this.ctx.arc(px, py, 1.8, 0, 2 * Math.PI);
+          this.ctx.fillStyle = '#ffffff';
+          this.ctx.shadowColor = t.color;
+          this.ctx.shadowBlur = 6;
+          this.ctx.globalAlpha = 0.5 + 0.4 * Math.sin(timeSec * 4 + p);
+          this.ctx.fill();
+        }
+
+        this.ctx.shadowBlur = 0;
+        this.ctx.globalAlpha = 1.0;
+      } else if ((animType === 'prism_sparkle' || animType === 'sparkle') && t.isLoaded && (t.isPlaying || progress > 0)) {
+        const nowMs = performance.now();
+        const dsp = t.customNodeDSP;
+        const density = Number(dsp?.params?.density) || 0.45;
+        const shimmer = Number(dsp?.params?.shimmer) || 0.5;
+
+        // Base shimmer orbital halo
+        const haloPulse = Math.sin(nowMs * 0.003) * 2;
+        this.ctx.beginPath();
+        this.ctx.arc(pxX, pxY, ringRadius + 2 + haloPulse, 0, 2 * Math.PI);
+        this.ctx.strokeStyle = t.color;
+        this.ctx.globalAlpha = 0.25 + (shimmer * 0.2);
+        this.ctx.lineWidth = 1.5;
+        this.ctx.stroke();
+
+        // Ephemeral orbiting sparkle glints
+        const numGlints = Math.round(6 + density * 8);
+        for (let j = 0; j < numGlints; j++) {
+          const speedFactor = 0.0008 + (j % 3) * 0.0004;
+          const glintAngle = (j / numGlints) * Math.PI * 2 + (nowMs * speedFactor) + Math.sin(nowMs * 0.002 + j * 1.7) * 0.3;
+          const glintDist = ringRadius + 3 + (Math.sin(nowMs * 0.005 + j * 2.1) + 1.0) * (4 + shimmer * 6);
+          const sx = pxX + Math.cos(glintAngle) * glintDist;
+          const sy = pxY + Math.sin(glintAngle) * glintDist;
+          
+          const glintPhase = Math.sin(nowMs * 0.008 + j * 1.9);
+          const glintAlpha = Math.max(0, (glintPhase + 0.3) * (0.5 + shimmer * 0.5));
+          const glintSize = 1.0 + Math.max(0, glintPhase) * (2.2 + density * 1.5);
+
+          if (glintAlpha > 0.05) {
+            this.ctx.beginPath();
+            this.ctx.arc(sx, sy, glintSize, 0, 2 * Math.PI);
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.shadowColor = t.color;
+            this.ctx.shadowBlur = 10;
+            this.ctx.globalAlpha = Math.min(1.0, glintAlpha);
+            this.ctx.fill();
+
+            // 4-point micro cross-flare for luminous peak sparks
+            if (glintPhase > 0.5) {
+              const flareLen = glintSize * 2.4;
+              this.ctx.strokeStyle = t.color;
+              this.ctx.lineWidth = 1.0;
+              this.ctx.globalAlpha = Math.min(0.9, glintAlpha * 0.85);
+              this.ctx.beginPath();
+              this.ctx.moveTo(sx - flareLen, sy);
+              this.ctx.lineTo(sx + flareLen, sy);
+              this.ctx.moveTo(sx, sy - flareLen);
+              this.ctx.lineTo(sx, sy + flareLen);
+              this.ctx.stroke();
+            }
+          }
+        }
+        this.ctx.shadowBlur = 0;
+        this.ctx.globalAlpha = 1.0;
       } else if (animType === 'spectral_bleed' && t.isLoaded && (t.isPlaying || progress > 0)) {
         const nowMs = performance.now();
         const dsp = t.customNodeDSP;
