@@ -281,11 +281,19 @@ class PrismCloudAlgoDSP {
 
   start() {
     this.isRunning = true;
-    if (this.ctx && this.feedbackL && this.feedbackR) {
-      const safe = Math.min(0.78, this.params.wash * 0.85);
+    if (this.ctx) {
       const now = this.ctx.currentTime;
-      this.feedbackL.gain.setTargetAtTime(safe, now, 0.03);
-      this.feedbackR.gain.setTargetAtTime(safe, now, 0.03);
+      if (this.feedbackL && this.feedbackR) {
+        const safe = Math.min(0.78, this.params.wash * 0.85);
+        this.feedbackL.gain.setTargetAtTime(safe, now, 0.03);
+        this.feedbackR.gain.setTargetAtTime(safe, now, 0.03);
+      }
+      if (this.wetGain) {
+        this.wetGain.gain.setTargetAtTime(this.params.wash, now, 0.03);
+      }
+      if (this.dryGain) {
+        this.dryGain.gain.setTargetAtTime(0.35, now, 0.03);
+      }
     }
     this._startScheduler();
   }
@@ -296,10 +304,15 @@ class PrismCloudAlgoDSP {
       clearTimeout(this._timer);
       this._timer = null;
     }
-    if (this.ctx && this.feedbackL && this.feedbackR) {
+    if (this.ctx) {
       const now = this.ctx.currentTime;
-      this.feedbackL.gain.setValueAtTime(0.0, now);
-      this.feedbackR.gain.setValueAtTime(0.0, now);
+      if (this.feedbackL && this.feedbackR) {
+        this.feedbackL.gain.setValueAtTime(0.0, now);
+        this.feedbackR.gain.setValueAtTime(0.0, now);
+      }
+      if (this.wetGain) {
+        this.wetGain.gain.setValueAtTime(0.0, now);
+      }
     }
   }
 

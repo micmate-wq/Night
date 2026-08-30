@@ -37,27 +37,31 @@ class PrismPolarCloudDSP {
     // Interval Semitones: +12, +7, +19, +5, -12
     this.intervals = [12, 7, 19, 5, -12];
 
-    // Chords in C5-C6 register
+    // Chords in C5-C7 register
     this.chords = [
-      // 0: Maj9 (C5, G5, B5, D6, E6, G6, B6, D7)
+      // 0: Maj9
       [523.25, 783.99, 987.77, 1174.66, 1318.51, 1567.98, 1975.53, 2349.32],
-      // 1: Min11 (C5, Eb5, G5, Bb5, D6, F6, G6, Bb6)
+      // 1: Min11
       [523.25, 622.25, 783.99, 932.33, 1174.66, 1396.91, 1567.98, 1864.66],
-      // 2: Sus2 (C5, D5, G5, C6, D6, G6, C7, D7)
+      // 2: Sus2
       [523.25, 587.33, 783.99, 1046.50, 1174.66, 1567.98, 2093.00, 2349.32],
-      // 3: Lydian Add9 (C5, E5, F#5, G5, D6, E6, F#6, B6)
-      [523.25, 659.25, 739.99, 783.99, 1174.66, 1318.51, 1479.98, 1975.53]
+      // 3: Lydian
+      [523.25, 659.25, 739.99, 783.99, 1174.66, 1318.51, 1479.98, 1975.53],
+      // 4: Maj 6/9
+      [523.25, 659.25, 880.00, 1174.66, 1318.51, 1567.98, 1760.00, 2349.32],
+      // 5: Min9
+      [523.25, 622.25, 783.99, 932.33, 1174.66, 1567.98, 1864.66, 2349.32]
     ];
 
     this.params = {
       chord: 0,
-      interval: 0, // Octave Up (+12)
-      rootPitch: 0.0,
-      density: 0.45,
-      delayTime: 0.42,
-      feedback: 0.60,
-      wash: 0.65,
-      swellRate: 0.22,
+      interval: 4, // Octave Down (-12)
+      rootPitch: -1.0,
+      density: 0.36,
+      delayTime: 0.43,
+      feedback: 0.39,
+      wash: 0.29,
+      swellRate: 0.30,
       gain: 0.75
     };
 
@@ -334,9 +338,18 @@ class PrismPolarCloudDSP {
 
   start() {
     this.isRunning = true;
-    if (this.ctx && this.feedbackGain) {
-      const safe = Math.min(0.78, this.params.feedback * 0.9);
-      this.feedbackGain.gain.setTargetAtTime(safe, this.ctx.currentTime, 0.03);
+    if (this.ctx) {
+      const now = this.ctx.currentTime;
+      if (this.feedbackGain) {
+        const safe = Math.min(0.78, this.params.feedback * 0.9);
+        this.feedbackGain.gain.setTargetAtTime(safe, now, 0.03);
+      }
+      if (this.wetGain) {
+        this.wetGain.gain.setTargetAtTime(this.params.wash, now, 0.03);
+      }
+      if (this.dryGain) {
+        this.dryGain.gain.setTargetAtTime(0.5, now, 0.03);
+      }
     }
     this._startScheduler();
   }

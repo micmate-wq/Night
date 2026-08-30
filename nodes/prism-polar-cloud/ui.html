@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Prism Polar Cloud</title>
+  <title>Polar Cloud</title>
   <style>
     :root {
       --bg: #f2f2f4;
@@ -203,7 +203,7 @@
   <div class="node-header">
     <div class="title-group">
       <span class="node-symbol">❄</span>
-      <span class="node-title">Prism Polar Cloud</span>
+      <span class="node-title">Polar Cloud</span>
     </div>
     <span class="tag-badge">Doppler Shifter • Cascade</span>
   </div>
@@ -212,82 +212,84 @@
     <!-- Cascade Interval -->
     <div class="control-item">
       <div class="control-label-row">
-        <label for="param-interval">Cascade Interval</label>
+        <label for="param-interval">Cascade</label>
       </div>
       <select id="param-interval">
         <option value="0">Octave Up (+12 st)</option>
         <option value="1">Perfect Fifth (+7 st)</option>
         <option value="2">Octave + Fifth (+19 st)</option>
         <option value="3">Perfect Fourth (+5 st)</option>
-        <option value="4">Octave Down (-12 st)</option>
+        <option value="4" selected>Octave Down (-12 st)</option>
       </select>
     </div>
 
     <!-- Harmonic Voicing -->
     <div class="control-item">
       <div class="control-label-row">
-        <label for="param-chord">Voicing</label>
+        <label for="param-chord">Voice</label>
       </div>
       <select id="param-chord">
-        <option value="0">Maj9 (C-G-B-D-E-G-B)</option>
-        <option value="1">Min11 (C-Eb-G-Bb-D-F)</option>
-        <option value="2">Sus2 (C-D-G-C-D-G)</option>
-        <option value="3">Lydian Add9 (C-E-F#-G-D)</option>
+        <option value="0" selected>Maj9</option>
+        <option value="1">Min11</option>
+        <option value="2">Sus2</option>
+        <option value="3">Lydian</option>
+        <option value="4">Maj 6/9</option>
+        <option value="5">Min9</option>
       </select>
     </div>
 
     <!-- Delay Time -->
     <div class="control-item">
       <div class="control-label-row">
-        <label for="param-delayTime">Delay Time</label>
-        <span class="value-display" id="val-delayTime">0.42 s</span>
+        <label for="param-delayTime">Delay</label>
+        <span class="value-display" id="val-delayTime">0.43 s</span>
       </div>
-      <input type="range" id="param-delayTime" min="0.2" max="1.0" step="0.01" value="0.42">
+      <input type="range" id="param-delayTime" min="0.2" max="1.0" step="0.01" value="0.43">
     </div>
 
     <!-- Feedback Amount -->
     <div class="control-item">
       <div class="control-label-row">
         <label for="param-feedback">Feedback</label>
-        <span class="value-display" id="val-feedback">60%</span>
+        <span class="value-display" id="val-feedback">39%</span>
       </div>
-      <input type="range" id="param-feedback" min="0.0" max="0.85" step="0.01" value="0.60">
+      <input type="range" id="param-feedback" min="0.0" max="0.85" step="0.01" value="0.39">
     </div>
 
     <!-- Master Wash -->
     <div class="control-item">
       <div class="control-label-row">
-        <label for="param-wash">Master Wash</label>
-        <span class="value-display" id="val-wash">65%</span>
+        <label for="param-wash">Wash</label>
+        <span class="value-display" id="val-wash">29%</span>
       </div>
-      <input type="range" id="param-wash" min="0.0" max="1.0" step="0.01" value="0.65">
+      <input type="range" id="param-wash" min="0.0" max="1.0" step="0.01" value="0.29">
+    </div>
+
+    <!-- Master Pitch -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-rootPitch">Pitch</label>
+        <span class="value-display" id="val-rootPitch">-1 st (B)</span>
+      </div>
+      <input type="range" id="param-rootPitch" min="-12" max="12" step="1" value="-1">
     </div>
 
     <!-- Cloud Density -->
     <div class="control-item">
       <div class="control-label-row">
         <label for="param-density">Density</label>
-        <span class="value-display" id="val-density">0.45</span>
+        <span class="value-display" id="val-density">0.36</span>
       </div>
-      <input type="range" id="param-density" min="0.1" max="1.0" step="0.01" value="0.45">
-    </div>
-
-    <!-- Master Pitch -->
-    <div class="control-item">
-      <div class="control-label-row">
-        <label for="param-rootPitch">Master Pitch</label>
-        <span class="value-display" id="val-rootPitch">0 st (C)</span>
-      </div>
-      <input type="range" id="param-rootPitch" min="-12" max="12" step="1" value="0">
+      <input type="range" id="param-density" min="0.1" max="1.0" step="0.01" value="0.36">
     </div>
 
     <!-- Breathing Speed -->
     <div class="control-item">
       <div class="control-label-row">
-        <label for="param-swellRate">Breathing Speed</label>
-        <span class="value-display" id="val-swellRate">0.22 Hz</span>
+        <label for="param-swellRate">Breathing</label>
+        <span class="value-display" id="val-swellRate">0.30 Hz</span>
       </div>
-      <input type="range" id="param-swellRate" min="0.08" max="0.55" step="0.01" value="0.22">
+      <input type="range" id="param-swellRate" min="0.08" max="0.55" step="0.01" value="0.30">
     </div>
   </div>
 
@@ -302,13 +304,13 @@
 
   const state = {
     chord: 0,
-    interval: 0,
-    rootPitch: 0,
-    density: 0.45,
-    delayTime: 0.42,
-    feedback: 0.60,
-    wash: 0.65,
-    swellRate: 0.22,
+    interval: 4,
+    rootPitch: -1,
+    density: 0.36,
+    delayTime: 0.43,
+    feedback: 0.39,
+    wash: 0.29,
+    swellRate: 0.30,
     gain: 0.75
   };
 
@@ -353,8 +355,8 @@
   bindSlider('param-delayTime', 'delayTime', v => `${v.toFixed(2)} s`);
   bindSlider('param-feedback', 'feedback', v => `${Math.round(v * 100)}%`);
   bindSlider('param-wash', 'wash', v => `${Math.round(v * 100)}%`);
-  bindSlider('param-density', 'density', v => v.toFixed(2));
   bindSlider('param-rootPitch', 'rootPitch', v => formatPitch(v));
+  bindSlider('param-density', 'density', v => v.toFixed(2));
   bindSlider('param-swellRate', 'swellRate', v => `${v.toFixed(2)} Hz`);
 
   const intervalEl = document.getElementById('param-interval');
@@ -392,7 +394,7 @@
     }
   });
 
-  // Wobbly Shimmering Ribbon Wave Engine (No particles, no circles, light background)
+  // Wobbly Shimmering Ribbon Wave Engine
   let waveTime = 0;
 
   function getActiveTrackColor() {
@@ -411,7 +413,6 @@
 
     const trackColor = getActiveTrackColor();
 
-    // Clean light grey canvas background
     ctx.fillStyle = '#e5e5ea';
     ctx.fillRect(0, 0, w, h);
 
@@ -425,7 +426,6 @@
       const speedMult = 0.8 + (r * 0.45);
       const t = waveTime * speedMult + (r * 1.7);
       
-      // Breathing shimmer fade envelope (waves periodically faint and re-emerge)
       const swell = Math.sin(t * (state.swellRate * 3.5 + 0.3) + r * 1.2);
       const alpha = Math.max(0, (swell * 0.5 + 0.5) * (0.2 + state.wash * 0.6));
 
@@ -434,12 +434,10 @@
       ctx.beginPath();
       for (let x = 0; x <= w; x += 3) {
         const normX = x / w;
-        // Multi-harmonic wobbly wave equation matching canvas outer ring
         const w1 = Math.sin((x * 0.022) + t * 2.2) * baseAmp;
         const w2 = Math.cos((x * 0.045) - t * 1.5) * (baseAmp * 0.5);
         const w3 = Math.sin((x * 0.08) + t * 3.1) * (baseAmp * 0.25 * (1 + state.feedback));
         
-        // Edge dampening so waves tuck neatly into borders
         const taper = Math.sin(normX * Math.PI);
         const y = centerY + (w1 + w2 + w3) * taper + ((r - 1.5) * 5);
 
