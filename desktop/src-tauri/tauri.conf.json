@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/refs/heads/dev/crates/tauri-config-schema/schema.json",
   "productName": "Aether Desktop",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "identifier": "com.aether.desktop",
   "build": {
     "frontendDist": "../",
@@ -15,7 +15,7 @@
     },
     "windows": [
       {
-        "title": "Aether Desktop v4.1",
+        "title": "[v4.2 UI] Aether Desktop",
         "width": 1280,
         "height": 800,
         "resizable": true,
