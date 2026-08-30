@@ -1,0 +1,53 @@
+{
+  "id": "com.aether.node.body",
+  "name": "Body",
+  "version": "1.0.0",
+  "author": "Aether",
+  "description": "Field recording as exciter for a pitched resonant body. Rings grammar, not a clone.",
+  "category": "Resonator / Body",
+  "inputs": 1,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "structure",
+      "name": "Structure",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.42,
+      "unit": "norm"
+    },
+    {
+      "id": "brightness",
+      "name": "Brightness",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.55,
+      "unit": "norm"
+    },
+    {
+      "id": "damping",
+      "name": "Damping",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.45,
+      "unit": "norm"
+    },
+    {
+      "id": "position",
+      "name": "Position",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.35,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": "pulse"
+}

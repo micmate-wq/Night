@@ -1,0 +1,71 @@
+{
+  "id": "com.aether.node.kinetic-glitch-pond",
+  "name": "Kinetic Glitch-Pond",
+  "version": "1.1.0",
+  "author": "Aether Community",
+  "description": "Organic Foley & Noise Burst Generator driven by kinetic particle collisions and vector barriers.",
+  "category": "Generative / Foley Synthesizer",
+  "inputs": 0,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "attack",
+      "name": "Attack",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.15,
+      "unit": "norm"
+    },
+    {
+      "id": "decay",
+      "name": "Decay",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.35,
+      "unit": "norm"
+    },
+    {
+      "id": "filter_sweep",
+      "name": "Filter Sweep",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.5,
+      "unit": "norm"
+    },
+    {
+      "id": "particle_speed",
+      "name": "Particle Speed",
+      "type": "float",
+      "min": 0.1,
+      "max": 1.0,
+      "default": 0.5,
+      "unit": "norm"
+    },
+    {
+      "id": "glitch_intensity",
+      "name": "Velocity / Intensity",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.6,
+      "unit": "norm"
+    },
+    {
+      "id": "trigger_glitch",
+      "name": "Trigger Glitch",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.0,
+      "unit": "gate"
+    }
+  ],
+  "canvas_animation": "glow_random"
+}

@@ -1,0 +1,53 @@
+{
+  "id": "com.aether.node.rotate",
+  "name": "Rotate",
+  "version": "1.0.0",
+  "author": "Aether",
+  "description": "Six quantized band-pass resonators. 4ms SMR grammar, not a clone. Tick Tok can rotate the chord.",
+  "category": "Resonator / Harmony",
+  "inputs": 1,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "rotate",
+      "name": "Rotate",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "unit": "norm"
+    },
+    {
+      "id": "spread",
+      "name": "Spread",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.45,
+      "unit": "norm"
+    },
+    {
+      "id": "morph",
+      "name": "Morph",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.3,
+      "unit": "norm"
+    },
+    {
+      "id": "q",
+      "name": "Q",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.62,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": "pulse"
+}

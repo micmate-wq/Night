@@ -147,9 +147,32 @@ async fn load_node_bundle_dialog() -> Result<Option<LoadedNodeBundle>, String> {
     }
 }
 
+fn resolve_candidate_path(path: &str) -> std::path::PathBuf {
+    let p = std::path::PathBuf::from(path);
+    if p.exists() {
+        return p;
+    }
+    let filename = p.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| path.to_string());
+    let candidates = [
+        format!("nodes/{}", filename),
+        format!("../nodes/{}", filename),
+        format!("../../nodes/{}", filename),
+        format!("Aether 4.0 UI/nodes/{}", filename),
+        format!("../Aether 4.0 UI/nodes/{}", filename),
+        format!("../../Aether 4.0 UI/nodes/{}", filename),
+    ];
+    for cand in &candidates {
+        let cp = std::path::PathBuf::from(cand);
+        if cp.exists() {
+            return cp;
+        }
+    }
+    p
+}
+
 #[tauri::command]
 async fn load_node_bundle_from_path(path: String) -> Result<LoadedNodeBundle, String> {
-    let file_path = std::path::PathBuf::from(&path);
+    let file_path = resolve_candidate_path(&path);
     unpack_node_bundle(&file_path)
 }
 
@@ -163,7 +186,8 @@ async fn load_node_bundle_from_base64(base64: String, filename: Option<String>) 
 
 #[tauri::command]
 async fn read_audio_file(path: String) -> Result<String, String> {
-    let bytes = std::fs::read(&path).map_err(|e| format!("Failed to read audio file at {}: {}", path, e))?;
+    let file_path = resolve_candidate_path(&path);
+    let bytes = std::fs::read(&file_path).map_err(|e| format!("Failed to read audio file at {:?}: {}", file_path, e))?;
     Ok(BASE64_STANDARD.encode(bytes))
 }
 
@@ -185,6 +209,9 @@ pub fn run() {
             write_file_at_path
         ])
         .setup(|app| {
+            if let Ok(menu) = tauri::menu::Menu::default(app.handle()) {
+                let _ = app.set_menu(menu);
+            }
             let webview = app.get_webview_window("main").expect("no main window");
             webview.with_webview(|_wv| {
                 // WKWebView host configuration

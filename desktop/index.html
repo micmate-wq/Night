@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AETHER 3D — Standalone 4-Track Spatial Audio Studio</title>
+  <title>[v4.0 UI] AETHER 3D — Standalone 4-Track Spatial Audio Studio</title>
+  <link rel="icon" type="image/svg+xml" href="app-icon.svg">
   <meta name="description" content="Standalone 4-track 3D spatial audio player & live performance workstation with HRTF 3D spatial canvas, trackpad depth pinch, motion automation, Ableton-style bipolar EQ, live input, and master WAV recording.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,6 +29,11 @@
   --canvas-grid: rgba(0, 0, 0, 0.12);
   --canvas-axis: #000000;
   
+  --shadow-flat-sm: 0 2px 5px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-flat-md: 0 6px 16px -2px rgba(0, 0, 0, 0.16), 0 3px 6px -1px rgba(0, 0, 0, 0.10);
+  --shadow-flat-elevated: 0 16px 36px -6px rgba(0, 0, 0, 0.22), 0 6px 14px -3px rgba(0, 0, 0, 0.12);
+  --shadow-inset-soft: inset 0 2px 6px rgba(0, 0, 0, 0.12);
+
   --track-1: #FC4037; /* Poppy Coral */
   --track-2: #FFEA00; /* Canary Yellow */
   --track-3: #8B68B9; /* Slate Lavender */
@@ -60,6 +66,11 @@ body.theme-dark {
   --accent-soft: rgba(255, 255, 255, 0.12);
   --canvas-grid: rgba(255, 255, 255, 0.15);
   --canvas-axis: #FFFFFF;
+
+  --shadow-flat-sm: 0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-flat-md: 0 8px 20px rgba(0, 0, 0, 0.7), 0 3px 8px rgba(0, 0, 0, 0.5);
+  --shadow-flat-elevated: 0 20px 40px rgba(0, 0, 0, 0.85), 0 8px 16px rgba(0, 0, 0, 0.6);
+  --shadow-inset-soft: inset 0 2px 8px rgba(0, 0, 0, 0.8);
 
   --track-1: #FC4037; /* Poppy Coral */
   --track-2: #FFEA00; /* Canary Yellow */
@@ -98,42 +109,48 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 18px;
+  padding: 5px 12px;
   background: var(--bg-card);
-  border: 2px solid var(--border-accent);
+  border: 1.5px solid var(--border-accent);
   border-radius: var(--radius-sm);
-  gap: 12px;
-  flex-wrap: wrap;
+  box-shadow: var(--shadow-flat-sm);
+  gap: 8px;
 }
 
-.header-left, .header-center, .header-right {
+.header-left, .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .transport-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 .btn-transport {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-sm);
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
   background: var(--bg-main);
-  border: 1.5px solid var(--border-accent);
+  border: 1px solid var(--border-accent);
   color: var(--text-accent);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: var(--shadow-flat-sm);
   transition: all 0.15s ease;
+  padding: 0;
 }
 .btn-transport:hover {
   background: var(--accent-primary);
   color: var(--bg-main);
+}
+.btn-transport:active {
+  box-shadow: var(--shadow-inset-soft);
+  transform: translateY(1px);
 }
 .btn-transport.playing {
   background: var(--accent-primary);
@@ -142,21 +159,27 @@ body {
 
 .btn-rec-master {
   background: var(--bg-main);
-  border: 1.5px solid var(--border-accent);
+  border: 1px solid var(--border-accent);
   color: var(--text-accent);
   font-family: var(--font-heading);
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  padding: 7px 12px;
-  border-radius: var(--radius-sm);
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 3px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  box-shadow: var(--shadow-flat-sm);
   transition: all 0.15s ease;
 }
 .btn-rec-master:hover {
   background: var(--accent-soft);
+}
+.btn-rec-master:active {
+  box-shadow: var(--shadow-inset-soft);
+  transform: translateY(1px);
 }
 .btn-rec-master.recording {
   background: var(--text-main);
@@ -168,74 +191,54 @@ body {
   100% { box-shadow: 0 0 10px 3px rgba(128, 128, 128, 0.7); }
 }
 
-.app-title-group {
-  display: flex;
-  flex-direction: column;
-}
-.app-title {
-  font-family: var(--font-heading);
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--text-accent);
-  letter-spacing: -0.02em;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-.app-title .version-tag {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-}
-.app-subtitle {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-
 .master-time-display {
   font-family: var(--font-mono);
-  font-size: 1.25rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--text-accent);
   background: var(--bg-main);
-  border: 1.5px solid var(--border-accent);
-  padding: 4px 12px;
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-accent);
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 3px;
+  box-shadow: var(--shadow-inset-soft);
   letter-spacing: 0.05em;
-  min-width: 96px;
-  text-align: center;
+  min-width: 68px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header-btn {
   background: var(--bg-main);
-  border: 1.5px solid var(--border-accent);
+  border: 1px solid var(--border-accent);
   color: var(--text-accent);
   font-family: var(--font-heading);
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 7px 12px;
-  border-radius: var(--radius-sm);
+  font-size: 0.68rem;
+  font-weight: 700;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 3px;
   cursor: pointer;
+  box-shadow: var(--shadow-flat-sm);
   transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 .header-btn:hover {
   background: var(--accent-soft);
 }
-
+.header-btn:active {
+  box-shadow: var(--shadow-inset-soft);
+  transform: translateY(1px);
+}
 
 .master-vol-control {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.75rem;
+  gap: 5px;
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--text-accent);
   font-family: var(--font-heading);
@@ -243,8 +246,8 @@ body {
 .header-slider {
   -webkit-appearance: none;
   appearance: none;
-  width: 80px;
-  height: 4px;
+  width: 60px;
+  height: 3px;
   background: var(--border-light);
   outline: none;
   border-radius: 2px;
@@ -252,16 +255,17 @@ body {
 .header-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 13px;
-  height: 13px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--text-main);
   cursor: pointer;
 }
 
 .theme-toggle-btn {
-  padding: 6px 10px;
-  font-size: 0.78rem;
+  height: 24px;
+  padding: 0 6px;
+  font-size: 0.70rem;
 }
 
 /* ==========================================================================
@@ -270,51 +274,21 @@ body {
 .spatial-workspace-section {
   background: var(--bg-card);
   border: 2px solid var(--border-accent);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-flat-md);
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.workspace-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.workspace-title {
-  font-family: var(--font-heading);
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-accent);
-  letter-spacing: 0.05em;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.dot-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-primary);
-}
-.workspace-instructions {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-.workspace-instructions strong {
-  color: var(--text-accent);
 }
 
 .canvas-arena-container {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 500px;
   background: var(--bg-canvas);
   border: 1.5px solid var(--border-accent);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.14), var(--shadow-flat-sm);
   overflow: hidden;
   user-select: none;
 }
@@ -381,6 +355,7 @@ body {
   background: var(--bg-card);
   border: 2px solid var(--border-accent);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-flat-md);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -431,14 +406,19 @@ body {
   background: var(--bg-main);
   border: 1.5px solid var(--border-accent);
   border-top: 3px solid var(--strip-color, var(--border-accent));
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-flat-sm);
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   min-width: 0; /* CRITICAL: Prevent grid child overflow */
   overflow: hidden;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.channel-strip:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-flat-elevated);
 }
 .channel-strip.drag-over {
   border-color: var(--strip-color, var(--accent-primary)) !important;
@@ -523,7 +503,7 @@ body {
 .channel-controls {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .playlist-bar {
@@ -535,6 +515,7 @@ body {
   border-radius: var(--radius-sm);
   padding: 3px 6px;
   gap: 4px;
+  box-shadow: var(--shadow-inset-soft);
 }
 .btn-playlist {
   background: var(--bg-main);
@@ -566,21 +547,34 @@ body {
   text-align: center;
 }
 
-.mute-solo-group {
+.strip-status-bar {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 3px 6px;
+  box-shadow: var(--shadow-inset-soft);
   gap: 6px;
 }
+
+.mute-solo-group {
+  display: flex;
+  gap: 4px;
+}
 .btn-toggle {
-  flex: 1;
-  background: transparent;
+  background: var(--bg-main);
   border: 1px solid var(--border-accent);
   color: var(--text-accent);
   font-family: var(--font-heading);
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  padding: 4px 0;
-  border-radius: 3px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 2px;
   cursor: pointer;
+  box-shadow: var(--shadow-flat-sm);
   transition: all 0.15s ease;
 }
 .btn-toggle:hover { background: var(--accent-soft); }
@@ -590,50 +584,54 @@ body {
   border-color: var(--strip-color, var(--accent-primary));
 }
 
-.gauges-row {
+.gauges-group {
   display: flex;
-  justify-content: space-between;
-  background: var(--bg-card);
-  padding: 4px 8px;
-  border-radius: 3px;
-  border: 1px solid var(--border-light);
-  font-size: 0.7rem;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-accent);
 }
-.gauge-item { display: flex; gap: 4px; }
-.g-label { font-weight: 700; color: var(--text-muted); }
-.g-val { font-weight: 700; color: var(--text-accent); font-family: var(--font-mono); }
+.g-sep { color: var(--text-muted); font-size: 0.6rem; }
 
 /* Motion Automation Container */
 .motion-box {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
-  padding: 6px 8px;
+  padding: 4px 6px;
+  box-shadow: var(--shadow-inset-soft);
+}
+.motion-toolbar {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
 }
-.motion-header {
-  font-family: var(--font-heading);
-  font-size: 0.62rem;
-  font-weight: 700;
-  color: var(--text-accent);
-  letter-spacing: 0.05em;
-  text-align: center;
+.motion-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
 }
-.motion-buttons-row { display: flex; gap: 4px; }
 .btn-motion {
-  flex: 1;
   background: var(--bg-main);
   border: 1px solid var(--border-accent);
   color: var(--text-accent);
   font-family: var(--font-heading);
-  font-size: 0.65rem;
+  font-size: 0.64rem;
   font-weight: 700;
-  padding: 3px 0;
-  border-radius: 3px;
+  height: 20px;
+  width: 20px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
   cursor: pointer;
+  box-shadow: var(--shadow-flat-sm);
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 .btn-motion:hover { background: var(--accent-soft); }
 .rec-btn.recording {
@@ -648,49 +646,61 @@ body {
   color: #FFF;
   border-color: var(--strip-color, var(--accent-primary));
 }
-.motion-speed-row {
+
+.speed-slider-group {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-}
-.speed-label {
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: var(--text-muted);
-}
-.speed-btn-group { display: flex; gap: 2px; }
-.btn-speed {
+  gap: 4px;
   background: var(--bg-main);
   border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 2px 5px;
+  height: 20px;
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+}
+.speed-label {
+  font-size: 0.56rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
   color: var(--text-muted);
-  font-size: 0.6rem;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.motion-speed-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  min-width: 30px;
+  width: 100%;
+  height: 3px;
+  background: var(--border-light);
+  outline: none;
+  border-radius: 2px;
+}
+.motion-speed-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--strip-color, var(--accent-primary));
+  cursor: pointer;
+  box-shadow: var(--shadow-flat-sm);
+  transition: transform 0.1s ease;
+}
+.motion-speed-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.25);
+}
+.speed-val-badge {
+  font-size: 0.56rem;
   font-family: var(--font-mono);
   font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 2px;
-  cursor: pointer;
-}
-.btn-speed:hover { color: var(--text-accent); border-color: var(--border-accent); }
-.btn-speed.active {
-  background: var(--strip-color, var(--accent-primary));
-  color: #FFF;
-  border-color: var(--strip-color, var(--accent-primary));
-}
-
-/* High contrast text on yellow (T2) and green (T4) active buttons */
-#channel-1 .btn-src.active,
-#channel-1 .btn-playlist.btn-shuf.active,
-#channel-1 .btn-toggle.active,
-#channel-1 .rec-btn.recording,
-#channel-1 .play-motion-btn.active,
-#channel-1 .btn-speed.active,
-#channel-3 .btn-src.active,
-#channel-3 .btn-playlist.btn-shuf.active,
-#channel-3 .btn-toggle.active,
-#channel-3 .rec-btn.recording,
-#channel-3 .play-motion-btn.active,
-#channel-3 .btn-speed.active {
-  color: #000000;
+  color: var(--text-accent);
+  min-width: 40px;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .channel-strip .knob-arc-active {
@@ -703,23 +713,15 @@ body {
 .eq-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
-  padding: 8px 6px;
-}
-.eq-title {
-  font-family: var(--font-heading);
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text-accent);
-  letter-spacing: 0.06em;
-  text-align: center;
+  padding: 4px 6px;
+  box-shadow: var(--shadow-inset-soft);
 }
 .eq-knobs-row {
   display: flex;
-  justify-content: space-evenly; /* Evenly spaced */
+  justify-content: space-evenly;
   align-items: center;
   width: 100%;
 }
@@ -727,14 +729,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 1px;
   user-select: none;
 }
 
 .rotary-knob-container {
   position: relative;
-  width: 46px;
-  height: 46px;
+  width: 36px;
+  height: 36px;
   cursor: ns-resize;
   touch-action: none;
 }
@@ -831,7 +833,53 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-flat-elevated);
+}
+
+#node-inspector-modal .modal-card {
+  width: 540px;
+  max-width: 94vw;
+  padding: 0;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 2px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-flat-elevated);
+  transform: scale(0.96);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+#node-inspector-modal.active .modal-card {
+  transform: scale(1);
+}
+.node-inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--bg-main);
+  border-bottom: 1.5px solid var(--border-accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.node-inspector-close-btn {
+  background: var(--bg-main);
+  border: 1.5px solid var(--border-accent);
+  color: var(--text-accent);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  box-shadow: var(--shadow-flat-sm);
+  transition: all 0.15s ease;
+}
+.node-inspector-close-btn:hover {
+  background: var(--accent-primary);
+  color: var(--bg-main);
+}
+.node-inspector-close-btn:active {
+  box-shadow: var(--shadow-inset-soft);
+  transform: translateY(1px);
 }
 .modal-title {
   font-family: var(--font-heading);
@@ -859,38 +907,50 @@ body {
   justify-content: flex-end;
   gap: 8px;
 }
+
+/* WKWebView MediaElementSource fails on display:none / detached <audio>. */
+#aether-audio-host {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0.01;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+}
+#aether-audio-host audio {
+  width: 1px;
+  height: 1px;
+  opacity: 0.01;
+}
   </style>
 </head>
 <body class="theme-minimal">
+  <div id="aether-audio-host" aria-hidden="true"></div>
   <div class="app-container">
     <!-- APP HEADER & MASTER CONTROLS -->
     <header class="app-header">
       <div class="header-left">
         <div class="transport-brand">
           <button id="master-play-btn" class="btn-transport" title="Play / Pause All (Space)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </button>
           <button id="master-stop-btn" class="btn-transport" title="Stop All & Rewind">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
           </button>
           <button id="master-rec-btn" class="btn-rec-master" title="Record Master Live Output to WAV">
-            <span id="rec-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;"></span>
-            <span id="rec-btn-text">REC MASTER</span>
+            <span id="rec-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
+            <span id="rec-btn-text">REC</span>
           </button>
         </div>
-        <div class="app-title-group">
-          <h1 class="app-title">AETHER 3D <span class="version-tag">v3.0 3D</span></h1>
-          <span class="app-subtitle">4-Track 3D Spatial Audio Studio &amp; Motion Automation</span>
-        </div>
-      </div>
-
-      <div class="header-center">
         <div class="master-time-display" id="master-time">00:00.0</div>
       </div>
 
       <div class="header-right">
         <button id="demo-btn" class="header-btn" title="Load 4 synthetic demo stems">
-          <span class="icon">∿</span> Demo Stems
+          <span class="icon">∿</span> Demo
         </button>
         <button id="export-session-btn" class="header-btn" title="Save DAW Project to disk (Finder)">
           <span>💾</span> Save
@@ -901,12 +961,12 @@ body {
         <input type="file" id="import-session-file" accept=".aether,.json,application/json" style="display:none;">
 
         <div class="master-vol-control">
-          <span>MASTER</span>
+          <span>VOL</span>
           <input type="range" id="master-volume" min="0" max="1" step="0.01" value="1.0" class="header-slider">
-          <span id="master-vol-val" style="min-width:32px;font-family:var(--font-mono);">100%</span>
+          <span id="master-vol-val" style="font-family:var(--font-mono);font-size:0.68rem;min-width:28px;">100%</span>
         </div>
 
-        <button id="theme-toggle-btn" class="header-btn theme-toggle-btn" title="Toggle Dark / Light Theme">
+        <button id="theme-toggle-btn" class="header-btn theme-toggle-btn" title="Toggle Minimal / Dark Theme">
           <span id="theme-icon">🌙</span>
         </button>
       </div>
@@ -914,14 +974,6 @@ body {
 
     <!-- 2D SPATIAL CANVAS WORKSPACE -->
     <section class="spatial-workspace-section">
-      <div class="workspace-header">
-        <div class="workspace-title">
-          <span class="dot-indicator"></span> 3D SPATIAL CANVAS &amp; MOTION AUTOMATION
-        </div>
-        <div class="workspace-instructions">
-          Drag nodes for <strong>X/Y</strong> • <strong>Ctrl + Two-Finger Scroll / Pinch</strong> for <strong>Z Depth (Air Absorption)</strong> • Ableton EQ • Live In • Rec Master
-        </div>
-      </div>
       <div class="canvas-arena-container" id="arena-container">
         <div class="axis-label axis-top">+100% VOLUME</div>
         <div class="axis-label axis-bottom">0% VOLUME</div>
@@ -959,7 +1011,7 @@ body {
               <button class="btn-src btn-node-inspect" id="t0-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-cyan); font-weight: bold;">⚙ UI</button>
               <button class="btn-src" onclick="document.getElementById('t0-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t0-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
-              <button class="btn-src" id="t0-stream" title="Icecast URL. Default Hitchhiker: https://dontpanic.fm/listen/stream  Marvin: https://dontpanic.fm/listen/marvin">Stream</button>
+              <button class="btn-src" id="t0-stream" title="Live Stream / URL Receiver">Stream</button>
             </div>
           </div>
           <div class="channel-controls">
@@ -969,48 +1021,43 @@ body {
               <button class="btn-playlist" id="t0-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t0-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
             </div>
-            <div class="mute-solo-group">
-              <button class="btn-toggle mute-btn" id="t0-mute">MUTE</button>
-              <button class="btn-toggle solo-btn" id="t0-solo">SOLO</button>
-            </div>
-            <div class="gauges-row">
-              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t0-vol-txt">80%</span></div>
-              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t0-pan-txt">C</span></div>
+            <div class="strip-status-bar">
+              <div class="mute-solo-group">
+                <button class="btn-toggle mute-btn" id="t0-mute">MUTE</button>
+                <button class="btn-toggle solo-btn" id="t0-solo">SOLO</button>
+              </div>
+              <div class="gauges-group">
+                <span class="g-val" id="t0-vol-txt">80%</span>
+                <span class="g-sep">•</span>
+                <span class="g-val" id="t0-pan-txt">C</span>
+              </div>
             </div>
             <div class="motion-box">
-              <div class="motion-header">MOTION AUTOMATION</div>
-              <div class="motion-buttons-row">
-                <button class="btn-motion rec-btn" id="t0-rec">● REC</button>
-                <button class="btn-motion play-motion-btn" id="t0-play-motion">▶ PLAY</button>
-                <button class="btn-motion clear-btn" id="t0-clear-motion">CLR</button>
-              </div>
-              <div class="motion-speed-row">
-                <span class="speed-label">SPEED</span>
-                <div class="speed-btn-group">
-                  <button class="btn-speed" data-track="0" data-speed="0.01">0.01x</button>
-                  <button class="btn-speed" data-track="0" data-speed="0.1">0.1x</button>
-                  <button class="btn-speed" data-track="0" data-speed="0.5">0.5x</button>
-                  <button class="btn-speed active" data-track="0" data-speed="1.0">1.0x</button>
-                  <button class="btn-speed" data-track="0" data-speed="2.0">2.0x</button>
+              <div class="motion-toolbar">
+                <div class="motion-actions">
+                  <button class="btn-motion rec-btn" id="t0-rec" title="Record Motion">●</button>
+                  <button class="btn-motion play-motion-btn" id="t0-play-motion" title="Play Motion">▶</button>
+                  <button class="btn-motion clear-btn" id="t0-clear-motion" title="Clear Motion">✕</button>
+                </div>
+                <div class="speed-slider-group">
+                  <span class="speed-label">SPEED</span>
+                  <input type="range" class="motion-speed-slider" id="t0-speed-slider" data-track="0" min="0" max="1000" step="1" value="930" title="Motion Speed: 0.0001x - 2.0x">
+                  <span class="speed-val-badge" id="t0-speed-val">1.00x</span>
                 </div>
               </div>
             </div>
             <div class="eq-section">
-              <div class="eq-title">3-BAND BIPOLAR EQ</div>
               <div class="eq-knobs-row">
-                <!-- Ableton style rotary dial LOW -->
                 <div class="eq-knob-group">
                   <div class="rotary-knob-container" id="t0-knob-low" data-track="0" data-band="low" title="Low Shelf (150Hz) • Drag vertical, Shift for fine, Double-click to reset"></div>
                   <span class="knob-val-badge" id="t0-eq-low-val">0dB</span>
                   <span class="knob-label">BASS</span>
                 </div>
-                <!-- MID -->
                 <div class="eq-knob-group">
                   <div class="rotary-knob-container" id="t0-knob-mid" data-track="0" data-band="mid" title="Mid Peak (1kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
                   <span class="knob-val-badge" id="t0-eq-mid-val">0dB</span>
                   <span class="knob-label">MID</span>
                 </div>
-                <!-- HIGH -->
                 <div class="eq-knob-group">
                   <div class="rotary-knob-container" id="t0-knob-high" data-track="0" data-band="high" title="High Shelf (6kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
                   <span class="knob-val-badge" id="t0-eq-high-val">0dB</span>
@@ -1034,7 +1081,7 @@ body {
               <button class="btn-src btn-node-inspect" id="t1-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-magenta); font-weight: bold;">⚙ UI</button>
               <button class="btn-src" onclick="document.getElementById('t1-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t1-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
-              <button class="btn-src" id="t1-stream" title="Icecast URL. Default Hitchhiker: https://dontpanic.fm/listen/stream  Marvin: https://dontpanic.fm/listen/marvin">Stream</button>
+              <button class="btn-src" id="t1-stream" title="Live Stream / URL Receiver">Stream</button>
             </div>
           </div>
           <div class="channel-controls">
@@ -1044,34 +1091,32 @@ body {
               <button class="btn-playlist" id="t1-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t1-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
             </div>
-            <div class="mute-solo-group">
-              <button class="btn-toggle mute-btn" id="t1-mute">MUTE</button>
-              <button class="btn-toggle solo-btn" id="t1-solo">SOLO</button>
-            </div>
-            <div class="gauges-row">
-              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t1-vol-txt">30%</span></div>
-              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t1-pan-txt">C</span></div>
+            <div class="strip-status-bar">
+              <div class="mute-solo-group">
+                <button class="btn-toggle mute-btn" id="t1-mute">MUTE</button>
+                <button class="btn-toggle solo-btn" id="t1-solo">SOLO</button>
+              </div>
+              <div class="gauges-group">
+                <span class="g-val" id="t1-vol-txt">30%</span>
+                <span class="g-sep">•</span>
+                <span class="g-val" id="t1-pan-txt">C</span>
+              </div>
             </div>
             <div class="motion-box">
-              <div class="motion-header">MOTION AUTOMATION</div>
-              <div class="motion-buttons-row">
-                <button class="btn-motion rec-btn" id="t1-rec">● REC</button>
-                <button class="btn-motion play-motion-btn" id="t1-play-motion">▶ PLAY</button>
-                <button class="btn-motion clear-btn" id="t1-clear-motion">CLR</button>
-              </div>
-              <div class="motion-speed-row">
-                <span class="speed-label">SPEED</span>
-                <div class="speed-btn-group">
-                  <button class="btn-speed" data-track="1" data-speed="0.01">0.01x</button>
-                  <button class="btn-speed" data-track="1" data-speed="0.1">0.1x</button>
-                  <button class="btn-speed" data-track="1" data-speed="0.5">0.5x</button>
-                  <button class="btn-speed active" data-track="1" data-speed="1.0">1.0x</button>
-                  <button class="btn-speed" data-track="1" data-speed="2.0">2.0x</button>
+              <div class="motion-toolbar">
+                <div class="motion-actions">
+                  <button class="btn-motion rec-btn" id="t1-rec" title="Record Motion">●</button>
+                  <button class="btn-motion play-motion-btn" id="t1-play-motion" title="Play Motion">▶</button>
+                  <button class="btn-motion clear-btn" id="t1-clear-motion" title="Clear Motion">✕</button>
+                </div>
+                <div class="speed-slider-group">
+                  <span class="speed-label">SPEED</span>
+                  <input type="range" class="motion-speed-slider" id="t1-speed-slider" data-track="1" min="0" max="1000" step="1" value="930" title="Motion Speed: 0.0001x - 2.0x">
+                  <span class="speed-val-badge" id="t1-speed-val">1.00x</span>
                 </div>
               </div>
             </div>
             <div class="eq-section">
-              <div class="eq-title">3-BAND BIPOLAR EQ</div>
               <div class="eq-knobs-row">
                 <div class="eq-knob-group">
                   <div class="rotary-knob-container" id="t1-knob-low" data-track="1" data-band="low" title="Low Shelf (150Hz) • Drag vertical, Shift for fine, Double-click to reset"></div>
@@ -1106,7 +1151,7 @@ body {
               <button class="btn-src btn-node-inspect" id="t2-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-orange); font-weight: bold;">⚙ UI</button>
               <button class="btn-src" onclick="document.getElementById('t2-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t2-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
-              <button class="btn-src" id="t2-stream" title="Icecast URL. Default Hitchhiker: https://dontpanic.fm/listen/stream  Marvin: https://dontpanic.fm/listen/marvin">Stream</button>
+              <button class="btn-src" id="t2-stream" title="Live Stream / URL Receiver">Stream</button>
             </div>
           </div>
           <div class="channel-controls">
@@ -1116,34 +1161,32 @@ body {
               <button class="btn-playlist" id="t2-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t2-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
             </div>
-            <div class="mute-solo-group">
-              <button class="btn-toggle mute-btn" id="t2-mute">MUTE</button>
-              <button class="btn-toggle solo-btn" id="t2-solo">SOLO</button>
-            </div>
-            <div class="gauges-row">
-              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t2-vol-txt">50%</span></div>
-              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t2-pan-txt">L50</span></div>
+            <div class="strip-status-bar">
+              <div class="mute-solo-group">
+                <button class="btn-toggle mute-btn" id="t2-mute">MUTE</button>
+                <button class="btn-toggle solo-btn" id="t2-solo">SOLO</button>
+              </div>
+              <div class="gauges-group">
+                <span class="g-val" id="t2-vol-txt">50%</span>
+                <span class="g-sep">•</span>
+                <span class="g-val" id="t2-pan-txt">L50</span>
+              </div>
             </div>
             <div class="motion-box">
-              <div class="motion-header">MOTION AUTOMATION</div>
-              <div class="motion-buttons-row">
-                <button class="btn-motion rec-btn" id="t2-rec">● REC</button>
-                <button class="btn-motion play-motion-btn" id="t2-play-motion">▶ PLAY</button>
-                <button class="btn-motion clear-btn" id="t2-clear-motion">CLR</button>
-              </div>
-              <div class="motion-speed-row">
-                <span class="speed-label">SPEED</span>
-                <div class="speed-btn-group">
-                  <button class="btn-speed" data-track="2" data-speed="0.01">0.01x</button>
-                  <button class="btn-speed" data-track="2" data-speed="0.1">0.1x</button>
-                  <button class="btn-speed" data-track="2" data-speed="0.5">0.5x</button>
-                  <button class="btn-speed active" data-track="2" data-speed="1.0">1.0x</button>
-                  <button class="btn-speed" data-track="2" data-speed="2.0">2.0x</button>
+              <div class="motion-toolbar">
+                <div class="motion-actions">
+                  <button class="btn-motion rec-btn" id="t2-rec" title="Record Motion">●</button>
+                  <button class="btn-motion play-motion-btn" id="t2-play-motion" title="Play Motion">▶</button>
+                  <button class="btn-motion clear-btn" id="t2-clear-motion" title="Clear Motion">✕</button>
+                </div>
+                <div class="speed-slider-group">
+                  <span class="speed-label">SPEED</span>
+                  <input type="range" class="motion-speed-slider" id="t2-speed-slider" data-track="2" min="0" max="1000" step="1" value="930" title="Motion Speed: 0.0001x - 2.0x">
+                  <span class="speed-val-badge" id="t2-speed-val">1.00x</span>
                 </div>
               </div>
             </div>
             <div class="eq-section">
-              <div class="eq-title">3-BAND BIPOLAR EQ</div>
               <div class="eq-knobs-row">
                 <div class="eq-knob-group">
                   <div class="rotary-knob-container" id="t2-knob-low" data-track="2" data-band="low" title="Low Shelf (150Hz) • Drag vertical, Shift for fine, Double-click to reset"></div>
@@ -1178,7 +1221,7 @@ body {
               <button class="btn-src btn-node-inspect" id="t3-node-inspect" title="Open Node UI Inspector" style="display: none; color: var(--accent-lime); font-weight: bold;">⚙ UI</button>
               <button class="btn-src" onclick="document.getElementById('t3-file').click()" title="Load local audio file or .aethernode">Load</button>
               <button class="btn-src" id="t3-live-in" title="Live Audio Input (Mic/Instrument/DAW)">Live In</button>
-              <button class="btn-src" id="t3-stream" title="Icecast URL. Default Hitchhiker: https://dontpanic.fm/listen/stream  Marvin: https://dontpanic.fm/listen/marvin">Stream</button>
+              <button class="btn-src" id="t3-stream" title="Live Stream / URL Receiver">Stream</button>
             </div>
           </div>
           <div class="channel-controls">
@@ -1188,34 +1231,32 @@ body {
               <button class="btn-playlist" id="t3-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t3-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
             </div>
-            <div class="mute-solo-group">
-              <button class="btn-toggle mute-btn" id="t3-mute">MUTE</button>
-              <button class="btn-toggle solo-btn" id="t3-solo">SOLO</button>
-            </div>
-            <div class="gauges-row">
-              <div class="gauge-item"><span class="g-label">VOL</span><span class="g-val" id="t3-vol-txt">50%</span></div>
-              <div class="gauge-item"><span class="g-label">PAN</span><span class="g-val" id="t3-pan-txt">R50</span></div>
+            <div class="strip-status-bar">
+              <div class="mute-solo-group">
+                <button class="btn-toggle mute-btn" id="t3-mute">MUTE</button>
+                <button class="btn-toggle solo-btn" id="t3-solo">SOLO</button>
+              </div>
+              <div class="gauges-group">
+                <span class="g-val" id="t3-vol-txt">50%</span>
+                <span class="g-sep">•</span>
+                <span class="g-val" id="t3-pan-txt">R50</span>
+              </div>
             </div>
             <div class="motion-box">
-              <div class="motion-header">MOTION AUTOMATION</div>
-              <div class="motion-buttons-row">
-                <button class="btn-motion rec-btn" id="t3-rec">● REC</button>
-                <button class="btn-motion play-motion-btn" id="t3-play-motion">▶ PLAY</button>
-                <button class="btn-motion clear-btn" id="t3-clear-motion">CLR</button>
-              </div>
-              <div class="motion-speed-row">
-                <span class="speed-label">SPEED</span>
-                <div class="speed-btn-group">
-                  <button class="btn-speed" data-track="3" data-speed="0.01">0.01x</button>
-                  <button class="btn-speed" data-track="3" data-speed="0.1">0.1x</button>
-                  <button class="btn-speed" data-track="3" data-speed="0.5">0.5x</button>
-                  <button class="btn-speed active" data-track="3" data-speed="1.0">1.0x</button>
-                  <button class="btn-speed" data-track="3" data-speed="2.0">2.0x</button>
+              <div class="motion-toolbar">
+                <div class="motion-actions">
+                  <button class="btn-motion rec-btn" id="t3-rec" title="Record Motion">●</button>
+                  <button class="btn-motion play-motion-btn" id="t3-play-motion" title="Play Motion">▶</button>
+                  <button class="btn-motion clear-btn" id="t3-clear-motion" title="Clear Motion">✕</button>
+                </div>
+                <div class="speed-slider-group">
+                  <span class="speed-label">SPEED</span>
+                  <input type="range" class="motion-speed-slider" id="t3-speed-slider" data-track="3" min="0" max="1000" step="1" value="930" title="Motion Speed: 0.0001x - 2.0x">
+                  <span class="speed-val-badge" id="t3-speed-val">1.00x</span>
                 </div>
               </div>
             </div>
             <div class="eq-section">
-              <div class="eq-title">3-BAND BIPOLAR EQ</div>
               <div class="eq-knobs-row">
                 <div class="eq-knob-group">
                   <div class="rotary-knob-container" id="t3-knob-low" data-track="3" data-band="low" title="Low Shelf (150Hz) • Drag vertical, Shift for fine, Double-click to reset"></div>
@@ -1261,14 +1302,27 @@ body {
     </div>
   </div>
 
+  <!-- STREAM URL RECEIVER MODAL -->
+  <div class="modal-overlay" id="stream-url-modal">
+    <div class="modal-card">
+      <h3 class="modal-title" id="stream-modal-title">Live Audio Stream Receiver</h3>
+      <p class="modal-desc">Enter an Icecast, Shoutcast, or direct HTTP/HTTPS audio stream URL (e.g. MP3, AAC, OGG):</p>
+      <input type="url" id="stream-url-input" class="modal-select" placeholder="https://dontpanic.fm/listen/stream" style="font-family:var(--font-mono);font-size:0.75rem;padding:6px 8px;margin-bottom:12px;" />
+      <div class="modal-actions">
+        <button class="header-btn" id="stream-modal-cancel-btn">Cancel</button>
+        <button class="header-btn" id="stream-modal-confirm-btn" style="background:var(--accent-primary);color:var(--bg-main);">Connect Stream</button>
+      </div>
+    </div>
+  </div>
+
   <!-- AETHER NODE INSPECTOR MODAL -->
   <div class="modal-overlay" id="node-inspector-modal">
-    <div class="modal-card" style="width: 520px; max-width: 92vw; padding: 0; overflow: hidden; background: var(--bg-card);">
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: var(--bg-main); border-bottom: 1px solid var(--border-light);">
+    <div class="modal-card">
+      <div class="node-inspector-header">
         <h3 id="node-modal-title" style="font-family: var(--font-heading); font-size: 12px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; text-transform: uppercase; margin: 0; display: flex; align-items: center; gap: 8px;">
           <span>⚡</span> Aether Node Inspector
         </h3>
-        <button class="header-btn" id="node-modal-close-btn" style="padding: 3px 10px; font-size: 11px;">✕ Close</button>
+        <button class="node-inspector-close-btn" id="node-modal-close-btn">✕ Close</button>
       </div>
       <iframe id="node-inspector-frame" style="width: 100%; height: 340px; border: none; display: block; background: var(--bg-canvas);"></iframe>
     </div>
@@ -1290,9 +1344,7 @@ window.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && (e.key === 'r' || e.key === 'R' || e.code === 'KeyR')) {
     e.preventDefault();
     closeStudioAudioForUnload();
-    const u = new URL(window.location.href);
-    u.searchParams.set('_r', String(Date.now()));
-    window.location.replace(u.toString());
+    window.location.reload();
   }
 }, true);
 
@@ -1481,10 +1533,16 @@ class AudioTrack {
     this.isStream = false;
     this.streamUrl = '';
     this.streamAudio = null;
-    this._streamWantsLive = false;
-    this._streamRetry = 0;
-    this._streamReconnectTimer = null;
     this.streamMediaSource = null;
+    this.streamEntryGain = null;
+    this._streamCaptureAnalyser = null;
+    this._streamCaptureRetry = false;
+    this._streamTapKind = null;
+    this._streamPcmAbort = null;
+    this._streamPcmRunning = false;
+    this._streamPcmSources = [];
+    this._streamPcmNext = 0;
+    this.streamPcmGain = null;
 
     // Default opening coordinates for the 4 tracks on 2D canvas:
     // T1: Center Top (80% Vol, C) | T2: Center Bottom (30% Vol, C)
@@ -1499,14 +1557,15 @@ class AudioTrack {
     this.x = defPos.x;
     this.y = defPos.y;
     this.z = defPos.z;
-    this.baseRadius = 24;
+    this.baseRadius = 29;
 
     this.motionPath = [];
     this.isRecordingMotion = false;
     this.isPlayingMotion = false;
     this.motionSpeed = 1.0;
     this.recordStartTime = 0;
-    this.motionPlayStartTime = 0;
+    this.motionAccumulatedTime = 0;
+    this.lastMotionFrameTime = 0;
 
     // Web Audio Nodes
     this.eqLowNode = null;
@@ -1570,7 +1629,8 @@ class AudioTrack {
     this.recBtn = document.getElementById(`t${i}-rec`);
     this.playMotionBtn = document.getElementById(`t${i}-play-motion`);
     this.clearMotionBtn = document.getElementById(`t${i}-clear-motion`);
-    this.speedBtns = document.querySelectorAll(`.btn-speed[data-track="${i}"]`);
+    this.speedSlider = document.getElementById(`t${i}-speed-slider`);
+    this.speedValEl = document.getElementById(`t${i}-speed-val`);
 
     this.eqLowVal = document.getElementById(`t${i}-eq-low-val`);
     this.eqMidVal = document.getElementById(`t${i}-eq-mid-val`);
@@ -1604,13 +1664,13 @@ class AudioTrack {
     this.playMotionBtn.addEventListener('click', () => this.togglePlayMotion());
     this.clearMotionBtn.addEventListener('click', () => this.clearMotion());
 
-    this.speedBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.speedBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.motionSpeed = parseFloat(btn.getAttribute('data-speed'));
+    if (this.speedSlider) {
+      this.speedSlider.addEventListener('input', (e) => {
+        const sliderPos = parseFloat(e.target.value);
+        const speed = this.sliderPosToSpeed(sliderPos);
+        this.setMotionSpeed(speed, false);
       });
-    });
+    }
 
     // Initialize Ableton-style bipolar rotary dials
     this.knobLow = new BipolarRotaryKnob(document.getElementById(`t${i}-knob-low`), {
@@ -1628,6 +1688,37 @@ class AudioTrack {
 
     // Apply default initial volume/pan labels immediately
     this.updateAudioParamsFromPosition();
+    this.setMotionSpeed(this.motionSpeed);
+  }
+
+  sliderPosToSpeed(pos) {
+    const norm = Math.max(0, Math.min(1, pos / 1000));
+    // Logarithmic curve: 0.0001x to 2.0x
+    const speed = 0.0001 * Math.pow(20000, norm);
+    return Math.round(speed * 10000) / 10000;
+  }
+
+  speedToSliderPos(speed) {
+    const s = Math.max(0.0001, Math.min(2.0, speed));
+    const norm = Math.log(s / 0.0001) / Math.log(20000);
+    return Math.round(Math.max(0, Math.min(1, norm)) * 1000);
+  }
+
+  setMotionSpeed(speed, updateSlider = true) {
+    if (isNaN(speed) || speed <= 0) speed = 1.0;
+    this.motionSpeed = speed;
+    if (updateSlider && this.speedSlider) {
+      this.speedSlider.value = this.speedToSliderPos(speed);
+    }
+    if (this.speedValEl) {
+      if (speed < 0.001) {
+        this.speedValEl.textContent = speed.toFixed(4) + 'x';
+      } else if (speed < 0.01) {
+        this.speedValEl.textContent = speed.toFixed(3) + 'x';
+      } else {
+        this.speedValEl.textContent = speed.toFixed(2) + 'x';
+      }
+    }
   }
 
   setupWebAudioNodes(audioCtx) {
@@ -1804,6 +1895,15 @@ class AudioTrack {
     this.customNodeZipBase64 = null;
     this.isCustomNode = false;
     if (this.nodeInspectBtn) this.nodeInspectBtn.style.display = 'none';
+
+    // If stream or live-in is active, reconnect directly to EQ chain
+    if (this.isStream) {
+      this._routeStreamEntryIntoGraph();
+    } else if (this.isLiveIn && this.liveMediaSource && this.eqLowNode) {
+      try { this.liveMediaSource.disconnect(); } catch (e) {}
+      const insertIn = this._getInsertInputNode(this.customNodeDSP);
+      this.liveMediaSource.connect(insertIn || this.eqLowNode);
+    }
   }
 
   cleanupSources() {
@@ -1826,7 +1926,15 @@ class AudioTrack {
 
     try {
       this.liveMediaSource = ctx.createMediaStreamSource(stream);
-      this.liveMediaSource.connect(this.eqLowNode);
+      const liveInsert = this._getInsertInputNode(this.customNodeDSP);
+      if (liveInsert) {
+        this.liveMediaSource.connect(liveInsert);
+        if (typeof this.customNodeDSP.start === 'function') {
+          this.customNodeDSP.start();
+        }
+      } else {
+        this.liveMediaSource.connect(this.eqLowNode);
+      }
 
       this.isLoaded = true;
       this.duration = Infinity;
@@ -1835,6 +1943,8 @@ class AudioTrack {
       this.nameEl.textContent = `[LIVE] ${deviceLabel}`;
       this.statusEl.textContent = 'Active Real-Time Audio Input';
       if (this.liveInBtn) this.liveInBtn.classList.add('active');
+
+      this.updateAudioParamsFromPosition();
     } catch (err) {
       console.error('Failed to attach live input stream:', err);
       this.statusEl.textContent = 'Error attaching Live In';
@@ -1854,39 +1964,169 @@ class AudioTrack {
     if (this.liveInBtn) this.liveInBtn.classList.remove('active');
   }
 
-  // --- STREAM URL (Icecast ingest) ---
-  async promptStreamUrl() {
-    await this.studio.ensureAudioRunning();
+  // --- STREAM URL ---
+  promptStreamUrl() {
+    this.studio.promptStreamModal(this.index);
+  }
 
-    const hitchhiker = 'https://dontpanic.fm/listen/stream';
-    const marvin = 'https://dontpanic.fm/listen/marvin';
-    const defaultUrl = this.streamUrl || hitchhiker;
-    const url = prompt(
-      `Track ${this.index + 1} — Icecast URL\nHitchhiker: ${hitchhiker}\nMarvin: ${marvin}\n(tailnet: http://macmini.tail32e87c.ts.net:4250/stream or /marvin)`,
-      defaultUrl
-    );
-    if (url !== null && url.trim() !== '') {
-      await this.loadStreamUrl(url.trim());
+  _ensureAudioHost() {
+    let host = document.getElementById('aether-audio-host');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'aether-audio-host';
+      host.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(host);
+    }
+    // Never display:none — WKWebView lets remote <audio> bypass MediaElementSource.
+    host.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0.01;pointer-events:none;overflow:hidden;z-index:-1;';
+    return host;
+  }
+
+  _getInsertInputNode(dsp) {
+    if (!dsp) return null;
+    const candidates = [dsp.input, dsp.inputNode, dsp.workletNode];
+    for (let i = 0; i < candidates.length; i++) {
+      const n = candidates[i];
+      if (n && typeof n.connect === 'function') return n;
+    }
+    return null;
+  }
+
+  _ensureStreamEntryGain() {
+    const ctx = this.studio && this.studio.audioCtx;
+    if (!ctx || !this.streamMediaSource) return null;
+    if (!this.streamEntryGain) {
+      this.streamEntryGain = ctx.createGain();
+      try {
+        this.streamEntryGain.channelCount = 2;
+        this.streamEntryGain.channelCountMode = 'explicit';
+      } catch (e) {}
+      this.streamEntryGain.gain.setValueAtTime(1, ctx.currentTime);
+    }
+    // Re-assert MES → entry (idempotent). Do not disconnect MES; that drops WKWebView capture.
+    try { this.streamMediaSource.connect(this.streamEntryGain); } catch (e) {}
+    return this.streamEntryGain;
+  }
+
+  _routeStreamEntryIntoGraph() {
+    const entry = this._ensureStreamEntryGain();
+    if (!entry) return false;
+    try { entry.disconnect(); } catch (e) {}
+    const insertIn = this._getInsertInputNode(this.customNodeDSP);
+    if (insertIn) {
+      entry.connect(insertIn);
+      if (this.customNodeDSP && typeof this.customNodeDSP.connect === 'function' && this.eqLowNode) {
+        try { this.customNodeDSP.connect(this.eqLowNode); } catch (e) {}
+      }
+      if (this.customNodeDSP && typeof this.customNodeDSP.start === 'function') {
+        this.customNodeDSP.start();
+      }
+    } else if (this.eqLowNode) {
+      entry.connect(this.eqLowNode);
+    }
+    if (this._streamCaptureAnalyser) {
+      try { entry.connect(this._streamCaptureAnalyser); } catch (e) {}
+    }
+    return true;
+  }
+
+  _resumeStreamElement() {
+    const el = this.streamAudio;
+    if (!el) return;
+    try {
+      el.muted = false;
+      // captureStream tap: keep the element "playing" but inaudible so WKWebView
+      // exclusive hardware output cannot bypass gain/pan/spatial.
+      el.volume = (this._streamTapKind === 'captureStream') ? 0.0001 : 1;
+    } catch (e) {}
+    const playp = el.play();
+    if (playp && typeof playp.catch === 'function') {
+      playp.catch(err => console.warn('Stream play notice:', err));
     }
   }
 
-  cleanupStream() {
-    this._streamWantsLive = false;
-    if (this._streamReconnectTimer) {
-      clearTimeout(this._streamReconnectTimer);
-      this._streamReconnectTimer = null;
+  _attachStreamTap(el, ctx) {
+    if (!el || !ctx) return false;
+    if (this.streamMediaSource) return true;
+    let ms = null;
+    try {
+      if (typeof el.captureStream === 'function') ms = el.captureStream();
+      else if (typeof el.webkitCaptureStream === 'function') ms = el.webkitCaptureStream();
+    } catch (e) {
+      ms = null;
     }
+    if (ms && typeof ms.getAudioTracks === 'function' && ms.getAudioTracks().length) {
+      try {
+        this.streamMediaSource = ctx.createMediaStreamSource(ms);
+        this._streamTapKind = 'captureStream';
+        try { el.volume = 0.0001; } catch (e2) {}
+        return true;
+      } catch (e) {
+        this.streamMediaSource = null;
+        this._streamTapKind = null;
+      }
+    }
+    try {
+      this.streamMediaSource = ctx.createMediaElementSource(el);
+      this._streamTapKind = 'mediaElement';
+      try { el.volume = 1; } catch (e2) {}
+      return true;
+    } catch (e) {
+      this.streamMediaSource = null;
+      this._streamTapKind = null;
+      return false;
+    }
+  }
+
+  _armStreamCaptureWatch() {
+    const ctx = this.studio && this.studio.audioCtx;
+    if (!ctx || !this.streamEntryGain || this._streamCaptureRetry) return;
+    if (!this._streamCaptureAnalyser) {
+      this._streamCaptureAnalyser = ctx.createAnalyser();
+      this._streamCaptureAnalyser.fftSize = 256;
+    }
+    try { this.streamEntryGain.connect(this._streamCaptureAnalyser); } catch (e) {}
+    const el = this.streamAudio;
+    const url = this.streamUrl;
+    window.setTimeout(() => {
+      if (this._streamCaptureRetry) return;
+      if (!this.isStream || this.streamAudio !== el || !this._streamCaptureAnalyser) return;
+      if (!el || el.paused || el.readyState < 2) return;
+      const data = new Uint8Array(this._streamCaptureAnalyser.fftSize);
+      this._streamCaptureAnalyser.getByteTimeDomainData(data);
+      let peak = 0;
+      for (let i = 0; i < data.length; i++) {
+        const d = Math.abs(data[i] - 128);
+        if (d > peak) peak = d;
+      }
+      if (peak > 2) return;
+      // Element is playing but MES is silent: recreate element+MES once.
+      console.warn('Stream MES capture silent; recreating media element');
+      this._streamCaptureRetry = true;
+      if (url) {
+        this.loadStreamUrl(url).then(() => {
+          if (this.streamMediaSource && this.customNodeDSP) {
+            this._routeStreamEntryIntoGraph();
+          }
+        }).catch((e) => console.warn('Stream capture retry:', e));
+      }
+    }, 800);
+  }
+
+  cleanupStream() {
+    this._stopIcecastPcm();
     if (this.streamAudio) {
       try {
         this.streamAudio.oncanplay = null;
-        this.streamAudio.onplaying = null;
         this.streamAudio.onerror = null;
-        this.streamAudio.onstalled = null;
-        this.streamAudio.onwaiting = null;
-        this.streamAudio.onended = null;
+        this.streamAudio.onplaying = null;
         this.streamAudio.pause();
         this.streamAudio.removeAttribute('src');
+        this.streamAudio.src = '';
         this.streamAudio.load();
+        if (this.streamAudio.parentNode) {
+          this.streamAudio.parentNode.removeChild(this.streamAudio);
+        }
       } catch (e) {}
       this.streamAudio = null;
     }
@@ -1894,54 +2134,426 @@ class AudioTrack {
       try { this.streamMediaSource.disconnect(); } catch (e) {}
       this.streamMediaSource = null;
     }
+    this._streamTapKind = null;
+    if (this.streamEntryGain) {
+      try { this.streamEntryGain.disconnect(); } catch (e) {}
+      this.streamEntryGain = null;
+    }
+    if (this._streamCaptureAnalyser) {
+      try { this._streamCaptureAnalyser.disconnect(); } catch (e) {}
+      this._streamCaptureAnalyser = null;
+    }
     this.isStream = false;
+    this.streamUrl = '';
     if (this.streamBtn) this.streamBtn.classList.remove('active');
   }
 
-  _bindIcecastElementHandlers(el) {
-    el.onplaying = () => {
-      this._streamRetry = 0;
-      if (this.statusEl) this.statusEl.textContent = 'LIVE STREAMING';
-    };
-    el.onerror = () => this._scheduleStreamReconnect('error');
-    el.onstalled = () => this._scheduleStreamReconnect('stalled');
-    el.onended = () => this._scheduleStreamReconnect('ended');
-    el.onwaiting = () => {
-      if (this.statusEl) this.statusEl.textContent = 'Stream buffering…';
-    };
+
+  _mp3FrameLength(u8, i) {
+    if (i + 4 > u8.length) return 0;
+    if (u8[i] !== 0xff || (u8[i + 1] & 0xe0) !== 0xe0) return 0;
+    const verBits = (u8[i + 1] >> 3) & 3;
+    const layerBits = (u8[i + 1] >> 1) & 3;
+    const brIdx = (u8[i + 2] >> 4) & 15;
+    const srIdx = (u8[i + 2] >> 2) & 3;
+    const pad = (u8[i + 2] >> 1) & 1;
+    if (verBits === 1 || layerBits === 0 || brIdx === 0 || brIdx === 15 || srIdx === 3) return 0;
+    const mpeg1 = verBits === 3;
+    const brs1 = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0];
+    const brs2 = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0];
+    const srs1 = [44100, 48000, 32000];
+    const srs2 = [22050, 24000, 16000];
+    const br = (mpeg1 ? brs1 : brs2)[brIdx] * 1000;
+    const sr = (mpeg1 ? srs1 : srs2)[srIdx];
+    if (!br || !sr) return 0;
+    const coeff = mpeg1 ? 144 : 72;
+    return Math.floor((coeff * br) / sr) + pad;
   }
 
-  _scheduleStreamReconnect(reason) {
-    if (!this._streamWantsLive || !this.isStream || !this.streamUrl) return;
-    if (this._streamReconnectTimer) return;
-    this._streamRetry = (this._streamRetry || 0) + 1;
-    const delay = Math.min(1500 * this._streamRetry, 8000);
-    if (this.statusEl) this.statusEl.textContent = `Stream ${reason}, retry ${this._streamRetry}…`;
-    this._streamReconnectTimer = setTimeout(() => {
-      this._streamReconnectTimer = null;
-      if (!this._streamWantsLive || !this.streamAudio || !this.streamUrl) return;
-      const el = this.streamAudio;
-      const url = this.streamUrl;
-      try { el.pause(); } catch (e) {}
-      // Reassign src on the SAME element so createMediaElementSource stays valid.
-      el.crossOrigin = 'anonymous';
-      el.src = url;
-      el.load();
-      if (this.studio.isPlaying || this.isPlaying) {
-        el.play().catch(() => {});
+  _stopIcecastPcm() {
+    this._streamPcmRunning = false;
+    this._streamPcmPaused = false;
+    this._streamPcmPrimed = false;
+    if (this._streamPcmAbort) {
+      try { this._streamPcmAbort.abort(); } catch (e) {}
+      this._streamPcmAbort = null;
+    }
+    if (this._streamPcmWorklet) {
+      try { this._streamPcmWorklet.port.onmessage = null; } catch (e) {}
+      try { this._streamPcmWorklet.disconnect(); } catch (e) {}
+      this._streamPcmWorklet = null;
+    }
+    if (this._streamPcmProc) {
+      try { this._streamPcmProc.onaudioprocess = null; } catch (e) {}
+      try { this._streamPcmProc.disconnect(); } catch (e) {}
+      this._streamPcmProc = null;
+    }
+    if (this._streamPcmSilent) {
+      try { this._streamPcmSilent.disconnect(); } catch (e) {}
+      this._streamPcmSilent = null;
+    }
+    this._pcmL = null;
+    this._pcmR = null;
+    this._pcmW = 0;
+    this._pcmRpos = 0;
+    this._pcmCount = 0;
+    this._mp3Overlap = null;
+    this._mp3OverlapFrames = 0;
+    if (this.streamPcmGain) {
+      try { this.streamPcmGain.disconnect(); } catch (e) {}
+      this.streamPcmGain = null;
+    }
+  }
+
+  _pauseIcecastPcm() {
+    this._streamPcmPaused = true;
+    if (this._streamPcmWorklet) {
+      try { this._streamPcmWorklet.port.postMessage({ type: 'pause' }); } catch (e) {}
+    }
+    const ctx = this.studio && this.studio.audioCtx;
+    if (this.streamPcmGain && ctx) {
+      try {
+        this.streamPcmGain.gain.cancelScheduledValues(ctx.currentTime);
+        this.streamPcmGain.gain.setTargetAtTime(0, ctx.currentTime, 0.008);
+      } catch (e) {}
+    }
+    if (this.streamAudio) {
+      try { this.streamAudio.pause(); } catch (e) {}
+    }
+    if (this.statusEl && this.isStream) this.statusEl.textContent = 'STREAM PAUSED';
+  }
+
+  _resumeIcecastPcm() {
+    const ctx = this.studio && this.studio.audioCtx;
+    const sr = ctx ? ctx.sampleRate : 44100;
+    this._streamPcmPaused = false;
+    const keep = Math.floor(sr * 0.4);
+    if (this._streamPcmWorklet) {
+      try { this._streamPcmWorklet.port.postMessage({ type: 'resume', keep }); } catch (e) {}
+    }
+    if (this._pcmL && this._pcmCount > 0) {
+      const dropKeep = Math.min(this._pcmCount, keep);
+      const drop = this._pcmCount - dropKeep;
+      if (drop > 0) {
+        this._pcmRpos = (this._pcmRpos + drop) % this._pcmL.length;
+        this._pcmCount = dropKeep;
       }
-    }, delay);
+    }
+    if (this.streamPcmGain && ctx) {
+      try {
+        this.streamPcmGain.gain.cancelScheduledValues(ctx.currentTime);
+        this.streamPcmGain.gain.setTargetAtTime(1, ctx.currentTime, 0.012);
+      } catch (e) {}
+    }
+    if (this.streamAudio) {
+      this._resumeStreamElement();
+    }
+    if (this.isStream && this.streamUrl && !this._streamPcmRunning && !this.streamAudio) {
+      this._startIcecastPcmTap(this.streamUrl).catch((e) => console.warn('stream resume:', e));
+    }
+    if (this.statusEl && this.isStream) this.statusEl.textContent = 'LIVE STREAMING';
+  }
+
+  _pcmAvail() {
+    return this._pcmCount || 0;
+  }
+
+  _pcmWrite(chL, chR, start, end) {
+    if (this._streamPcmWorklet && end > start) {
+      const l = chL.subarray(start, end).slice();
+      const r = chR.subarray(start, end).slice();
+      try { this._streamPcmWorklet.port.postMessage({ type: 'pcm', l, r }); } catch (e) {}
+    }
+    if (!this._pcmL) return;
+    const cap = this._pcmL.length;
+    for (let i = start; i < end; i++) {
+      if (this._pcmCount >= cap - 8) {
+        // drop oldest so a paused/idle ring never wedges
+        this._pcmRpos = (this._pcmRpos + 1) % cap;
+        this._pcmCount--;
+      }
+      const w = this._pcmW;
+      this._pcmL[w] = chL[i] || 0;
+      this._pcmR[w] = chR[i] || 0;
+      this._pcmW = (w + 1) % cap;
+      this._pcmCount++;
+    }
+  }
+
+  _pcmRead(outL, outR, n) {
+    const cap = this._pcmL ? this._pcmL.length : 0;
+    for (let i = 0; i < n; i++) {
+      if (!cap || this._pcmCount <= 0) {
+        outL[i] = 0;
+        outR[i] = 0;
+        continue;
+      }
+      const r = this._pcmRpos;
+      outL[i] = this._pcmL[r];
+      outR[i] = this._pcmR[r];
+      this._pcmRpos = (r + 1) % cap;
+      this._pcmCount--;
+    }
+  }
+
+  _mp3FrameSamples(u8, i) {
+    if (i + 2 > u8.length) return 1152;
+    const verBits = (u8[i + 1] >> 3) & 3;
+    return verBits === 3 ? 1152 : 576;
+  }
+
+  async _ensureIcecastPcmWorklet(ctx) {
+    if (!ctx || ctx._icecastPcmWorkletReady) return true;
+    const tryUrls = [];
+    try { tryUrls.push(new URL('icecast-pcm-worklet.js', window.location.href).href); } catch (e) {}
+    tryUrls.push('/desktop/icecast-pcm-worklet.js');
+    for (const u of tryUrls) {
+      try {
+        await ctx.audioWorklet.addModule(u);
+        ctx._icecastPcmWorkletReady = true;
+        return true;
+      } catch (e) {}
+    }
+    const src = `class IcecastPcmWorklet extends AudioWorkletProcessor{constructor(){super();this.L=null;this.R=null;this.cap=0;this.w=0;this.r=0;this.n=0;this.paused=false;this.primed=false;this.primeNeed=0;this.port.onmessage=(e)=>{const d=e.data||{};if(d.type==='setup'){this.cap=d.cap|0;this.L=new Float32Array(this.cap);this.R=new Float32Array(this.cap);this.w=this.r=this.n=0;this.primed=false;this.paused=!!d.paused;this.primeNeed=d.prime|0}else if(d.type==='pcm'){const l=d.l,rr=d.r;if(!this.L||!l)return;for(let i=0;i<l.length;i++){if(this.n>=this.cap-8){this.r=(this.r+1)%this.cap;this.n--}this.L[this.w]=l[i]||0;this.R[this.w]=(rr&&rr[i])||0;this.w=(this.w+1)%this.cap;this.n++}if(!this.primed&&this.n>=this.primeNeed)this.primed=true}else if(d.type==='pause'){this.paused=true}else if(d.type==='resume'){this.paused=false;const keep=d.keep|0;if(this.L&&keep>=0&&this.n>keep){const drop=this.n-keep;this.r=(this.r+drop)%this.cap;this.n=keep}}}}process(_i,outputs){const o=outputs[0];if(!o||!o[0])return true;const outL=o[0],outR=o[1]||outL,frames=outL.length;if(this.paused||!this.primed||!this.L){outL.fill(0);if(outR!==outL)outR.fill(0);return true}for(let i=0;i<frames;i++){if(this.n<=0){outL[i]=0;outR[i]=0;continue}outL[i]=this.L[this.r];outR[i]=this.R[this.r];this.r=(this.r+1)%this.cap;this.n--}return true}}registerProcessor('icecast-pcm-worklet',IcecastPcmWorklet);`;
+    try {
+      const blob = new Blob([src], { type: 'application/javascript' });
+      const blobUrl = URL.createObjectURL(blob);
+      await ctx.audioWorklet.addModule(blobUrl);
+      URL.revokeObjectURL(blobUrl);
+      ctx._icecastPcmWorkletReady = true;
+      return true;
+    } catch (e) {
+      console.warn('Icecast PCM worklet:', e);
+      return false;
+    }
+  }
+
+  async _startIcecastPcmTap(url) {
+    const ctx = this.studio && this.studio.audioCtx;
+    if (!ctx || !url) throw new Error('no audio context');
+    this._stopIcecastPcm();
+    this._streamPcmAbort = new AbortController();
+    this._streamPcmRunning = true;
+    this._streamPcmPaused = false;
+    this._streamPcmPrimed = false;
+    this._streamPcmFirstDecode = true;
+    this._mp3Overlap = new Uint8Array(0);
+    this._mp3OverlapFrames = 0;
+
+    const res = await fetch(url, {
+      signal: this._streamPcmAbort.signal,
+      mode: 'cors',
+      cache: 'no-store',
+      headers: { 'Accept': 'audio/mpeg,audio/*;q=0.9,*/*;q=0.1' }
+    });
+    if (!res.ok || !res.body) throw new Error('stream fetch ' + res.status);
+
+    const cap = Math.max(16, Math.floor(ctx.sampleRate * 16));
+    this._pcmL = new Float32Array(cap);
+    this._pcmR = new Float32Array(cap);
+    this._pcmW = 0;
+    this._pcmRpos = 0;
+    this._pcmCount = 0;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(1, ctx.currentTime);
+    this.streamPcmGain = gain;
+    this.streamMediaSource = gain;
+    this._streamTapKind = 'pcmFetch';
+
+    const primeSamples = Math.floor(ctx.sampleRate * 4.0);
+    const workletOk = await this._ensureIcecastPcmWorklet(ctx);
+    if (workletOk) {
+      const node = new AudioWorkletNode(ctx, 'icecast-pcm-worklet', {
+        numberOfInputs: 1,
+        numberOfOutputs: 1,
+        outputChannelCount: [2],
+        channelCount: 2,
+        channelCountMode: 'explicit',
+        channelInterpretation: 'speakers'
+      });
+      node.port.postMessage({ type: 'setup', cap, prime: primeSamples, paused: false });
+      const silent = ctx.createGain();
+      silent.gain.setValueAtTime(0, ctx.currentTime);
+      silent.connect(node);
+      node.connect(gain);
+      this._streamPcmSilent = silent;
+      this._streamPcmWorklet = node;
+      this._streamTapKind = 'pcmWorklet';
+    } else {
+      const proc = ctx.createScriptProcessor(8192, 1, 2);
+      this._streamPcmProc = proc;
+      proc.onaudioprocess = (ev) => {
+        const outL = ev.outputBuffer.getChannelData(0);
+        const outR = ev.outputBuffer.getChannelData(1);
+        const n = outL.length;
+        if (this._streamPcmPaused) {
+          outL.fill(0);
+          outR.fill(0);
+          return;
+        }
+        if (!this._streamPcmPrimed) {
+          if (this._pcmAvail() >= primeSamples) this._streamPcmPrimed = true;
+        }
+        if (!this._streamPcmPrimed) {
+          outL.fill(0);
+          outR.fill(0);
+          return;
+        }
+        this._pcmRead(outL, outR, n);
+      };
+      const silent = ctx.createGain();
+      silent.gain.setValueAtTime(0, ctx.currentTime);
+      silent.connect(proc);
+      proc.connect(gain);
+      this._streamPcmSilent = silent;
+    }
+
+    this._ensureStreamEntryGain();
+    this._routeStreamEntryIntoGraph();
+
+    const reader = res.body.getReader();
+    let pending = new Uint8Array(0);
+    const concat = (a, b) => {
+      const o = new Uint8Array(a.length + b.length);
+      o.set(a, 0);
+      o.set(b, a.length);
+      return o;
+    };
+
+    const OVERLAP_FRAMES = 8;
+    const ENC_DELAY = 576;
+
+    const decodeWindow = async (take) => {
+      if (!take || take.length < 64) return;
+      const overlap = this._mp3Overlap || new Uint8Array(0);
+      const combined = overlap.length ? concat(overlap, take) : take;
+      const copy = combined.buffer.slice(combined.byteOffset, combined.byteOffset + combined.byteLength);
+      let audio = null;
+      try {
+        audio = await ctx.decodeAudioData(copy);
+      } catch (e) {
+        return;
+      }
+      if (!this._streamPcmRunning || !audio) return;
+      const chL = audio.getChannelData(0);
+      const chR = audio.numberOfChannels > 1 ? audio.getChannelData(1) : chL;
+      const frameSamples = this._mp3FrameSamples(take, 0);
+      let start = 0;
+      if (this._streamPcmFirstDecode) {
+        start = Math.min(chL.length, ENC_DELAY);
+        this._streamPcmFirstDecode = false;
+      } else {
+        // Skip only the prepended overlap frames (ENC_DELAY already consumed on first window)
+        start = Math.min(chL.length, (this._mp3OverlapFrames || 0) * frameSamples);
+      }
+      const end = chL.length;
+      if (end <= start) return;
+      const srcRate = audio.sampleRate || ctx.sampleRate;
+      if (Math.abs(srcRate - ctx.sampleRate) > 2) {
+        const ratio = ctx.sampleRate / srcRate;
+        const n = Math.max(1, Math.floor((end - start) * ratio));
+        const l2 = new Float32Array(n);
+        const r2 = new Float32Array(n);
+        const last = end - start - 1;
+        for (let i = 0; i < n; i++) {
+          const x = start + (i / ratio);
+          const j = Math.min(last, Math.floor(x - start));
+          const f = x - start - j;
+          const j2 = Math.min(last, j + 1);
+          const a = start + j;
+          const b = start + j2;
+          l2[i] = chL[a] + ((chL[b] - chL[a]) * f);
+          r2[i] = chR[a] + ((chR[b] - chR[a]) * f);
+        }
+        this._pcmWrite(l2, r2, 0, n);
+      } else {
+        this._pcmWrite(chL, chR, start, end);
+      }
+
+      // keep last N complete frames as decoder context
+      let frames = 0;
+      let lastStarts = [];
+      let c = 0;
+      while (c + 4 < take.length) {
+        const n = this._mp3FrameLength(take, c);
+        if (n < 24) { c += 1; continue; }
+        if (c + n > take.length) break;
+        lastStarts.push(c);
+        c += n;
+        frames++;
+      }
+      if (lastStarts.length >= OVERLAP_FRAMES) {
+        const o = lastStarts[lastStarts.length - OVERLAP_FRAMES];
+        this._mp3Overlap = take.subarray(o);
+        this._mp3OverlapFrames = OVERLAP_FRAMES;
+      }
+    };
+
+    const pump = async () => {
+      while (this._streamPcmRunning) {
+        const step = await reader.read();
+        if (step.done) break;
+        if (!step.value || !step.value.length) continue;
+        pending = concat(pending, step.value);
+        let sync = -1;
+        for (let i = 0; i < pending.length - 1; i++) {
+          if (pending[i] === 0xff && (pending[i + 1] & 0xe0) === 0xe0) { sync = i; break; }
+        }
+        if (sync < 0) {
+          if (pending.length > 8192) pending = pending.subarray(pending.length - 4);
+          continue;
+        }
+        if (sync > 0) pending = pending.subarray(sync);
+        let cursor = 0;
+        let lastGood = 0;
+        while (cursor + 4 < pending.length) {
+          const n = this._mp3FrameLength(pending, cursor);
+          if (n < 24) {
+            cursor += 1;
+            continue;
+          }
+          if (cursor + n > pending.length) break;
+          cursor += n;
+          lastGood = cursor;
+        }
+        // First window ~2s so we prime once; later ~460ms so decodeAudioData fires even less often
+        const need = this._streamPcmFirstDecode ? 28000 : 40000;
+        if (lastGood >= need) {
+          const take = pending.subarray(0, lastGood);
+          pending = pending.subarray(lastGood);
+          await decodeWindow(take);
+        } else if (pending.length > 131072) {
+          pending = pending.subarray(pending.length - 16384);
+        }
+      }
+    };
+
+    pump().catch((err) => {
+      if (err && err.name === 'AbortError') return;
+      console.warn('Icecast PCM tap:', err);
+    });
+    this.statusEl.textContent = 'LIVE STREAMING';
+    return true;
   }
 
   async loadStreamUrl(url) {
     if (!url) return;
+    if (this.streamUrl !== url) this._streamCaptureRetry = false;
     await this.studio.ensureAudioRunning();
     const ctx = this.studio.audioCtx;
+    if (!this.gainNode) {
+      this.setupWebAudioNodes(ctx);
+    }
 
-    this.cleanupSources();
+    // Clear previous live input or stream without discarding insert effects
+    this.cleanupLiveIn();
+    this.cleanupStream();
+    this.stopNodeOnly({ keepStream: true });
+    this.audioBuffer = null;
+    this._pcmCopy = null;
+
     this.isStream = true;
-    this._streamWantsLive = true;
-    this._streamRetry = 0;
     this.streamUrl = url;
     if (this.streamBtn) this.streamBtn.classList.add('active');
 
@@ -1950,22 +2562,83 @@ class AudioTrack {
     this.statusEl.textContent = 'Connecting stream...';
 
     try {
-      const el = new Audio();
-      // crossOrigin MUST be set before src or the Web Audio graph is silently tainted.
+      try {
+        await this._startIcecastPcmTap(url);
+        this.isLoaded = true;
+        this.duration = Infinity;
+        this.isPlaying = true;
+        this.startTime = ctx.currentTime;
+        try { await ctx.resume(); } catch (e) {}
+        this.updateAudioParamsFromPosition();
+        if (this.studio.masterPlayBtn) {
+          this.studio.isPlaying = true;
+          this.studio.masterPlayBtn.classList.add('active');
+          this.studio.masterPlayBtn.textContent = '⏸ PAUSE';
+        }
+        return;
+      } catch (pcmErr) {
+        console.warn('PCM tap failed, audio element fallback:', pcmErr);
+      }
+
+      const host = this._ensureAudioHost();
+
+      const el = document.createElement('audio');
       el.crossOrigin = 'anonymous';
-      el.preload = 'none';
-      this._bindIcecastElementHandlers(el);
-      el.src = url;
+      el.setAttribute('crossorigin', 'anonymous');
+      el.preload = 'auto';
+      el.autoplay = false;
+      el.controls = false;
+      el.muted = false;
+      el.volume = 1;
+      el.playsInline = true;
+      el.setAttribute('playsinline', '');
+      el.setAttribute('webkit-playsinline', '');
+      host.appendChild(el);
       this.streamAudio = el;
 
-      this.streamMediaSource = ctx.createMediaElementSource(el);
-      this.streamMediaSource.connect(this.eqLowNode);
+      el.onerror = (err) => {
+        console.warn('Stream audio error:', err);
+        this.statusEl.textContent = '[STREAM ERROR]';
+      };
+      const hookTap = () => {
+        try { ctx.resume(); } catch (e) {}
+        if (!this._attachStreamTap(el, ctx)) return;
+        this._ensureStreamEntryGain();
+        this._routeStreamEntryIntoGraph();
+        this.updateAudioParamsFromPosition();
+      };
+      el.onplaying = () => {
+        this.statusEl.textContent = 'LIVE STREAMING';
+        hookTap();
+      };
+      el.oncanplay = () => {
+        if (this.statusEl.textContent === 'Connecting stream...') {
+          this.statusEl.textContent = 'STREAM READY';
+        }
+        hookTap();
+      };
+
+      this._streamTapKind = null;
+      this.streamMediaSource = null;
+      el.src = url;
+      try { el.load(); } catch (e) {}
 
       this.isLoaded = true;
       this.duration = Infinity;
 
-      if (this.studio.isPlaying) {
-        this.play();
+      this._resumeStreamElement();
+      hookTap();
+      this._armStreamCaptureWatch();
+      this.isPlaying = true;
+      this.startTime = ctx.currentTime;
+
+      try { await ctx.resume(); } catch (e) {}
+      this.updateAudioParamsFromPosition();
+
+      if (this.studio.masterPlayBtn) {
+        this.studio.isPlaying = true;
+        this.studio.masterPlayBtn.classList.add('active');
+        this.studio.masterPlayBtn.textContent = '⏸ PAUSE';
       }
     } catch (err) {
       console.error('Failed to load audio stream:', err);
@@ -2130,7 +2803,12 @@ class AudioTrack {
     try {
       const objectUrl = URL.createObjectURL(file);
       if (!this.htmlAudio) {
-        this.htmlAudio = new Audio();
+        const host = this._ensureAudioHost();
+        this.htmlAudio = document.createElement('audio');
+        this.htmlAudio.crossOrigin = 'anonymous';
+        this.htmlAudio.setAttribute('crossorigin', 'anonymous');
+        this.htmlAudio.preload = 'auto';
+        host.appendChild(this.htmlAudio);
         this.mediaElementSource = ctx.createMediaElementSource(this.htmlAudio);
         this.mediaElementSource.connect(this.eqLowNode);
       }
@@ -2164,14 +2842,21 @@ class AudioTrack {
 
     await this.studio.ensureAudioRunning();
     const ctx = this.studio.audioCtx;
+    if (!this.gainNode) {
+      this.setupWebAudioNodes(ctx);
+    }
 
-    this.stopNodeOnly();
+    const isEffectNode = !!(bundle.manifest && (Number(bundle.manifest.inputs) > 0 || bundle.manifest.type === 'effect' || bundle.manifest.category === 'effect' || (bundle.manifest.category || '').toLowerCase().includes('effect')));
+    const keepTape = isEffectNode ? this.audioBuffer : null;
+    const keepStream = (isEffectNode && this.isStream) ? this.streamUrl : null;
+    const keepLiveIn = (isEffectNode && this.isLiveIn) ? this.liveStream : null;
+
+    this.stopNodeOnly({ keepStream: !!keepStream, keepLiveIn: !!keepLiveIn });
     this.useMediaElement = false;
-    this.isLiveIn = false;
-    this.isStream = false;
-    const insertNode = !!(bundle.manifest && Number(bundle.manifest.inputs) > 0);
-    const keepTape = insertNode ? this.audioBuffer : null;
-    this.audioBuffer = null;
+    if (!keepLiveIn) this.isLiveIn = false;
+    if (!keepStream) this.isStream = false;
+    else this.isStream = true;
+    if (!keepTape) this.audioBuffer = null;
     this.playlist = [];
 
     if (this.customNodeDSP && typeof this.customNodeDSP.dispose === 'function') {
@@ -2192,7 +2877,14 @@ class AudioTrack {
           }
           URL.revokeObjectURL(blobUrl);
           
-          const workletNode = new AudioWorkletNode(ctx, processorName);
+          const workletNode = new AudioWorkletNode(ctx, processorName, {
+            numberOfInputs: 1,
+            numberOfOutputs: 1,
+            outputChannelCount: [2],
+            channelCount: 2,
+            channelCountMode: 'explicit',
+            channelInterpretation: 'speakers'
+          });
           const gainNode = ctx.createGain();
           gainNode.gain.setValueAtTime(1.0, ctx.currentTime);
           workletNode.connect(gainNode);
@@ -2269,6 +2961,24 @@ class AudioTrack {
           } else if (this.customNodeDSP.input) {
             this._armNodeTape(keepTape);
           }
+          this._armInsertDry(keepTape);
+        }
+      } else if (keepStream) {
+        this.isStream = true;
+        this.streamUrl = keepStream;
+        // Never pause/destroy streamAudio or null streamMediaSource on insert.
+        // Disconnect+reconnect the entry gain only — MES stays captured.
+        if (this.streamMediaSource) {
+          this._routeStreamEntryIntoGraph();
+          this._resumeStreamElement();
+        }
+      } else if (keepLiveIn && this.liveMediaSource) {
+        this.isLiveIn = true;
+        try { this.liveMediaSource.disconnect(); } catch (e) {}
+        const liveInsert = this._getInsertInputNode(this.customNodeDSP);
+        this.liveMediaSource.connect(liveInsert || this.eqLowNode);
+        if (this.customNodeDSP && typeof this.customNodeDSP.start === 'function') {
+          this.customNodeDSP.start();
         }
       }
       this.isCustomNode = true;
@@ -2283,7 +2993,15 @@ class AudioTrack {
         this.studio.openNodeInspector(this);
       }
 
-      if (this.studio.isPlaying) {
+      this.updateAudioParamsFromPosition();
+
+      if (keepStream || keepLiveIn) {
+        this.isPlaying = true;
+        if (this.customNodeDSP && typeof this.customNodeDSP.start === 'function') {
+          this.customNodeDSP.start();
+        }
+        if (keepStream) this._resumeStreamElement();
+      } else if (this.studio.isPlaying) {
         this.play();
       }
       if (autoOpenInspector) {
@@ -2388,6 +3106,9 @@ class AudioTrack {
         }
         this._armInsertDry(this.audioBuffer);
       }
+      if (this.isStream) {
+        this._resumeIcecastPcm();
+      }
       this.isPlaying = true;
       return;
     }
@@ -2399,8 +3120,8 @@ class AudioTrack {
 
     if (!ctx) return;
 
-    if (this.isStream && this.streamAudio) {
-      this.streamAudio.play().catch(e => console.warn('Stream play error:', e));
+    if (this.isStream && (this.streamPcmGain || this._streamPcmRunning || this.streamAudio)) {
+      this._resumeIcecastPcm();
       this.isPlaying = true;
       this.startTime = ctx.currentTime;
       return;
@@ -2436,14 +3157,13 @@ class AudioTrack {
     }
   }
 
-  stopNodeOnly() {
+  stopNodeOnly(opts = {}) {
     this._stopNodeTape();
     this._stopInsertDry();
-    if (this.isCustomNode && this.customNodeDSP) {
+    if (this.isCustomNode && this.customNodeDSP && !opts.keepStream && !opts.keepLiveIn) {
       if (typeof this.customNodeDSP.stop === 'function') {
         this.customNodeDSP.stop();
       }
-      this.isPlaying = false;
     }
     if (this.bufferSource) {
       this.bufferSource.onended = null;
@@ -2455,10 +3175,12 @@ class AudioTrack {
       this.htmlAudio.onended = null;
       this.htmlAudio.pause();
     }
-    if (this.streamAudio) {
+    if (this.isStream && !opts.keepStream) {
+      this._pauseIcecastPcm();
+    } else if (this.streamAudio && !this.isCustomNode && !opts.keepStream) {
       this.streamAudio.pause();
     }
-    this.isPlaying = false;
+    if (!opts.keepStream && !opts.keepLiveIn) this.isPlaying = false;
   }
 
   stop() {
@@ -2630,12 +3352,13 @@ class AudioTrack {
     if (this.isRecordingMotion) {
       this.isRecordingMotion = false;
       this.recBtn.classList.remove('recording');
-      this.recBtn.textContent = '● REC';
+      this.recBtn.textContent = '●';
 
       if (this.motionPath.length > 1) {
         this.isPlayingMotion = true;
         this.playMotionBtn.classList.add('active');
-        this.motionPlayStartTime = performance.now();
+        this.motionAccumulatedTime = 0;
+        this.lastMotionFrameTime = performance.now();
       }
     } else {
       this.motionPath = [];
@@ -2643,7 +3366,7 @@ class AudioTrack {
       this.isPlayingMotion = false;
       this.recordStartTime = performance.now();
       this.recBtn.classList.add('recording');
-      this.recBtn.textContent = '■ REC...';
+      this.recBtn.textContent = '■';
       this.playMotionBtn.classList.remove('active');
       this.motionPath.push({ t: 0, x: this.x, y: this.y, z: this.z });
     }
@@ -2654,7 +3377,7 @@ class AudioTrack {
     this.isPlayingMotion = !this.isPlayingMotion;
     this.playMotionBtn.classList.toggle('active', this.isPlayingMotion);
     if (this.isPlayingMotion) {
-      this.motionPlayStartTime = performance.now();
+      this.lastMotionFrameTime = performance.now();
     }
   }
 
@@ -2663,8 +3386,10 @@ class AudioTrack {
     this.isRecordingMotion = false;
     this.isPlayingMotion = false;
     this.recBtn.classList.remove('recording');
-    this.recBtn.textContent = '● REC';
+    this.recBtn.textContent = '●';
     this.playMotionBtn.classList.remove('active');
+    this.motionAccumulatedTime = 0;
+    this.lastMotionFrameTime = 0;
   }
 
   updateMotionPlayback() {
@@ -2674,8 +3399,14 @@ class AudioTrack {
     if (totalPathDuration <= 0) return;
 
     const now = performance.now();
-    const elapsedReal = (now - this.motionPlayStartTime) / 1000;
-    const elapsedScaled = (elapsedReal * this.motionSpeed) % totalPathDuration;
+    if (!this.lastMotionFrameTime) {
+      this.lastMotionFrameTime = now;
+    }
+    const dtReal = Math.min((now - this.lastMotionFrameTime) / 1000, 0.25);
+    this.lastMotionFrameTime = now;
+
+    this.motionAccumulatedTime = (this.motionAccumulatedTime || 0) + dtReal * this.motionSpeed;
+    const elapsedScaled = this.motionAccumulatedTime % totalPathDuration;
 
     let p1 = this.motionPath[0];
     let p2 = this.motionPath[this.motionPath.length - 1];
@@ -2848,6 +3579,17 @@ async function base64ToAudioBuffer(base64Str, audioCtx) {
   });
 }
 
+function arrayBufferToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  const chunk = 0x8000;
+  for (let i = 0; i < len; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunk, len)));
+  }
+  return btoa(binary);
+}
+
 /**
  * Main Aether Studio Engine
  */
@@ -2960,6 +3702,39 @@ class SpatialStudio {
     // Modal Events
     this.modalCancelBtn.addEventListener('click', () => this.hideLiveInModal());
     this.modalConfirmBtn.addEventListener('click', () => this.confirmLiveInput());
+
+    // Stream Modal Events
+    this.pendingStreamTrackIndex = null;
+    this.streamUrlModal = document.getElementById('stream-url-modal');
+    this.streamModalTitle = document.getElementById('stream-modal-title');
+    this.streamUrlInput = document.getElementById('stream-url-input');
+    this.streamModalCancelBtn = document.getElementById('stream-modal-cancel-btn');
+    this.streamModalConfirmBtn = document.getElementById('stream-modal-confirm-btn');
+
+    if (this.streamModalCancelBtn) {
+      this.streamModalCancelBtn.addEventListener('click', () => this.hideStreamModal());
+    }
+    if (this.streamModalConfirmBtn) {
+      this.streamModalConfirmBtn.addEventListener('click', () => this.confirmStreamModal());
+    }
+    if (this.streamUrlInput) {
+      this.streamUrlInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.confirmStreamModal();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          this.hideStreamModal();
+        }
+      });
+    }
+    if (this.streamUrlModal) {
+      this.streamUrlModal.addEventListener('click', (e) => {
+        if (e.target === this.streamUrlModal) {
+          this.hideStreamModal();
+        }
+      });
+    }
 
     // Node Inspector Modal & IPC PostMessage Bridge
     this.activeInspectorTrack = null;
@@ -3076,12 +3851,10 @@ class SpatialStudio {
 
     // Keyboard shortcuts
     window.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'r') {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'r' || e.key === 'R' || e.code === 'KeyR')) {
         e.preventDefault();
         this.closeAudioContext(true);
-        const u = new URL(window.location.href);
-        u.searchParams.set('_r', String(Date.now()));
-        window.location.replace(u.toString());
+        window.location.reload();
       }
       if (e.code === 'Space') {
         const tag = (e.target && e.target.tagName) || '';
@@ -3313,6 +4086,14 @@ class SpatialStudio {
           try { t.streamMediaSource.disconnect(); } catch (e) {}
           t.streamMediaSource = null;
         }
+        if (t.streamEntryGain) {
+          try { t.streamEntryGain.disconnect(); } catch (e) {}
+          t.streamEntryGain = null;
+        }
+        if (t._streamCaptureAnalyser) {
+          try { t._streamCaptureAnalyser.disconnect(); } catch (e) {}
+          t._streamCaptureAnalyser = null;
+        }
         if (t.mediaElementSource) {
           try { t.mediaElementSource.disconnect(); } catch (e) {}
           t.mediaElementSource = null;
@@ -3375,6 +4156,9 @@ class SpatialStudio {
                 t.customNodeDSP.params[paramId] = val;
               }
             }
+          }
+          if (s.isStream && s.streamUrl) {
+            await t.loadStreamUrl(s.streamUrl);
           }
           if (!wasMasterPlaying && t.customNodeDSP && typeof t.customNodeDSP.stop === 'function') {
             t.customNodeDSP.stop();
@@ -3589,6 +4373,41 @@ class SpatialStudio {
       } else {
         this.stopAll();
       }
+    }
+  }
+
+  // --- STREAM URL MODAL ---
+  promptStreamModal(trackIndex) {
+    this.pendingStreamTrackIndex = trackIndex;
+    const track = this.tracks[trackIndex];
+    if (this.streamModalTitle) {
+      this.streamModalTitle.textContent = `Track ${trackIndex + 1} — Live Stream Receiver`;
+    }
+    if (this.streamUrlInput) {
+      this.streamUrlInput.value = (track && track.streamUrl) ? track.streamUrl : 'https://dontpanic.fm/listen/stream';
+    }
+    if (this.streamUrlModal) {
+      this.streamUrlModal.classList.add('active');
+      setTimeout(() => {
+        if (this.streamUrlInput) {
+          this.streamUrlInput.focus();
+          this.streamUrlInput.select();
+        }
+      }, 50);
+    }
+  }
+
+  hideStreamModal() {
+    if (this.streamUrlModal) {
+      this.streamUrlModal.classList.remove('active');
+    }
+  }
+
+  async confirmStreamModal() {
+    const url = (this.streamUrlInput?.value || '').trim();
+    this.hideStreamModal();
+    if (url && this.pendingStreamTrackIndex !== null && this.tracks[this.pendingStreamTrackIndex]) {
+      await this.tracks[this.pendingStreamTrackIndex].loadStreamUrl(url);
     }
   }
 
@@ -4006,24 +4825,21 @@ class SpatialStudio {
           t.motionPath = saved.motionPath;
           t.isPlayingMotion = true;
           if (t.playMotionBtn) t.playMotionBtn.classList.add('active');
-          t.motionPlayStartTime = performance.now();
+          t.motionAccumulatedTime = 0;
+          t.lastMotionFrameTime = performance.now();
         } else {
           t.motionPath = [];
           t.isPlayingMotion = false;
           if (t.playMotionBtn) t.playMotionBtn.classList.remove('active');
         }
 
-        if (saved.motionSpeed) {
-          t.motionSpeed = saved.motionSpeed;
-          if (t.speedBtns) {
-            t.speedBtns.forEach(b => {
-              b.classList.toggle('active', parseFloat(b.getAttribute('data-speed')) === t.motionSpeed);
-            });
-          }
+        if (saved.motionSpeed !== undefined) {
+          t.setMotionSpeed(parseFloat(saved.motionSpeed));
         }
 
         // Check if Track is a Custom Node or Audio File/Stream
-        const pathLooksLikeNode = (saved.filePath || '').toLowerCase().endsWith('.aethernode');
+        const rawFileName = (saved.filePath || saved.sampleName || saved.name || '').split('/').pop() || '';
+        const pathLooksLikeNode = (saved.filePath || '').toLowerCase().endsWith('.aethernode') || rawFileName.toLowerCase().endsWith('.aethernode');
         const wantsCustomNode = !!(saved.isCustomNode || saved.customNodeBundle || saved.customNodeZipBase64 || pathLooksLikeNode);
         if (wantsCustomNode) {
           try {
@@ -4039,10 +4855,10 @@ class SpatialStudio {
                 console.warn('Session zip unpack failed for track ' + (idx + 1) + ':', zipErr);
               }
             }
-            if (!bundle && pathLooksLikeNode) {
+            if (!bundle && (pathLooksLikeNode || saved.filePath)) {
               try {
-                bundle = await invokeTauri('load_node_bundle_from_path', { path: saved.filePath });
-                if (!zipBase64) {
+                bundle = await invokeTauri('load_node_bundle_from_path', { path: saved.filePath || rawFileName });
+                if (!zipBase64 && saved.filePath) {
                   try { zipBase64 = await invokeTauri('read_audio_file', { path: saved.filePath }); } catch (e) {}
                 }
               } catch (pathErr) {
@@ -4051,6 +4867,32 @@ class SpatialStudio {
             }
             if (!bundle && saved.customNodeBundle) {
               bundle = saved.customNodeBundle;
+            }
+            // Fallback: Fetch bundle via HTTP server
+            if (!bundle) {
+              const nodeFileName = rawFileName.toLowerCase().endsWith('.aethernode') ? rawFileName : `${rawFileName}.aethernode`;
+              const candidateUrls = [
+                `/nodes/${nodeFileName}`,
+                `/Aether%204.0%20UI/nodes/${nodeFileName}`,
+                `../nodes/${nodeFileName}`
+              ];
+              for (const url of candidateUrls) {
+                try {
+                  const resp = await fetch(url);
+                  if (resp.ok) {
+                    const buf = await resp.arrayBuffer();
+                    const b64 = arrayBufferToBase64(buf);
+                    bundle = await invokeTauri('load_node_bundle_from_base64', {
+                      base64: b64,
+                      filename: nodeFileName
+                    });
+                    if (bundle) {
+                      zipBase64 = b64;
+                      break;
+                    }
+                  }
+                } catch (_) {}
+              }
             }
             if (!bundle) throw new Error('No custom node bundle, zip, or path available');
             await t.loadNodeBundle(bundle, false);
@@ -4167,7 +5009,7 @@ class SpatialStudio {
     this.tracks.forEach(t => {
       if (t.isLiveIn) {
         t.isPlaying = true;
-      } else if (t.isStream && t.streamAudio) {
+      } else if (t.isStream) {
         t.play();
       } else if (t.isLoaded) {
         t.play(nowTime);
@@ -4181,10 +5023,7 @@ class SpatialStudio {
     this.masterPlayBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
 
     this.tracks.forEach(t => {
-      if (t.isStream && t.streamAudio) {
-        t.streamAudio.pause();
-        t.isPlaying = false;
-      } else if (!t.isLiveIn) {
+      if (!t.isLiveIn) {
         t.stopNodeOnly();
       }
     });
@@ -4556,6 +5395,23 @@ class SpatialStudio {
 
     this.ctx.clearRect(0, 0, w, h);
 
+    // Concentric Graduated Polar/Spatial Depth Reference Rings
+    const cx = w / 2;
+    const cy = h / 2;
+    const maxRadius = Math.min(w, h) * 0.46;
+    const ringFractions = [0.28, 0.56, 0.85];
+    this.ctx.save();
+    ringFractions.forEach((frac) => {
+      const radius = maxRadius * frac;
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+      this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.07)';
+      this.ctx.lineWidth = 1;
+      this.ctx.setLineDash([3, 5]);
+      this.ctx.stroke();
+    });
+    this.ctx.restore();
+
     if (this.isPlaying && this.audioCtx) {
       const t = this.audioCtx.currentTime;
       const secs = (t % 60).toFixed(1).padStart(4, '0');
@@ -4810,14 +5666,25 @@ class SpatialStudio {
         this.ctx.stroke();
       }
 
-      // Center Node Orb
+      // Center Node Orb with Flat Elevation Shadow
+      this.ctx.save();
+      this.ctx.shadowColor = this.isDark ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.45)';
+      this.ctx.shadowBlur = (this.activeDragNodeIndex === i || t.isRecordingMotion) ? 22 : 12;
+      this.ctx.shadowOffsetX = 0;
+      this.ctx.shadowOffsetY = (this.activeDragNodeIndex === i || t.isRecordingMotion) ? 8 : 4;
+
       this.ctx.beginPath();
       this.ctx.arc(pxX, pxY, nodeRadius, 0, 2 * Math.PI);
       this.ctx.fillStyle = t.color;
-      this.ctx.shadowColor = t.color;
-      this.ctx.shadowBlur = (this.activeDragNodeIndex === i || t.isRecordingMotion) ? 16 : 6;
       this.ctx.fill();
-      this.ctx.shadowBlur = 0;
+      this.ctx.restore();
+
+      // Tactile Specular Micro-Rim
+      this.ctx.beginPath();
+      this.ctx.arc(pxX, pxY, nodeRadius, 0, 2 * Math.PI);
+      this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.12)';
+      this.ctx.lineWidth = 1;
+      this.ctx.stroke();
 
       // Dedicated Gear Icon Badge on Canvas Node
       if (t.isCustomNode) {
@@ -4855,7 +5722,7 @@ class SpatialStudio {
 
       let statusExtra = '';
       if (t.isRecordingMotion) statusExtra = ' [REC...]';
-      else if (t.isPlayingMotion) statusExtra = ` [${t.motionSpeed}x]`;
+      else if (t.isPlayingMotion) statusExtra = ` [${(t.motionSpeed < 0.001 ? t.motionSpeed.toFixed(4) : (t.motionSpeed < 0.01 ? t.motionSpeed.toFixed(3) : t.motionSpeed.toFixed(2)))}x]`;
       else if (t.isLiveIn) statusExtra = ' [LIVE]';
 
       this.ctx.fillText(`V:${volPct}% P:${panStr} Z:${t.z.toFixed(1)}${statusExtra}`, pxX, pxY + nodeRadius + 16);

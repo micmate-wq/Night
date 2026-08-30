@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Body</title>
+  <style>
+    :root {
+      --bg: var(--aether-bg, var(--bg-main, #0A0A0A));
+      --panel: var(--aether-panel, var(--bg-card, #141414));
+      --accent: var(--track-color, var(--aether-accent, #FFFFFF));
+      --text: var(--aether-text, var(--text-main, #FFFFFF));
+      --muted: var(--aether-text-muted, var(--text-muted, #888));
+      --border: var(--aether-border, var(--border-light, #333));
+      --font-h: var(--aether-font-heading, 'Space Grotesk', sans-serif);
+      --font-m: var(--aether-font-mono, 'JetBrains Mono', monospace);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--font-h); font-size: 11px;
+      width: 100vw; height: 100vh; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    header {
+      padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .title { font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; font-size: 11px; }
+    .badge { font-family: var(--font-m); font-size: 9px; opacity: 0.6; letter-spacing: 0.08em; }
+    .modes { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; padding: 10px 12px; align-items: end; height: 36px; }
+    .bar { height: 6px; border-radius: 1px; background: rgba(255,255,255,0.08); }
+    .bar.on { background: var(--accent); opacity: 0.85; }
+    .bar.pulse { box-shadow: 0 0 8px var(--accent); opacity: 1; }
+    .grid { padding: 8px 12px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+    label { display: flex; flex-direction: column; gap: 4px; }
+    .row { display: flex; justify-content: space-between; color: var(--muted); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .val { font-family: var(--font-m); color: var(--text); }
+    input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: #222; border: 1px solid var(--border); outline: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--text); cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">Body</div>
+    <div class="badge" id="note-badge">G2</div>
+  </header>
+  <div class="modes" id="modes"></div>
+  <div class="grid">
+    <label><div class="row"><span>Structure</span><span class="val" id="v-structure">0.42</span></div>
+      <input id="structure" type="range" min="0" max="1" step="0.01" value="0.42"></label>
+    <label><div class="row"><span>Brightness</span><span class="val" id="v-brightness">0.55</span></div>
+      <input id="brightness" type="range" min="0" max="1" step="0.01" value="0.55"></label>
+    <label><div class="row"><span>Damping</span><span class="val" id="v-damping">0.45</span></div>
+      <input id="damping" type="range" min="0" max="1" step="0.01" value="0.45"></label>
+    <label><div class="row"><span>Position</span><span class="val" id="v-position">0.35</span></div>
+      <input id="position" type="range" min="0" max="1" step="0.01" value="0.35"></label>
+  </div>
+  <script>
+    const modesEl = document.getElementById('modes');
+    const bars = [];
+    for (let i = 0; i < 8; i++) {
+      const d = document.createElement('div');
+      d.className = 'bar';
+      modesEl.appendChild(d);
+      bars.push(d);
+    }
+    const state = { structure: 0.42, brightness: 0.55, damping: 0.45, position: 0.35 };
+    const badge = document.getElementById('note-badge');
+    const NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+    function f0() {
+      return 55 * Math.pow(4, Math.max(0, Math.min(1, state.structure)));
+    }
+
+    function noteName(hz) {
+      const n = Math.round(12 * Math.log2(hz / 440) + 69);
+      return NAMES[((n % 12) + 12) % 12] + Math.floor(n / 12 - 1);
+    }
+
+    function modeEnergy(i) {
+      const p = Math.max(0, Math.min(1, state.position));
+      const b = Math.max(0, Math.min(1, state.brightness));
+      const strike = 0.07 + p * 0.43;
+      const loc = 0.14 + 0.86 * Math.abs(Math.sin(Math.PI * (i + 1) * strike));
+      const even = (i % 2 === 0) ? (1 - p * 0.72) : (0.28 + p * 0.72);
+      const rolloff = Math.pow(0.28 + b * 0.72, i * 0.5);
+      return loc * even * rolloff;
+    }
+
+    function paintBars(pulseOn) {
+      bars.forEach((d, i) => {
+        const e = modeEnergy(i);
+        d.style.height = Math.max(4, Math.round(6 + e * 22)) + 'px';
+        d.classList.toggle('on', e > 0.18);
+        d.classList.toggle('pulse', !!pulseOn && e > 0.35);
+      });
+    }
+
+    function paintBadge() {
+      badge.textContent = noteName(f0());
+    }
+
+    function notify(id, value) {
+      window.parent.postMessage({ type: 'aether:param-change', paramId: id, value: value }, '*');
+    }
+
+    function fmtVal(n) {
+      return Number(n).toFixed(2);
+    }
+
+    function bind(id) {
+      const el = document.getElementById(id);
+      const v = document.getElementById('v-' + id);
+      el.addEventListener('input', () => {
+        const n = parseFloat(el.value);
+        state[id] = n;
+        v.textContent = fmtVal(n);
+        if (id === 'structure') paintBadge();
+        paintBars(false);
+        notify(id, n);
+      });
+    }
+    ['structure', 'brightness', 'damping', 'position'].forEach(bind);
+
+    paintBadge();
+    paintBars(false);
+
+    let flash = false;
+    let last = performance.now();
+    function loop(now) {
+      const decay = Math.max(0, Math.min(1, state.damping));
+      const dt = 180 + decay * 420;
+      if (now - last >= dt) {
+        last = now;
+        flash = !flash;
+        paintBars(flash);
+      }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    window.addEventListener('message', (event) => {
+      if (!event.data || event.data.type !== 'aether:param-update') return;
+      const { paramId, value } = event.data;
+      if (state[paramId] === undefined) return;
+      state[paramId] = value;
+      const el = document.getElementById(paramId);
+      const v = document.getElementById('v-' + paramId);
+      if (el) el.value = value;
+      if (v) v.textContent = fmtVal(Number(value));
+      if (paramId === 'structure') paintBadge();
+      paintBars(flash);
+    });
+  </script>
+</body>
+</html>
