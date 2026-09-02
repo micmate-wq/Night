@@ -190,6 +190,17 @@ body {
   0% { box-shadow: 0 0 0 0 rgba(128, 128, 128, 0.4); }
   100% { box-shadow: 0 0 10px 3px rgba(128, 128, 128, 0.7); }
 }
+#icecast-out-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #888;
+}
+#icecast-out-dot.live { background: #2ecc71; }
+#icecast-out-dot.connecting { background: #f1c40f; }
+#icecast-out-dot.err { background: #e74c3c; }
+#icecast-out-mount { opacity: 0.7; font-weight: 600; }
 
 .master-time-display {
   font-family: var(--font-mono);
@@ -943,6 +954,11 @@ body {
           <button id="master-rec-btn" class="btn-rec-master" title="Record Master Live Output to WAV">
             <span id="rec-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
             <span id="rec-btn-text">REC</span>
+          </button>
+          <button id="icecast-out-btn" class="btn-rec-master" title="Stream master mix to Icecast /matt">
+            <span id="icecast-out-dot"></span>
+            <span id="icecast-out-text">CONNECT</span>
+            <span id="icecast-out-mount">/matt</span>
           </button>
         </div>
         <div class="master-time-display" id="master-time">00:00.0</div>
@@ -2894,6 +2910,27 @@ class AudioTrack {
             bundle.manifest.parameters.forEach(p => { defaultParams[p.id] = p.default; });
           }
 
+          workletNode.port.onmessage = (e) => {
+            if (!e.data) return;
+            if (e.data.type === 'aether:voice-trigger') {
+              this.lastVoiceTriggers = e.data.triggers;
+              if (e.data.bpm && this.customNodeDSP && this.customNodeDSP.params) {
+                this.customNodeDSP.params.bpm = e.data.bpm;
+              }
+              const hasKick = Array.isArray(e.data.triggers) && e.data.triggers.some(tr => tr.voice === 'kick');
+              if (hasKick) {
+                this.lastKickTime = performance.now();
+              }
+              const modal = document.getElementById('custom-node-inspector-modal');
+              if (modal && modal.classList.contains('active')) {
+                const frame = document.getElementById('custom-node-inspector-frame');
+                if (frame && frame.contentWindow) {
+                  frame.contentWindow.postMessage(e.data, '*');
+                }
+              }
+            }
+          };
+
           this.customNodeDSP = {
             workletNode,
             gainNode,
@@ -3511,6 +3548,31 @@ async function invokeTauri(cmd, args = {}) {
   return null;
 }
 
+function createTauriChannel(onmessage) {
+  const Core = window.__TAURI__ && window.__TAURI__.core;
+  if (Core && typeof Core.Channel === 'function') {
+    const ch = new Core.Channel();
+    ch.onmessage = onmessage;
+    return ch;
+  }
+  return null;
+}
+
+async function invokeTauriRaw(cmd, bytes) {
+  try {
+    if (window.__TAURI__ && window.__TAURI__.core && typeof window.__TAURI__.core.invoke === 'function') {
+      return await window.__TAURI__.core.invoke(cmd, bytes);
+    }
+    if (window.__TAURI_INTERNALS__ && typeof window.__TAURI_INTERNALS__.invoke === 'function') {
+      return await window.__TAURI_INTERNALS__.invoke(cmd, bytes);
+    }
+  } catch (err) {
+    console.warn(`Tauri raw command "${cmd}" failed:`, err);
+    throw err;
+  }
+  return null;
+}
+
 async function audioBufferToBase64(audioBuffer) {
   if (!audioBuffer) return null;
   const numChannels = audioBuffer.numberOfChannels;
@@ -3612,6 +3674,13 @@ class SpatialStudio {
     this.masterRecChunksR = [];
     this.masterRecStartTime = 0;
 
+    this._icecastLive = false;
+    this._icecastConnecting = false;
+    this._icecastPcmInFlight = false;
+    this._icecastCaptureReady = false;
+    this.icecastCaptureNode = null;
+    this.icecastZeroGain = null;
+
     // Theme state
     this.isDark = (localStorage.getItem('aether_theme') || localStorage.getItem('tetrasphere_theme')) === 'dark';
 
@@ -3662,6 +3731,12 @@ class SpatialStudio {
     this.masterPlayBtn.addEventListener('click', () => this.toggleMasterPlay());
     this.masterStopBtn.addEventListener('click', () => this.stopMaster());
     this.masterRecBtn.addEventListener('click', () => this.toggleMasterRecording());
+    this.icecastOutBtn = document.getElementById('icecast-out-btn');
+    this.icecastOutText = document.getElementById('icecast-out-text');
+    this.icecastOutDot = document.getElementById('icecast-out-dot');
+    if (this.icecastOutBtn) {
+      this.icecastOutBtn.addEventListener('click', () => this.toggleIcecastOutbound());
+    }
 
     // Volume Slider
     this.masterVolumeSlider.addEventListener('input', (e) => {
@@ -3754,6 +3829,11 @@ class SpatialStudio {
     // Bidirectional window.postMessage bridge from embedded Node UIs
     window.addEventListener('message', (event) => {
       if (!event.data || typeof event.data !== 'object') return;
+      if (event.data.type === 'SET_VOICE_VOL') {
+        if (this.activeInspectorTrack && this.activeInspectorTrack.customNodeDSP && this.activeInspectorTrack.customNodeDSP.workletNode) {
+          try { this.activeInspectorTrack.customNodeDSP.workletNode.port.postMessage(event.data); } catch (_) {}
+        }
+      }
       if (event.data.type === 'aether:param-change' || event.data.type === 'PARAMETER_CHANGE') {
         const paramId = event.data.paramId || event.data.id;
         const value = event.data.value;
@@ -3907,16 +3987,16 @@ class SpatialStudio {
     this.masterGain = this.audioCtx.createGain();
     this.masterGain.gain.value = parseFloat(this.masterVolumeSlider.value);
 
-    // Audio Graph: Direct bit-perfect transparent master bus
-    this.masterGain.connect(this.audioCtx.destination);
-
-    // Master Limiter Node (available for peak-limiting safety)
+    // Master Limiter Node — Icecast tap sits AFTER this.
     this.masterLimiter = this.audioCtx.createDynamicsCompressor();
     this.masterLimiter.threshold.value = -0.5;
     this.masterLimiter.knee.value = 12.0;
     this.masterLimiter.ratio.value = 4.0;
     this.masterLimiter.attack.value = 0.003;
     this.masterLimiter.release.value = 0.15;
+
+    this.masterGain.connect(this.masterLimiter);
+    this.masterLimiter.connect(this.audioCtx.destination);
 
     // Setup ScriptProcessor / Worklet for Master Recording capture (isolated with 0-gain sink to prevent duplicate delayed audio output)
     const bufferSize = 4096;
@@ -3940,6 +4020,7 @@ class SpatialStudio {
     this._masterRecorderArmed = false;
 
     this.tracks.forEach(track => track.setupWebAudioNodes(this.audioCtx));
+    this._initIcecastCapture();
 
     this.audioCtx.addEventListener('statechange', () => {
       if (!this.audioCtx) return;
@@ -4113,6 +4194,9 @@ class SpatialStudio {
       this.masterLimiter = null;
       this.masterRecorderNode = null;
       this.recorderZeroGain = null;
+      this.icecastCaptureNode = null;
+      this.icecastZeroGain = null;
+      this._icecastCaptureReady = false;
       this.reverbBuffer = null;
       this.workletReady = false;
       if (oldCtx && oldCtx.state !== 'closed') {
@@ -4457,6 +4541,170 @@ class SpatialStudio {
       console.error('Error connecting live input device:', err);
       alert('Failed to connect live input: ' + err.message);
     }
+  }
+
+  // --- ICECAST OUTBOUND (/matt) ---
+  _setIcecastUi(state, label) {
+    if (this.icecastOutDot) {
+      this.icecastOutDot.classList.remove('live', 'connecting', 'err');
+      if (state) this.icecastOutDot.classList.add(state);
+    }
+    if (this.icecastOutText && label) this.icecastOutText.textContent = label;
+    if (this.icecastOutBtn) {
+      this.icecastOutBtn.classList.toggle('recording', state === 'live');
+    }
+  }
+
+  _onIcecastEvent(msg) {
+    if (!msg) return;
+    const ev = msg.event || msg;
+    if (ev === 'connecting') {
+      this._setIcecastUi('connecting', 'CONNECTING');
+    } else if (ev === 'connected') {
+      this._icecastLive = true;
+      this._icecastConnecting = false;
+      this._setIcecastUi('live', 'DISCONNECT');
+      this._startIcecastTap();
+    } else if (ev === 'disconnected') {
+      this._icecastLive = false;
+      this._icecastConnecting = false;
+      this._stopIcecastTap();
+      this._setIcecastUi('', 'CONNECT');
+    } else if (ev === 'error') {
+      this._icecastLive = false;
+      this._icecastConnecting = false;
+      this._stopIcecastTap();
+      this._setIcecastUi('err', 'CONNECT');
+      const message = (msg.data && msg.data.message) || 'Icecast error';
+      console.warn('Icecast outbound:', message);
+      if (this.showToast) this.showToast(message, 'error');
+    }
+  }
+
+  async _initIcecastCapture() {
+    if (!this.audioCtx || this._icecastCaptureReady) return;
+    const ctx = this.audioCtx;
+    const tryUrls = [];
+    try { tryUrls.push(new URL('icecast-capture-worklet.js', window.location.href).href); } catch (e) {}
+    tryUrls.push('/desktop/icecast-capture-worklet.js');
+    let loaded = false;
+    for (const u of tryUrls) {
+      try {
+        await ctx.audioWorklet.addModule(u);
+        loaded = true;
+        break;
+      } catch (e) {}
+    }
+    if (!loaded) {
+      const src = `class IcecastCaptureWorklet extends AudioWorkletProcessor{constructor(){super();this.cap=16384;this.L=new Float32Array(this.cap);this.R=new Float32Array(this.cap);this.w=0;this.r=0;this.n=0;this.enabled=false;this.batch=4096;this.port.onmessage=(e)=>{const d=e.data||{};if(d.type==='start'){this.enabled=true;this.batch=(d.batch|0)||4096;this.w=this.r=this.n=0}else if(d.type==='stop'){this.enabled=false;this.n=0}}}process(inputs,outputs){const out=outputs[0];if(out&&out[0])out[0].fill(0);if(out&&out[1])out[1].fill(0);if(!this.enabled)return true;const input=inputs[0];if(!input||!input[0])return true;const lIn=input[0],rIn=input[1]||lIn,frames=lIn.length;for(let i=0;i<frames;i++){if(this.n>=this.cap-1){this.r=(this.r+1)%this.cap;this.n--}this.L[this.w]=lIn[i]||0;this.R[this.w]=rIn[i]||0;this.w=(this.w+1)%this.cap;this.n++}while(this.n>=this.batch){const l=new Float32Array(this.batch),r=new Float32Array(this.batch);for(let i=0;i<this.batch;i++){l[i]=this.L[this.r];r[i]=this.R[this.r];this.r=(this.r+1)%this.cap}this.n-=this.batch;this.port.postMessage({type:'pcm',l,r},[l.buffer,r.buffer])}return true}}registerProcessor('icecast-capture-worklet',IcecastCaptureWorklet);`;
+      const blobUrl = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+      try {
+        await ctx.audioWorklet.addModule(blobUrl);
+        loaded = true;
+      } catch (e) {
+        console.warn('Icecast capture worklet failed to load', e);
+        return;
+      }
+    }
+    try {
+      this.icecastCaptureNode = new AudioWorkletNode(ctx, 'icecast-capture-worklet', {
+        numberOfInputs: 1,
+        numberOfOutputs: 1,
+        outputChannelCount: [2],
+        channelCount: 2,
+        channelCountMode: 'explicit',
+        channelInterpretation: 'speakers'
+      });
+      this.icecastZeroGain = ctx.createGain();
+      this.icecastZeroGain.gain.value = 0;
+      if (this.masterLimiter) this.masterLimiter.connect(this.icecastCaptureNode);
+      this.icecastCaptureNode.connect(this.icecastZeroGain);
+      this.icecastZeroGain.connect(ctx.destination);
+      this.icecastCaptureNode.port.onmessage = (e) => this._onIcecastPcm(e);
+      this._icecastCaptureReady = true;
+    } catch (e) {
+      console.warn('Icecast capture node failed', e);
+    }
+  }
+
+  _onIcecastPcm(e) {
+    if (!e || !e.data || e.data.type !== 'pcm') return;
+    if (!this._icecastLive) return;
+    if (this._icecastPcmInFlight) return;
+    const l = e.data.l;
+    const r = e.data.r;
+    if (!l || !l.length) return;
+    const interleaved = new Float32Array(l.length * 2);
+    for (let i = 0; i < l.length; i++) {
+      interleaved[i * 2] = l[i];
+      interleaved[i * 2 + 1] = (r && r[i]) || 0;
+    }
+    this._icecastPcmInFlight = true;
+    const bytes = new Uint8Array(interleaved.buffer);
+    Promise.resolve(invokeTauriRaw('icecast_push_pcm', bytes))
+      .catch(() => {})
+      .finally(() => { this._icecastPcmInFlight = false; });
+  }
+
+  _startIcecastTap() {
+    if (this.icecastCaptureNode) {
+      try { this.icecastCaptureNode.port.postMessage({ type: 'start', batch: 4096 }); } catch (e) {}
+    }
+  }
+
+  _stopIcecastTap() {
+    if (this.icecastCaptureNode) {
+      try { this.icecastCaptureNode.port.postMessage({ type: 'stop' }); } catch (e) {}
+    }
+  }
+
+  async toggleIcecastOutbound() {
+    if (this._icecastConnecting) return;
+    if (this._icecastLive) {
+      await this.disconnectIcecastOutbound();
+      return;
+    }
+    await this.connectIcecastOutbound();
+  }
+
+  async connectIcecastOutbound() {
+    await this.ensureAudioRunning();
+    await this._initIcecastCapture();
+    if (!window.__TAURI__) {
+      this._setIcecastUi('err', 'CONNECT');
+      if (this.showToast) this.showToast('Icecast outbound needs the Aether Desktop app.', 'error');
+      return;
+    }
+    this._icecastConnecting = true;
+    this._setIcecastUi('connecting', 'CONNECTING');
+    const onEvent = createTauriChannel((msg) => this._onIcecastEvent(msg));
+    const sampleRate = (this.audioCtx && this.audioCtx.sampleRate) || 44100;
+    try {
+      await invokeTauri('icecast_connect', {
+        onEvent,
+        sampleRate
+      });
+      this._icecastLive = true;
+      this._icecastConnecting = false;
+      this._setIcecastUi('live', 'DISCONNECT');
+      this._startIcecastTap();
+    } catch (err) {
+      this._icecastLive = false;
+      this._icecastConnecting = false;
+      this._stopIcecastTap();
+      this._setIcecastUi('err', 'CONNECT');
+      const message = (err && err.message) ? err.message : String(err || 'connect failed');
+      console.warn('Icecast connect failed:', message);
+      if (this.showToast) this.showToast(message, 'error');
+    }
+  }
+
+  async disconnectIcecastOutbound() {
+    this._stopIcecastTap();
+    this._icecastLive = false;
+    this._icecastConnecting = false;
+    try { await invokeTauri('icecast_disconnect'); } catch (e) {}
+    this._setIcecastUi('', 'CONNECT');
   }
 
   // --- MASTER LIVE RECORDING TO WAV ---
@@ -5550,14 +5798,24 @@ class SpatialStudio {
           beatFrac = ((performance.now() / 1000) * (bpm / 60)) % 1;
         }
         const pulse = Math.pow(1 - beatFrac, 2.2);
-        const currentRadius = ringRadius + (pulse * 8);
+
+        let kickRipple = 0;
+        if (t.lastKickTime) {
+          const kickAge = (performance.now() - t.lastKickTime) / 1000;
+          if (kickAge >= 0 && kickAge < 0.22) {
+            const kickEnv = Math.pow(1 - (kickAge / 0.22), 2);
+            kickRipple = kickEnv * 4.5 * Math.sin(kickAge * 45);
+          }
+        }
+
+        const currentRadius = ringRadius + (pulse * 8) + kickRipple;
         this.ctx.beginPath();
         this.ctx.arc(pxX, pxY, currentRadius, 0, 2 * Math.PI);
         this.ctx.strokeStyle = t.color;
-        this.ctx.globalAlpha = 0.35 + (pulse * 0.45);
-        this.ctx.lineWidth = 3.0;
+        this.ctx.globalAlpha = Math.min(1.0, 0.35 + (pulse * 0.45) + (Math.abs(kickRipple) * 0.08));
+        this.ctx.lineWidth = 3.0 + (Math.abs(kickRipple) * 0.3);
         this.ctx.shadowColor = t.color;
-        this.ctx.shadowBlur = 10;
+        this.ctx.shadowBlur = 10 + (Math.abs(kickRipple) * 2);
         this.ctx.stroke();
         this.ctx.shadowBlur = 0;
         this.ctx.globalAlpha = 1.0;
