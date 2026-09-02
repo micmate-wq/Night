@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use base64::prelude::*;
 use std::io::Read;
 
+mod icecast;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LoadedNodeBundle {
     pub file_path: String,
@@ -199,6 +201,7 @@ async fn write_file_at_path(path: String, content: String) -> Result<(), String>
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(icecast::IcecastState::new())
         .invoke_handler(tauri::generate_handler![
             save_project_dialog,
             load_project_dialog,
@@ -206,7 +209,11 @@ pub fn run() {
             load_node_bundle_from_path,
             load_node_bundle_from_base64,
             read_audio_file,
-            write_file_at_path
+            write_file_at_path,
+            icecast::icecast_connect,
+            icecast::icecast_disconnect,
+            icecast::icecast_push_pcm,
+            icecast::icecast_status
         ])
         .setup(|app| {
             if let Ok(menu) = tauri::menu::Menu::default(app.handle()) {
@@ -221,5 +228,3 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
-
