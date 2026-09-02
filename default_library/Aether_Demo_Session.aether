@@ -1,0 +1,135 @@
+{
+  "version": "3.0",
+  "type": "aether_project",
+  "name": "Aether Ambient Showcase",
+  "timestamp": "2026-08-30T22:00:00.000Z",
+  "masterVolume": 0.85,
+  "tracks": [
+    {
+      "index": 0,
+      "name": "Polar Cloud",
+      "sampleName": "prism-polar-cloud.aethernode",
+      "filePath": "nodes/prism-polar-cloud.aethernode",
+      "sampleData": null,
+      "isCustomNode": true,
+      "customNodeParams": {
+        "chord": 0,
+        "interval": 4,
+        "rootPitch": -1.0,
+        "density": 0.36,
+        "delayTime": 0.43,
+        "feedback": 0.39,
+        "wash": 0.29,
+        "swellRate": 0.3,
+        "gain": 0.75
+      },
+      "customNodeZipBase64": null,
+      "isLiveIn": false,
+      "x": 0.5,
+      "y": 0.78,
+      "z": 0.2,
+      "isMuted": false,
+      "isSoloed": false,
+      "motionSpeed": 0.5,
+      "motionPath": [],
+      "eq": {
+        "low": 0,
+        "mid": 0,
+        "high": 0
+      },
+      "isStream": false,
+      "streamUrl": ""
+    },
+    {
+      "index": 1,
+      "name": "Prism Sparkle",
+      "sampleName": "prism-sparkle.aethernode",
+      "filePath": "nodes/prism-sparkle.aethernode",
+      "sampleData": null,
+      "isCustomNode": true,
+      "customNodeParams": {
+        "scale": 0,
+        "rootPitch": 0.0,
+        "density": 0.45,
+        "shimmer": 0.55,
+        "decay": 3.2,
+        "gain": 0.75
+      },
+      "customNodeZipBase64": null,
+      "isLiveIn": false,
+      "x": 0.22,
+      "y": 0.32,
+      "z": -0.3,
+      "isMuted": false,
+      "isSoloed": false,
+      "motionSpeed": 1.0,
+      "motionPath": [],
+      "eq": {
+        "low": -2,
+        "mid": 1,
+        "high": 3
+      },
+      "isStream": false,
+      "streamUrl": ""
+    },
+    {
+      "index": 2,
+      "name": "Algo Wash",
+      "sampleName": "prism-cloud-algo.aethernode",
+      "filePath": "nodes/prism-cloud-algo.aethernode",
+      "sampleData": null,
+      "isCustomNode": true,
+      "customNodeParams": {
+        "chord": 0,
+        "rootPitch": 0.0,
+        "density": 0.45,
+        "swellRate": 0.22,
+        "wash": 0.72,
+        "attack": 1.2,
+        "release": 4.2,
+        "gain": 0.75
+      },
+      "customNodeZipBase64": null,
+      "isLiveIn": false,
+      "x": 0.78,
+      "y": 0.32,
+      "z": -0.3,
+      "isMuted": false,
+      "isSoloed": false,
+      "motionSpeed": 1.0,
+      "motionPath": [],
+      "eq": {
+        "low": 1,
+        "mid": -1,
+        "high": 2
+      },
+      "isStream": false,
+      "streamUrl": ""
+    },
+    {
+      "index": 3,
+      "name": "Track 4 (Empty)",
+      "sampleName": "Track 4",
+      "filePath": "",
+      "sampleData": null,
+      "isCustomNode": false,
+      "customNodeParams": null,
+      "customNodeZipBase64": null,
+      "isLiveIn": false,
+      "x": 0.5,
+      "y": 0.18,
+      "z": 0.0,
+      "isMuted": false,
+      "isSoloed": false,
+      "motionSpeed": 1.0,
+      "motionPath": [],
+      "eq": {
+        "low": 0,
+        "mid": 0,
+        "high": 0
+      },
+      "isStream": false,
+      "streamUrl": ""
+    }
+  ]
+}
