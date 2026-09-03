@@ -5,4 +5,5 @@ desktop/dsp-wasm/target/
 target/
 .DS_Store
 Aether 4.0 UI/
+desktop/dist/
 

@@ -169,6 +169,26 @@ fn resolve_candidate_path(path: &str) -> std::path::PathBuf {
             return cp;
         }
     }
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(macos_dir) = exe.parent() {
+            if let Some(contents_dir) = macos_dir.parent() {
+                let res = contents_dir.join("Resources");
+                let res_candidates = [
+                    res.join("nodes").join(&filename),
+                    res.join("_up_/_up_/nodes").join(&filename),
+                    res.join("_up_/_up_/default_library/nodes").join(&filename),
+                    res.join("_up_/_up_/_up_/nodes").join(&filename),
+                    res.join("_up_/_up_/_up_/default_library/nodes").join(&filename),
+                    res.join("default_library/nodes").join(&filename),
+                ];
+                for rc in &res_candidates {
+                    if rc.exists() {
+                        return rc.clone();
+                    }
+                }
+            }
+        }
+    }
     p
 }
 

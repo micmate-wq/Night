@@ -4,7 +4,8 @@
   "version": "4.2.1",
   "identifier": "com.aether.desktop",
   "build": {
-    "frontendDist": "../",
+    "beforeBuildCommand": "mkdir -p ../dist && cp ../index.html ../*.js ../*.svg ../dist/ 2>/dev/null || true",
+    "frontendDist": "../dist",
     "devUrl": "http://localhost:3456/desktop/index.html",
     "beforeDevCommand": "python3 -m http.server 3456 -d /Users/matt/.gemini/antigravity/scratch/aether"
   },
@@ -33,6 +34,10 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "resources": [
+      "../../nodes/**/*",
+      "../../default_library/**/*"
     ],
     "macOS": {
       "infoPlist": "Info.plist"
