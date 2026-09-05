@@ -1,0 +1,32 @@
+{
+  "id": "sine-generator",
+  "name": "Sine Generator",
+  "category": "generator",
+  "version": "1.0.0",
+  "description": "Minimal sine oscillator node with smooth pitch and amplitude modulation",
+  "params": {
+    "frequency": {
+      "label": "Frequency",
+      "type": "number",
+      "min": 20,
+      "max": 2000,
+      "default": 440,
+      "step": 1,
+      "unit": "Hz"
+    },
+    "volume": {
+      "label": "Volume",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0.25,
+      "step": 0.01,
+      "unit": ""
+    },
+    "active": {
+      "label": "Mute / Unmute",
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

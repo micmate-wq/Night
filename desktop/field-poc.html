@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Field POC — Sailor's Stone</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --ink:#e8e0d4; --mute:#8a8378; --bed:#c4a574; --pulse:#d9f934; --motif:#fa3ab1; --pin:#fc5d4b; --you:#46bdef; --bg:#12110f; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--ink); font: 14px/1.4 "IBM Plex Sans", system-ui, sans-serif; }
+  #wrap { display:grid; grid-template-columns: 1fr 280px; height:100%; }
+  canvas { width:100%; height:100%; display:block; cursor:crosshair; background:#1a1916; }
+  aside { padding:18px 16px; border-left:1px solid #2a2824; display:flex; flex-direction:column; gap:12px; }
+  h1 { font-size:13px; letter-spacing:.08em; text-transform:uppercase; margin:0; color:var(--mute); font-weight:600; }
+  .big { font-size:22px; margin:0; }
+  button { background:#2a2722; color:var(--ink); border:1px solid #3c3933; padding:8px 12px; cursor:pointer; }
+  button.on { background:#3d3420; border-color:var(--bed); }
+  .bar { height:8px; background:#2a2722; }
+  .bar > i { display:block; height:100%; width:0%; }
+  .l0 i { background:var(--bed); }
+  .l1 i { background:var(--pulse); }
+  .l2 i { background:var(--motif); }
+  pre { font: 11px/1.35 ui-monospace, monospace; color:#b7b1a6; margin:0; white-space:pre-wrap; }
+  .hint { color:var(--mute); font-size:12px; }
+  .wit { color:var(--pin); font-weight:600; min-height:1.2em; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <aside>
+    <h1>Field Guide × Aether · POC 1</h1>
+    <p class="big">Sailor's Stone</p>
+    <p class="hint">Drag the blue dot. You are walking. Pink pin is the stone. Rings are hear (600 m) and Witness (75 m).</p>
+    <button id="go">Click to start audio</button>
+    <button id="duck">Duck (voice playing)</button>
+    <div>bed (L0)<div class="bar l0"><i id="g0"></i></div></div>
+    <div>pulse (L1)<div class="bar l1"><i id="g1"></i></div></div>
+    <div>motif (L2)<div class="bar l2"><i id="g2"></i></div></div>
+    <p class="wit" id="wit"></p>
+    <pre id="pkt"></pre>
+  </aside>
+</div>
+<script>
+const PIN = { lon: -0.718583, lat: 51.114583, radiusM: 75, hearRadiusM: 600, id: 'sailors-stone' };
+const ENTER = { l0: 0.00, l1: 0.45, l2: 0.70 };
+
+function hav(a, b) {
+  const R = 6371000, toR = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * toR, dLon = (b.lon - a.lon) * toR;
+  const s = Math.sin(dLat/2)**2 + Math.cos(a.lat*toR)*Math.cos(b.lat*toR)*Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
+}
+function bearing(from, to) {
+  const toR = Math.PI / 180;
+  const y = Math.sin((to.lon-from.lon)*toR) * Math.cos(to.lat*toR);
+  const x = Math.cos(from.lat*toR)*Math.sin(to.lat*toR) -
+            Math.sin(from.lat*toR)*Math.cos(to.lat*toR)*Math.cos((to.lon-from.lon)*toR);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+function smoothstep(e0, e1, x) {
+  if (e1 <= e0) return x >= e1 ? 1 : 0;
+  const u = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
+  return u * u * (3 - 2 * u);
+}
+
+// ~metres per canvas unit at this latitude
+const M_PER_DEG_LAT = 111320;
+const M_PER_DEG_LON = 111320 * Math.cos(PIN.lat * Math.PI / 180);
+
+const you = { lat: PIN.lat + (420 / M_PER_DEG_LAT), lon: PIN.lon - (80 / M_PER_DEG_LON) };
+let duck = false, ctx = null, nodes = null;
+
+function packet() {
+  const distanceM = hav(you, PIN);
+  const t = 1 - Math.max(0, Math.min(1, distanceM / PIN.hearRadiusM));
+  const az = bearing(you, PIN);
+  const witness = distanceM <= PIN.radiusM;
+  const l0 = smoothstep(ENTER.l0, 1, t);
+  const l1 = t < ENTER.l1 ? 0 : smoothstep(ENTER.l1, 1, t);
+  const l2 = t < ENTER.l2 ? 0 : smoothstep(ENTER.l2, 1, t);
+  const duckF = duck ? 0.2 : 1;
+  return { pinId: PIN.id, distanceM, t, azimuth: az, witness, voDuck: duck,
+    layers: { l0: l0 * duckF, l1: l1 * duckF, l2: l2 * duckF } };
+}
+
+function applyAudio(p) {
+  if (!nodes) return;
+  const now = ctx.currentTime;
+  nodes.g0.gain.setTargetAtTime(p.layers.l0 * 0.22, now, 0.08);
+  nodes.g1.gain.setTargetAtTime(p.layers.l1 * 0.18, now, 0.08);
+  nodes.g2.gain.setTargetAtTime(p.layers.l2 * 0.16, now, 0.08);
+  nodes.pan.pan.setTargetAtTime(Math.max(-1, Math.min(1, Math.sin(p.azimuth * Math.PI/180))), now, 0.12);
+}
+
+function bootAudio() {
+  ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+  const master = ctx.createGain(); master.gain.value = 0.9; master.connect(ctx.destination);
+  const pan = ctx.createStereoPanner(); pan.connect(master);
+
+  const g0 = ctx.createGain(); g0.gain.value = 0; g0.connect(pan);
+  const o1 = ctx.createOscillator(); o1.type = 'sine'; o1.frequency.value = 73;
+  const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = 110;
+  o1.connect(g0); o2.connect(g0); o1.start(); o2.start();
+  const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+  const n = noiseBuf.getChannelData(0); for (let i=0;i<n.length;i++) n[i] = (Math.random()*2-1)*0.4;
+  const ns = ctx.createBufferSource(); ns.buffer = noiseBuf; ns.loop = true;
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
+  ns.connect(lp); lp.connect(g0); ns.start();
+
+  const g1 = ctx.createGain(); g1.gain.value = 0; g1.connect(pan);
+  const click = ctx.createOscillator(); click.type = 'square'; click.frequency.value = 1.2; // 72 bpm-ish
+  const clickGain = ctx.createGain(); clickGain.gain.value = 0;
+  const ping = ctx.createOscillator(); ping.type = 'sine'; ping.frequency.value = 180;
+  ping.connect(clickGain); clickGain.connect(g1); ping.start();
+  click.connect(click.frequency); // unused
+  const pulse = () => {
+    if (!ctx) return;
+    const t0 = ctx.currentTime;
+    clickGain.gain.cancelScheduledValues(t0);
+    clickGain.gain.setValueAtTime(0.9, t0);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.12);
+  };
+  setInterval(pulse, 833);
+
+  const g2 = ctx.createGain(); g2.gain.value = 0; g2.connect(pan);
+  const mot = ctx.createOscillator(); mot.type = 'triangle'; mot.frequency.value = 220;
+  mot.connect(g2); mot.start();
+  const seq = [220, 261.6, 293.7, 329.6];
+  let si = 0;
+  setInterval(() => { si = (si+1)%seq.length; mot.frequency.setTargetAtTime(seq[si], ctx.currentTime, 0.04); }, 1666);
+
+  nodes = { g0, g1, g2, pan };
+}
+
+const canvas = document.getElementById('c');
+const g0el = document.getElementById('g0');
+const g1el = document.getElementById('g1');
+const g2el = document.getElementById('g2');
+const pkt = document.getElementById('pkt');
+const wit = document.getElementById('wit');
+
+function worldToPx(lat, lon, w, h) {
+  const scale = Math.min(w, h) / (PIN.hearRadiusM * 2.4);
+  const dx = (lon - PIN.lon) * M_PER_DEG_LON * scale;
+  const dy = (PIN.lat - lat) * M_PER_DEG_LAT * scale;
+  return { x: w/2 + dx, y: h/2 + dy, scale };
+}
+function pxToWorld(x, y, w, h) {
+  const scale = Math.min(w, h) / (PIN.hearRadiusM * 2.4);
+  const lon = PIN.lon + (x - w/2) / scale / M_PER_DEG_LON;
+  const lat = PIN.lat - (y - h/2) / scale / M_PER_DEG_LAT;
+  return { lat, lon };
+}
+
+function draw(p) {
+  const dpr = devicePixelRatio || 1;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (canvas.width !== w*dpr) { canvas.width = w*dpr; canvas.height = h*dpr; }
+  const g = canvas.getContext('2d');
+  g.setTransform(dpr,0,0,dpr,0,0);
+  g.fillStyle = '#1a1916'; g.fillRect(0,0,w,h);
+  const { scale } = worldToPx(PIN.lat, PIN.lon, w, h);
+  g.strokeStyle = '#3a342c'; g.setLineDash([6,6]);
+  g.beginPath(); g.arc(w/2,h/2, PIN.hearRadiusM * scale, 0, Math.PI*2); g.stroke();
+  g.setLineDash([]); g.strokeStyle = '#fc5d4b88';
+  g.beginPath(); g.arc(w/2,h/2, PIN.radiusM * scale, 0, Math.PI*2); g.stroke();
+  g.fillStyle = '#fc5d4b'; g.beginPath(); g.arc(w/2,h/2, 7, 0, Math.PI*2); g.fill();
+  const youp = worldToPx(you.lat, you.lon, w, h);
+  g.fillStyle = '#46bdef'; g.beginPath(); g.arc(youp.x, youp.y, 8, 0, Math.PI*2); g.fill();
+  g.strokeStyle = '#46bdef55'; g.beginPath(); g.moveTo(youp.x, youp.y); g.lineTo(w/2,h/2); g.stroke();
+}
+
+function tick() {
+  const p = packet();
+  applyAudio(p);
+  g0el.style.width = (p.layers.l0*100).toFixed(0)+'%';
+  g1el.style.width = (p.layers.l1*100).toFixed(0)+'%';
+  g2el.style.width = (p.layers.l2*100).toFixed(0)+'%';
+  wit.textContent = p.witness ? 'WITNESS — you are on the stone. Voice would play. Music ducks.' : '';
+  pkt.textContent = JSON.stringify({
+    pinId: p.pinId, distanceM: Math.round(p.distanceM), t: +p.t.toFixed(3),
+    azimuth: Math.round(p.azimuth), witness: p.witness, voDuck: p.voDuck,
+    layers: { l0:+p.layers.l0.toFixed(2), l1:+p.layers.l1.toFixed(2), l2:+p.layers.l2.toFixed(2) }
+  }, null, 2);
+  draw(p);
+  requestAnimationFrame(tick);
+}
+
+let drag = false;
+canvas.addEventListener('pointerdown', e => { drag = true; move(e); canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointerup', () => { drag = false; });
+canvas.addEventListener('pointermove', e => { if (drag) move(e); });
+function move(e) {
+  const r = canvas.getBoundingClientRect();
+  const w = { lat: you.lat, lon: you.lon };
+  const nw = pxToWorld(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
+  you.lat = nw.lat; you.lon = nw.lon;
+}
+
+document.getElementById('go').onclick = async () => {
+  if (!ctx) bootAudio();
+  await ctx.resume();
+  document.getElementById('go').classList.add('on');
+  document.getElementById('go').textContent = 'Audio on';
+};
+document.getElementById('duck').onclick = () => {
+  duck = !duck;
+  document.getElementById('duck').classList.toggle('on', duck);
+  document.getElementById('duck').textContent = duck ? 'Voice playing (ducked)' : 'Duck (voice playing)';
+};
+tick();
+</script>
+</body>
+</html>
