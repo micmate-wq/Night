@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>[v4.0 UI] AETHER 3D — Standalone 4-Track Spatial Audio Studio</title>
+  <title>Aether 5.0 Codex</title>
   <link rel="icon" type="image/svg+xml" href="app-icon.svg">
   <meta name="description" content="Standalone 4-track 3D spatial audio player & live performance workstation with HRTF 3D spatial canvas, trackpad depth pinch, motion automation, Ableton-style bipolar EQ, live input, and master WAV recording.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -549,6 +549,14 @@ body {
   color: #FFF;
   border-color: var(--strip-color, var(--accent-primary));
 }
+.btn-playlist.btn-clear-source {
+  color: var(--text-muted);
+}
+.btn-playlist.btn-clear-source:hover {
+  color: #FFF;
+  background: #b42318;
+  border-color: #b42318;
+}
 .playlist-counter {
   font-family: var(--font-mono);
   font-size: 0.68rem;
@@ -978,8 +986,8 @@ body {
 
         <div class="master-vol-control">
           <span>VOL</span>
-          <input type="range" id="master-volume" min="0" max="1" step="0.01" value="1.0" class="header-slider">
-          <span id="master-vol-val" style="font-family:var(--font-mono);font-size:0.68rem;min-width:28px;">100%</span>
+          <input type="range" id="master-volume" min="0" max="1" step="0.01" value="0.8" class="header-slider">
+          <span id="master-vol-val" style="font-family:var(--font-mono);font-size:0.68rem;min-width:28px;">80%</span>
         </div>
 
         <button id="theme-toggle-btn" class="header-btn theme-toggle-btn" title="Toggle Minimal / Dark Theme">
@@ -1036,6 +1044,7 @@ body {
               <span class="playlist-counter" id="t0-count">0/0</span>
               <button class="btn-playlist" id="t0-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t0-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
+              <button class="btn-playlist btn-clear-source" id="t0-clear-source" title="Remove instrument or audio and empty this queue">CLEAR</button>
             </div>
             <div class="strip-status-bar">
               <div class="mute-solo-group">
@@ -1079,6 +1088,11 @@ body {
                   <span class="knob-val-badge" id="t0-eq-high-val">0dB</span>
                   <span class="knob-label">TREBLE</span>
                 </div>
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t0-knob-gain" data-track="0" title="Strip Gain (-24dB to +6dB) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t0-gain-val">0dB</span>
+                  <span class="knob-label">GAIN</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1106,6 +1120,7 @@ body {
               <span class="playlist-counter" id="t1-count">0/0</span>
               <button class="btn-playlist" id="t1-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t1-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
+              <button class="btn-playlist btn-clear-source" id="t1-clear-source" title="Remove instrument or audio and empty this queue">CLEAR</button>
             </div>
             <div class="strip-status-bar">
               <div class="mute-solo-group">
@@ -1149,6 +1164,11 @@ body {
                   <span class="knob-val-badge" id="t1-eq-high-val">0dB</span>
                   <span class="knob-label">TREBLE</span>
                 </div>
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t1-knob-gain" data-track="1" title="Strip Gain (-24dB to +6dB) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t1-gain-val">0dB</span>
+                  <span class="knob-label">GAIN</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1176,6 +1196,7 @@ body {
               <span class="playlist-counter" id="t2-count">0/0</span>
               <button class="btn-playlist" id="t2-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t2-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
+              <button class="btn-playlist btn-clear-source" id="t2-clear-source" title="Remove instrument or audio and empty this queue">CLEAR</button>
             </div>
             <div class="strip-status-bar">
               <div class="mute-solo-group">
@@ -1219,6 +1240,11 @@ body {
                   <span class="knob-val-badge" id="t2-eq-high-val">0dB</span>
                   <span class="knob-label">TREBLE</span>
                 </div>
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t2-knob-gain" data-track="2" title="Strip Gain (-24dB to +6dB) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t2-gain-val">0dB</span>
+                  <span class="knob-label">GAIN</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1246,6 +1272,7 @@ body {
               <span class="playlist-counter" id="t3-count">0/0</span>
               <button class="btn-playlist" id="t3-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t3-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
+              <button class="btn-playlist btn-clear-source" id="t3-clear-source" title="Remove instrument or audio and empty this queue">CLEAR</button>
             </div>
             <div class="strip-status-bar">
               <div class="mute-solo-group">
@@ -1288,6 +1315,11 @@ body {
                   <div class="rotary-knob-container" id="t3-knob-high" data-track="3" data-band="high" title="High Shelf (6kHz) • Drag vertical, Shift for fine, Double-click to reset"></div>
                   <span class="knob-val-badge" id="t3-eq-high-val">0dB</span>
                   <span class="knob-label">TREBLE</span>
+                </div>
+                <div class="eq-knob-group">
+                  <div class="rotary-knob-container" id="t3-knob-gain" data-track="3" title="Strip Gain (-24dB to +6dB) • Drag vertical, Shift for fine, Double-click to reset"></div>
+                  <span class="knob-val-badge" id="t3-gain-val">0dB</span>
+                  <span class="knob-label">GAIN</span>
                 </div>
               </div>
             </div>
@@ -1435,6 +1467,7 @@ class BipolarRotaryKnob {
     // Range -15 to +15 maps to angle -135° to +135°
     // 0 is 0° (top dead center at 12 o'clock)
     const norm = (this.value - this.min) / (this.max - this.min); // 0.0 to 1.0
+    const zeroAngle = -135 + ((0 - this.min) / (this.max - this.min)) * 270;
     const currentAngle = -135 + (norm * 270); // in degrees (-135 to +135)
 
     // Bipolar arc: draws from 0° (12 o'clock) to currentAngle
@@ -1442,10 +1475,10 @@ class BipolarRotaryKnob {
       this.arcActive.setAttribute('d', "");
     } else if (this.value > 0) {
       // Boost: 0° to currentAngle (clockwise)
-      this.arcActive.setAttribute('d', this.describeArc(25, 25, 20, 0, currentAngle));
+      this.arcActive.setAttribute('d', this.describeArc(25, 25, 20, zeroAngle, currentAngle));
     } else {
       // Cut: currentAngle to 0° (counter-clockwise)
-      this.arcActive.setAttribute('d', this.describeArc(25, 25, 20, currentAngle, 0));
+      this.arcActive.setAttribute('d', this.describeArc(25, 25, 20, currentAngle, zeroAngle));
     }
 
     // Rotate needle around center (25, 25)
@@ -1453,7 +1486,8 @@ class BipolarRotaryKnob {
   }
 
   setValue(val, triggerChange = true) {
-    let clamped = Math.max(this.min, Math.min(this.max, val));
+    const numeric = Number(val);
+    let clamped = Math.max(this.min, Math.min(this.max, Number.isFinite(numeric) ? numeric : this.defaultValue));
     clamped = Math.round(clamped / this.step) * this.step;
     this.value = clamped;
     this.render();
@@ -1516,6 +1550,8 @@ class BipolarRotaryKnob {
 /**
  * Audio Track Model
  */
+const AETHERNODE_STANDARD_GAIN = 0.8;
+
 class AudioTrack {
   constructor(index, name, color, studio) {
     this.index = index;
@@ -1600,6 +1636,8 @@ class AudioTrack {
     this.pannerNode = null;
 
     this.eqValues = { low: 0, mid: 0, high: 0 };
+    this.stripGainDb = 0;
+    this._sourceRevision = 0;
 
     this.startTime = 0;
     this.duration = 0;
@@ -1641,6 +1679,7 @@ class AudioTrack {
     this.nextBtn = document.getElementById(`t${i}-next`);
     this.countEl = document.getElementById(`t${i}-count`);
     this.shufBtn = document.getElementById(`t${i}-shuf`);
+    this.clearSourceBtn = document.getElementById(`t${i}-clear-source`);
 
     this.recBtn = document.getElementById(`t${i}-rec`);
     this.playMotionBtn = document.getElementById(`t${i}-play-motion`);
@@ -1651,6 +1690,7 @@ class AudioTrack {
     this.eqLowVal = document.getElementById(`t${i}-eq-low-val`);
     this.eqMidVal = document.getElementById(`t${i}-eq-mid-val`);
     this.eqHighVal = document.getElementById(`t${i}-eq-high-val`);
+    this.gainVal = document.getElementById(`t${i}-gain-val`);
 
     // File loading
     this.fileInput.addEventListener('change', (e) => {
@@ -1675,6 +1715,7 @@ class AudioTrack {
     if (this.prevBtn) this.prevBtn.addEventListener('click', () => this.prevInPlaylist());
     if (this.nextBtn) this.nextBtn.addEventListener('click', () => this.nextInPlaylist());
     if (this.shufBtn) this.shufBtn.addEventListener('click', () => this.toggleShuffle());
+    if (this.clearSourceBtn) this.clearSourceBtn.addEventListener('click', () => this.clearSource());
 
     this.recBtn.addEventListener('click', () => this.toggleRecordMotion());
     this.playMotionBtn.addEventListener('click', () => this.togglePlayMotion());
@@ -1700,6 +1741,10 @@ class AudioTrack {
     this.knobHigh = new BipolarRotaryKnob(document.getElementById(`t${i}-knob-high`), {
       min: -15, max: 15, value: 0,
       onChange: (val) => this.updateEQ('high', val)
+    });
+    this.knobGain = new BipolarRotaryKnob(document.getElementById(`t${i}-knob-gain`), {
+      min: -24, max: 6, value: 0,
+      onChange: (val) => this.updateStripGain(val)
     });
 
     // Apply default initial volume/pan labels immediately
@@ -1898,6 +1943,13 @@ class AudioTrack {
       if (this.eqHighNode) this.eqHighNode.gain.setTargetAtTime(gainDb, this.studio.audioCtx ? this.studio.audioCtx.currentTime : 0, 0.01);
       this.eqHighVal.textContent = txt;
     }
+  }
+
+  updateStripGain(gainDb) {
+    this.stripGainDb = Math.max(-24, Math.min(6, Number(gainDb) || 0));
+    const txt = `${this.stripGainDb > 0 ? '+' : ''}${this.stripGainDb.toFixed(1).replace('.0', '')}dB`;
+    if (this.gainVal) this.gainVal.textContent = txt;
+    this.updateAudioParamsFromPosition();
   }
 
   cleanupCustomNode() {
@@ -2733,8 +2785,46 @@ class AudioTrack {
     }
   }
 
+  clearSource() {
+    // Invalidate pending file/node loads before releasing their sources.
+    this._sourceRevision++;
+    this.cleanupSources();
+    if (this.htmlAudio) {
+      this.htmlAudio.onloadedmetadata = null;
+      this.htmlAudio.onerror = null;
+      if (this.htmlAudio.src.startsWith("blob:")) URL.revokeObjectURL(this.htmlAudio.src);
+      this.htmlAudio.removeAttribute("src");
+      this.htmlAudio.load();
+    }
+    this.useMediaElement = false;
+    if (this.fileInput) this.fileInput.value = "";
+    this.playlist = [];
+    this.playlistIndex = 0;
+    this.isShuffle = false;
+    this.isLoaded = false;
+    this.isPlaying = false;
+    this.duration = 0;
+    this.filePath = '';
+    this.sampleName = '';
+    this.name = `Track ${this.index + 1}`;
+    this.nameEl.textContent = `Track ${this.index + 1} (Empty)`;
+    this.statusEl.textContent = 'Drop file or choose source';
+    this.updatePlaylistUI();
+    this.updateAudioParamsFromPosition();
+
+    if (this.studio.activeInspectorTrack === this) {
+      this.studio.activeInspectorTrack = null;
+      if (this.studio.nodeInspectorModal) this.studio.nodeInspectorModal.classList.remove('active');
+      const frame = document.getElementById('node-inspector-frame');
+      if (frame) frame.srcdoc = '';
+    }
+    this.studio.showToast(`Cleared Track ${this.index + 1}`, 'info');
+  }
+
   async loadAudioFile(file) {
     if (!file) return;
+    const revision = ++this._sourceRevision;
+    const cancelled = () => revision !== this._sourceRevision;
     const lower = (file.name || '').toLowerCase();
 
     // Check if uploaded/dropped file is a custom .aethernode bundle or zip
@@ -2767,8 +2857,10 @@ class AudioTrack {
           bundle = loaded && loaded.bundle;
           if (loaded && loaded.zipBase64) zipBase64 = loaded.zipBase64;
         }
+        if (cancelled()) return;
         if (bundle) {
-          await this.loadNodeBundle(bundle);
+          await this.loadNodeBundle(bundle, true, revision);
+          if (cancelled()) return;
           if (zipBase64) this.customNodeZipBase64 = zipBase64;
           this.studio.showToast(`Loaded node: ${bundle.manifest.name || bundle.file_name}`, 'success');
           return;
@@ -2776,6 +2868,7 @@ class AudioTrack {
           throw new Error('Bundle unpack returned null');
         }
       } catch (nodeErr) {
+        if (cancelled()) return;
         this.statusEl.textContent = 'Node unpack error';
         this.studio.showToast(`Error unpacking node: ${nodeErr.message || nodeErr}`, 'error');
         return;
@@ -2788,6 +2881,7 @@ class AudioTrack {
     this.statusEl.textContent = 'Decoding...';
 
     await this.studio.ensureAudioRunning();
+    if (cancelled()) return;
     const ctx = this.studio.audioCtx;
 
     this.stopNodeOnly();
@@ -2801,6 +2895,7 @@ class AudioTrack {
         ctx.decodeAudioData(arrayBuffer.slice(0), resolve, reject);
       });
 
+      if (cancelled()) return;
       if (decodedBuffer) {
         this.audioBuffer = decodedBuffer;
         this.duration = decodedBuffer.duration;
@@ -2813,9 +2908,11 @@ class AudioTrack {
         return;
       }
     } catch (err) {
+      if (cancelled()) return;
       console.warn('ArrayBuffer decode fallback:', err);
     }
 
+    if (cancelled()) return;
     try {
       const objectUrl = URL.createObjectURL(file);
       if (!this.htmlAudio) {
@@ -2836,6 +2933,7 @@ class AudioTrack {
         this.htmlAudio.onerror = reject;
       });
 
+      if (cancelled()) return;
       this.duration = this.htmlAudio.duration || 10;
       this.isLoaded = true;
       this.statusEl.textContent = `${this.duration.toFixed(1)}s • Streaming${countInfo}`;
@@ -2844,19 +2942,21 @@ class AudioTrack {
         this.play(this.studio.getCurrentPlaybackTime());
       }
     } catch (fallbackErr) {
+      if (cancelled()) return;
       console.error('Failed to load file:', fallbackErr);
       this.statusEl.textContent = 'Error loading file';
     }
   }
 
-  async loadNodeBundle(bundle, autoOpenInspector = true) {
-    if (!bundle || !bundle.manifest) return;
+  async loadNodeBundle(bundle, autoOpenInspector = true, revision = ++this._sourceRevision) {
+    if (!bundle || !bundle.manifest || revision !== this._sourceRevision) return;
     this.nameEl.textContent = bundle.manifest.name || bundle.file_name || 'Aether Node';
     this.sampleName = bundle.manifest.name || bundle.file_name;
     this.filePath = bundle.file_path || '';
     this.statusEl.textContent = 'Node Ready';
 
     await this.studio.ensureAudioRunning();
+    if (revision !== this._sourceRevision) return;
     const ctx = this.studio.audioCtx;
     if (!this.gainNode) {
       this.setupWebAudioNodes(ctx);
@@ -2892,6 +2992,7 @@ class AudioTrack {
             console.warn('AudioWorklet addModule:', e);
           }
           URL.revokeObjectURL(blobUrl);
+          if (revision !== this._sourceRevision) return;
           
           const workletNode = new AudioWorkletNode(ctx, processorName, {
             numberOfInputs: 1,
@@ -3254,7 +3355,9 @@ class AudioTrack {
     const panVal = isCentered ? 0.0 : Math.max(-1.0, Math.min(1.0, rawPan));
     const isSpatialActive = this.isSpatialized || this.z > 0.5;
 
-    const baseVol = Math.pow(this.y, 1.5);
+    const stripGain = Math.pow(10, this.stripGainDb / 20);
+    const nodeGain = this.isCustomNode ? AETHERNODE_STANDARD_GAIN : 1.0;
+    const baseVol = Math.pow(this.y, 1.5) * stripGain * nodeGain;
 
     if (!isSpatialActive) {
       // -------------------------------------------------------------
@@ -4404,9 +4507,7 @@ class SpatialStudio {
         }
       } else if (targetTrack) {
         targetTrack.y = val;
-        if (targetTrack.gainNode && !targetTrack.isMuted) {
-          targetTrack.gainNode.gain.setTargetAtTime(Math.pow(val, 1.5), now, 0.1);
-        }
+        targetTrack.updateAudioParamsFromPosition();
         targetTrack.volTxt.textContent = `${Math.round(val * 100)}%`;
         this.renderCanvas();
       }
@@ -4419,9 +4520,7 @@ class SpatialStudio {
       } else if (targetTrack) {
         targetTrack.isMuted = mute;
         targetTrack.muteBtn.classList.toggle('active', targetTrack.isMuted);
-        if (targetTrack.gainNode) {
-          targetTrack.gainNode.gain.value = targetTrack.isMuted ? 0 : Math.pow(targetTrack.y, 1.5);
-        }
+        targetTrack.updateAudioParamsFromPosition();
         this.renderCanvas();
       }
     } else if (action === 'set_pan') {
@@ -4863,6 +4962,7 @@ class SpatialStudio {
         motionSpeed: t.motionSpeed,
         motionPath: t.motionPath,
         eq: { ...t.eqValues },
+        stripGainDb: t.stripGainDb,
         isStream: t.isStream,
         streamUrl: t.streamUrl
       });
@@ -5067,6 +5167,7 @@ class SpatialStudio {
           if (t.knobMid) t.knobMid.setValue(saved.eq.mid ?? 0);
           if (t.knobHigh) t.knobHigh.setValue(saved.eq.high ?? 0);
         }
+        if (t.knobGain) t.knobGain.setValue(saved.stripGainDb ?? 0);
 
         // Motion Automation Loop & Speed
         if (saved.motionPath && saved.motionPath.length > 1) {
@@ -5345,6 +5446,7 @@ class SpatialStudio {
       if (t.knobLow) t.knobLow.setValue(0);
       if (t.knobMid) t.knobMid.setValue(0);
       if (t.knobHigh) t.knobHigh.setValue(0);
+      if (t.knobGain) t.knobGain.setValue(0);
     });
   }
 
