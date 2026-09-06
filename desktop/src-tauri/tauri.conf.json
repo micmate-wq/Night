@@ -1,13 +1,13 @@
 {
   "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/refs/heads/dev/crates/tauri-config-schema/schema.json",
-  "productName": "Aether Desktop",
+  "productName": "Aether 5.0 Codex",
   "version": "4.2.1",
-  "identifier": "com.aether.desktop",
+  "identifier": "com.aether.desktop.codex",
   "build": {
     "beforeBuildCommand": "mkdir -p ../dist && cp ../index.html ../*.js ../*.svg ../dist/ 2>/dev/null || true",
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:3456/desktop/index.html",
-    "beforeDevCommand": "python3 -m http.server 3456 -d /Users/matt/.gemini/antigravity/scratch/aether"
+    "devUrl": "http://localhost:3467/desktop/index.html",
+    "beforeDevCommand": "python3 -m http.server 3467 --bind 127.0.0.1 -d .."
   },
   "app": {
     "withGlobalTauri": true,
@@ -16,7 +16,7 @@
     },
     "windows": [
       {
-        "title": "[v4.2.1 UI] Aether Desktop",
+        "title": "Aether 5.0 Codex \u2014 stabilization preview",
         "width": 1280,
         "height": 800,
         "resizable": true,
