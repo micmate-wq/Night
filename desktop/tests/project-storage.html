@@ -1,0 +1,91 @@
+<!doctype html><meta charset="utf-8"><title>Aether project storage checks</title>
+<button id="run">Run isolated storage checks</button><pre id="results">Ready</pre>
+<iframe id="app" src="../index.html" style="width:1280px;height:800px"></iframe>
+<script>
+const out = document.querySelector('#results');
+const assert = (value, message) => { if (!value) throw new Error(message); out.textContent += '\nPASS '+message; };
+const reject = async (fn, message) => { let failed=false; try { await fn(); } catch (_) { failed=true; } assert(failed,message); };
+document.querySelector('#run').onclick = async () => {
+  out.textContent='Running';
+  try {
+    const w=document.querySelector('#app').contentWindow, s=w.studio;
+    const notes=[]; w.alert=message=>notes.push(message);
+    await s.ensureAudioRunning(); s.masterGain.gain.value=0;
+    const track=s.tracks[0];
+    const makeFile = async (name, length) => {
+      const buffer=s.audioCtx.createBuffer(1,length,48000);
+      for(let i=0;i<length;i++) buffer.getChannelData(0)[i]=Math.sin(i/15)*0.05;
+      const data=await w.audioBufferToBase64(buffer);
+      return new w.File([Uint8Array.from(atob(data),c=>c.charCodeAt(0))],name,{type:'audio/wav'});
+    };
+    track.playlist=[await makeFile('third.wav',4800),await makeFile('first.wav',9600),await makeFile('second.wav',14400)];
+    track.playlistIndex=1; track.isShuffle=true;
+    await track.loadAudioFile(track.playlist[1]);
+    track.filePath='/unavailable-original-folder/first.wav';
+    track.setPosition(0.23,0.67,0.12); track.knobGain.setValue(-6); track.knobLow.setValue(3);
+    track.motionPath=[{t:0,x:0.2,y:0.3,z:0},{t:1000,x:0.6,y:0.7,z:0.1}];
+    const recording=s.tracks[1]; recording.audioBuffer=s.audioCtx.createBuffer(2,2400,48000); recording.isLoaded=true;
+    recording.sampleName='Recorded take';
+    const node=s.tracks[2];
+    const bundle={manifest:{name:'Storage Test',inputs:0},dsp_js:`class StorageTestDSP {
+      init(ctx){this.g=ctx.createGain();this.params={tone:1};} connect(dest){this.g.connect(dest);}
+      setParameter(id,v){this.params[id]=v;} stop(){} dispose(){this.g.disconnect();}
+    }`};
+    await node.loadNodeBundle(bundle,false);node.customNodeDSP.setParameter('tone',0.37);
+    const session=JSON.parse(JSON.stringify(await s.getCurrentSessionData('Portability test')));
+    assert(session.tracks[0].playlist.length===3,'all playlist files embedded');
+    const originalBytes=await Promise.all(track.playlist.map(async f=>Array.from(new Uint8Array(await f.arrayBuffer())).join(',')));
+    // Release every original File and buffer. Any local-path read is deliberately unavailable.
+    for(const t of s.tracks){t.cleanupSources();t.playlist=[];t.playlistIndex=0;}
+    const originalFetch=w.fetch;w.fetch=()=>Promise.reject(new Error('Original paths unavailable'));
+    const result=await s.applySession(session);
+    assert(result.failures.length===0,'reopen succeeds with original paths unavailable');
+    assert(track.playlist.map(f=>f.name).join(',')==='third.wav,first.wav,second.wav','playlist order preserved');
+    assert(track.playlistIndex===1 && track.isShuffle,'selected index and shuffle preserved');
+    assert(Math.abs(track.duration-0.2)<0.001,'selected sample duration restored');
+    for(let i=0;i<3;i++) assert(Array.from(new Uint8Array(await track.playlist[i].arrayBuffer())).join(',')===originalBytes[i],'playlist file '+i+' bytes preserved');
+    assert(track.stripGainDb===-6 && track.eqValues.low===3 && track.motionPath.length===2,'gain, EQ and recorded motion restored');
+    assert(Math.abs(track.x-0.23)<0.001 && Math.abs(track.y-0.67)<0.001,'position restored');
+    assert(recording.audioBuffer.numberOfChannels===2,'standalone stereo recording restored');
+    assert(node.customNodeDSP.params.tone===0.37,'embedded instrument and parameters restored');
+    track.isShuffle=false;track.nextInPlaylist();while(track._fileLoadPending) await new Promise(r=>setTimeout(r,10));
+    assert(track.playlistIndex===2 && Math.abs(track.duration-0.3)<0.001,'next sample decodes from restored File');
+    track.prevInPlaylist();while(track._fileLoadPending) await new Promise(r=>setTimeout(r,10));
+    assert(track.playlistIndex===1 && Math.abs(track.duration-0.2)<0.001,'previous sample decodes from restored File');
+    let stops=0;const stop=s.stopMaster.bind(s);s.stopMaster=()=>{stops++;stop();};
+    const damaged=structuredClone(session);damaged.tracks[0].playlist[2].data=btoa('broken audio');
+    const active=track.audioBuffer;
+    await reject(()=>s.applySession(damaged),'damaged unselected playlist file rejects load');
+    assert(stops===0 && track.audioBuffer===active,'failed validation leaves transport and current source untouched');
+    await reject(()=>s.applySession({tracks:[{index:0},{index:0}]}),'duplicate tracks rejected');
+    await reject(()=>s.applySession({tracks:[{index:9}]}),'out-of-range track rejected');
+    const legacy=structuredClone(session);legacy.version='3.0';for(const t of legacy.tracks){delete t.playlist;delete t.playlistIndex;delete t.isShuffle;}
+    await s.applySession(legacy);assert(track.isLoaded && track.playlist.length===0,'older embedded project reopens without stale playlist');
+    track.playlist=[{name:'unreadable.wav',arrayBuffer:async()=>{throw new Error('read failure');}}];
+    await reject(()=>s.getCurrentSessionData(),'unreadable playlist aborts save');track.playlist=[];
+    const external={version:'3.0',tracks:[{index:0,isLiveIn:true},{index:1,isStream:true,streamUrl:'https://example.invalid/live'},{index:2},{index:3}]};
+    await s.applySession(external);
+    const externalSave=await s.getCurrentSessionData();
+    assert(externalSave.tracks[0].isLiveIn && externalSave.tracks[1].isStream && externalSave.tracks[1].streamUrl===external.tracks[1].streamUrl,'external input and stream intent survives re-saving');
+    assert(!track.isLiveIn && !recording.isStream,'external inputs do not auto-connect');
+    const brokenNode=structuredClone(session);brokenNode.tracks[2].customNodeBundle.dsp_js='class BrokenDSP { init(){throw new Error("deliberate DSP failure");} }';
+    const partial=await s.applySession(brokenNode);
+    assert(partial.failures.length===1 && notes.at(-1).includes('deliberate DSP failure'),'runtime instrument failure reported as partial load');
+    track.playlist=[{name:'changing.wav',arrayBuffer:async()=>{track._sourceRevision++;return (await makeFile('valid.wav',480)).arrayBuffer();}}];
+    await reject(()=>s.getCurrentSessionData(),'source change during serialization aborts save');track.playlist=[];
+    track._fileLoadPending={};await reject(()=>s.getCurrentSessionData(),'save waits for pending source load');track._fileLoadPending=null;
+    const nativeInvoke=w.invokeTauri, oldToast=s.showToast.bind(s), toastMessages=[];
+    s.showToast=message=>toastMessages.push(message);
+    w.__TAURI__={};let fallbackCalls=0;w.showSaveFilePicker=()=>{fallbackCalls++;throw new Error('unexpected fallback');};
+    w.invokeTauri=async()=>null;await s.exportSession();
+    assert(fallbackCalls===0 && !toastMessages.some(m=>m.includes('Saved project')),'native save cancellation does not download or report success');
+    toastMessages.length=0;w.invokeTauri=async()=>{throw new Error('simulated native write failure');};await s.exportSession();
+    assert(fallbackCalls===0 && toastMessages.some(m=>m.includes('Save failed')) && !toastMessages.some(m=>m.includes('Saved project')),'native write failure stays a failure without browser fallback');
+    toastMessages.length=0;w.invokeTauri=async()=>({content:'{invalid'});await s.importSession();
+    assert(toastMessages.some(m=>m.includes('Load failed')),'malformed native project reports load failure');
+    w.invokeTauri=nativeInvoke;delete w.__TAURI__;delete w.showSaveFilePicker;s.showToast=oldToast;
+    w.fetch=originalFetch;s.stopMaster=stop;s.stopMaster();
+    out.textContent+='\nALL CHECKS PASSED';
+  }catch(e){out.textContent+='\nFAIL '+e.stack;}
+};
+</script>

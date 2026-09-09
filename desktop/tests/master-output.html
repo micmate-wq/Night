@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><title>Master output checks</title><pre id="result">Running offline audio tests…</pre><script src="../master-output.js"></script><script>
+(async()=>{const results=[];try{
+for(const [name,amp] of [['silence',0],['quiet',.05],['normal',.5],['overload',8]]){
+ const ctx=new OfflineAudioContext(2,48000,48000),b=ctx.createBuffer(2,48000,48000);
+ for(let c=0;c<2;c++)for(let i=0;i<48000;i++)b.getChannelData(c)[i]=amp*Math.sin(2*Math.PI*440*i/48000);
+ if(name==='overload'){b.getChannelData(0)[200]=20;b.getChannelData(1)[400]=-20;}
+ const source=ctx.createBufferSource();source.buffer=b;const chain=AetherMasterOutput.create(ctx);source.connect(chain.input);chain.output.connect(ctx.destination);source.start();const start=performance.now(),audio=await ctx.startRendering();let peak=0,sum=0;
+ for(let c=0;c<2;c++)for(const x of audio.getChannelData(c)){if(!Number.isFinite(x))throw Error(name+' nonfinite output');peak=Math.max(peak,Math.abs(x));sum+=x*x;}
+ if(peak>AetherMasterOutput.ceiling+1e-6)throw Error(name+' exceeded ceiling');if(name==='silence'&&peak!==0)throw Error('silence changed');if(amp&&peak===0)throw Error('unexpected silence');
+ results.push(name+': PASS, peak '+peak.toFixed(5)+', RMS '+Math.sqrt(sum/96000).toFixed(5)+', offline render '+Math.round(performance.now()-start)+' ms');
+}document.getElementById('result').textContent=results.join('\n')+'\nAll checks passed. Offline duration is not a live CPU benchmark.';
+}catch(e){document.getElementById('result').textContent=results.join('\n')+'\nFAIL '+e.stack;}})();
+</script>

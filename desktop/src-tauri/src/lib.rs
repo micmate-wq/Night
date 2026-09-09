@@ -4,6 +4,7 @@ use base64::prelude::*;
 use std::io::Read;
 
 mod icecast;
+mod project_write;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LoadedNodeBundle {
@@ -100,7 +101,7 @@ async fn save_project_dialog(content: String, default_name: Option<String>) -> R
 
     if let Some(handle) = file {
         let path = handle.path().to_path_buf();
-        std::fs::write(&path, content.as_bytes()).map_err(|e| e.to_string())?;
+        project_write::replace_project(std::path::Path::new(&path), content.as_bytes()).map_err(|e| e.to_string())?;
         Ok(Some(path.to_string_lossy().to_string()))
     } else {
         Ok(None)
@@ -215,7 +216,7 @@ async fn read_audio_file(path: String) -> Result<String, String> {
 
 #[tauri::command]
 async fn write_file_at_path(path: String, content: String) -> Result<(), String> {
-    std::fs::write(&path, content.as_bytes()).map_err(|e| e.to_string())
+    project_write::replace_project(std::path::Path::new(&path), content.as_bytes()).map_err(|e| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

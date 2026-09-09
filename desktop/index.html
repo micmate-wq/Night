@@ -425,10 +425,15 @@ body {
   gap: 10px;
   min-width: 0; /* CRITICAL: Prevent grid child overflow */
   overflow: hidden;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.channel-strip input, .channel-strip textarea, .channel-strip [contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
 }
 .channel-strip:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-flat-elevated);
 }
 .channel-strip.drag-over {
@@ -548,14 +553,6 @@ body {
   background: var(--strip-color, var(--accent-primary));
   color: #FFF;
   border-color: var(--strip-color, var(--accent-primary));
-}
-.btn-playlist.btn-clear-source {
-  color: var(--text-muted);
-}
-.btn-playlist.btn-clear-source:hover {
-  color: #FFF;
-  background: #b42318;
-  border-color: #b42318;
 }
 .playlist-counter {
   font-family: var(--font-mono);
@@ -1044,7 +1041,6 @@ body {
               <span class="playlist-counter" id="t0-count">0/0</span>
               <button class="btn-playlist" id="t0-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t0-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
-              <button class="btn-playlist btn-clear-source" id="t0-clear-source" title="Remove instrument or audio and empty this queue">CLEAR</button>
             </div>
             <div class="strip-status-bar">
               <div class="mute-solo-group">
@@ -1120,7 +1116,6 @@ body {
               <span class="playlist-counter" id="t1-count">0/0</span>
               <button class="btn-playlist" id="t1-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t1-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
-              <button class="btn-playlist btn-clear-source" id="t1-clear-source" title="Remove instrument or audio and empty this queue">CLEAR</button>
             </div>
             <div class="strip-status-bar">
               <div class="mute-solo-group">
@@ -1196,7 +1191,6 @@ body {
               <span class="playlist-counter" id="t2-count">0/0</span>
               <button class="btn-playlist" id="t2-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t2-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
-              <button class="btn-playlist btn-clear-source" id="t2-clear-source" title="Remove instrument or audio and empty this queue">CLEAR</button>
             </div>
             <div class="strip-status-bar">
               <div class="mute-solo-group">
@@ -1272,7 +1266,6 @@ body {
               <span class="playlist-counter" id="t3-count">0/0</span>
               <button class="btn-playlist" id="t3-next" title="Next sample">⏭</button>
               <button class="btn-playlist btn-shuf" id="t3-shuf" title="Shuffle loaded selection">🔀 SHUF</button>
-              <button class="btn-playlist btn-clear-source" id="t3-clear-source" title="Remove instrument or audio and empty this queue">CLEAR</button>
             </div>
             <div class="strip-status-bar">
               <div class="mute-solo-group">
@@ -1370,6 +1363,7 @@ body {
         <h3 id="node-modal-title" style="font-family: var(--font-heading); font-size: 12px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; text-transform: uppercase; margin: 0; display: flex; align-items: center; gap: 8px;">
           <span>⚡</span> Aether Node Inspector
         </h3>
+        <button class="node-inspector-close-btn" id="node-modal-clear-btn" title="Unload the sound; keep movement, position, EQ and gain">Clear sound</button>
         <button class="node-inspector-close-btn" id="node-modal-close-btn">✕ Close</button>
       </div>
       <iframe id="node-inspector-frame" style="width: 100%; height: 340px; border: none; display: block; background: var(--bg-canvas);"></iframe>
@@ -1379,6 +1373,10 @@ body {
   <!-- ==========================================================================
        JAVASCRIPT LOGIC: AETHER ENGINE
        ========================================================================== -->
+  <script src="motion-loop.js?v=2"></script>
+  <script src="node-ripple.js"></script>
+  <script src="node-art.js"></script>
+  <script src="master-output.js"></script>
   <script>
 // Top-level reload shortcut for Tauri Desktop Webview
 function closeStudioAudioForUnload() {
@@ -1679,7 +1677,6 @@ class AudioTrack {
     this.nextBtn = document.getElementById(`t${i}-next`);
     this.countEl = document.getElementById(`t${i}-count`);
     this.shufBtn = document.getElementById(`t${i}-shuf`);
-    this.clearSourceBtn = document.getElementById(`t${i}-clear-source`);
 
     this.recBtn = document.getElementById(`t${i}-rec`);
     this.playMotionBtn = document.getElementById(`t${i}-play-motion`);
@@ -1715,7 +1712,6 @@ class AudioTrack {
     if (this.prevBtn) this.prevBtn.addEventListener('click', () => this.prevInPlaylist());
     if (this.nextBtn) this.nextBtn.addEventListener('click', () => this.nextInPlaylist());
     if (this.shufBtn) this.shufBtn.addEventListener('click', () => this.toggleShuffle());
-    if (this.clearSourceBtn) this.clearSourceBtn.addEventListener('click', () => this.clearSource());
 
     this.recBtn.addEventListener('click', () => this.toggleRecordMotion());
     this.playMotionBtn.addEventListener('click', () => this.togglePlayMotion());
@@ -1975,6 +1971,7 @@ class AudioTrack {
   }
 
   cleanupSources() {
+    this._projectExternal = null;
     this.cleanupLiveIn();
     this.cleanupStream();
     this.cleanupCustomNode();
@@ -2822,6 +2819,12 @@ class AudioTrack {
   }
 
   async loadAudioFile(file) {
+    const token = this._fileLoadPending = {};
+    try { return await this._loadAudioFile(file); }
+    finally { if (this._fileLoadPending === token) this._fileLoadPending = null; }
+  }
+
+  async _loadAudioFile(file) {
     if (!file) return;
     const revision = ++this._sourceRevision;
     const cancelled = () => revision !== this._sourceRevision;
@@ -3089,6 +3092,7 @@ class AudioTrack {
           }
         }
       }
+      if (!this.customNodeDSP) throw new Error('Instrument has no supported DSP implementation.');
       // Insert-style nodes (manifest.inputs > 0 or type: effect) keep the track tape
       // and feed it into the DSP. Generators (inputs === 0, e.g. granular) stay empty.
       if (keepTape) {
@@ -3150,6 +3154,7 @@ class AudioTrack {
       console.error('Failed to instantiate node DSP:', err);
       this.statusEl.textContent = 'Node DSP Error';
       this.studio.showToast(`Node DSP error: ${err.message || err}`, 'error');
+      if (!autoOpenInspector) throw err;
     }
   }
 
@@ -3490,14 +3495,19 @@ class AudioTrack {
 
   toggleRecordMotion() {
     if (this.isRecordingMotion) {
+      // Preserve the release position and elapsed hold time before adding the return.
+      this.setPosition(this.x, this.y, this.z);
       this.isRecordingMotion = false;
       this.recBtn.classList.remove('recording');
       this.recBtn.textContent = '●';
 
       if (this.motionPath.length > 1) {
+        const recordedDuration = this.motionPath[this.motionPath.length - 1].t;
+        this.motionPath = AetherMotionLoop.makeLoop(this.motionPath);
         this.isPlayingMotion = true;
         this.playMotionBtn.classList.add('active');
-        this.motionAccumulatedTime = 0;
+        // Start at the release point, then return home without an initial snap.
+        this.motionAccumulatedTime = recordedDuration;
         this.lastMotionFrameTime = performance.now();
       }
     } else {
@@ -3533,44 +3543,7 @@ class AudioTrack {
   }
 
   updateMotionPlayback() {
-    if (!this.isPlayingMotion || this.isRecordingMotion || this.motionPath.length <= 1) return;
-
-    const totalPathDuration = this.motionPath[this.motionPath.length - 1].t;
-    if (totalPathDuration <= 0) return;
-
-    const now = performance.now();
-    if (!this.lastMotionFrameTime) {
-      this.lastMotionFrameTime = now;
-    }
-    const dtReal = Math.min((now - this.lastMotionFrameTime) / 1000, 0.25);
-    this.lastMotionFrameTime = now;
-
-    this.motionAccumulatedTime = (this.motionAccumulatedTime || 0) + dtReal * this.motionSpeed;
-    const elapsedScaled = this.motionAccumulatedTime % totalPathDuration;
-
-    let p1 = this.motionPath[0];
-    let p2 = this.motionPath[this.motionPath.length - 1];
-
-    for (let i = 0; i < this.motionPath.length - 1; i++) {
-      if (elapsedScaled >= this.motionPath[i].t && elapsedScaled <= this.motionPath[i + 1].t) {
-        p1 = this.motionPath[i];
-        p2 = this.motionPath[i + 1];
-        break;
-      }
-    }
-
-    const dt = p2.t - p1.t;
-    const factor = dt > 0 ? (elapsedScaled - p1.t) / dt : 0;
-    const interpX = p1.x + (p2.x - p1.x) * factor;
-    const interpY = p1.y + (p2.y - p1.y) * factor;
-    const p1Z = p1.z !== undefined ? p1.z : 0;
-    const p2Z = p2.z !== undefined ? p2.z : 0;
-    const interpZ = p1Z + (p2Z - p1Z) * factor;
-
-    this.x = Math.max(0, Math.min(1, interpX));
-    this.y = Math.max(0, Math.min(1, interpY));
-    this.z = Math.max(0, Math.min(50, interpZ));
-    this.updateAudioParamsFromPosition();
+    AetherMotionLoop.updateMotionPlayback.call(this);
   }
 
   getProgress() {
@@ -3862,11 +3835,10 @@ class SpatialStudio {
         try {
           const session = JSON.parse(evt.target.result);
           await this.applySession(session);
-          this.showToast(`✅ Loaded "${file.name}"!`);
-          this.flashButtonSuccess(this.importSessionBtn, 'Loaded!');
+
         } catch (err) {
           console.error('Failed to load session file:', err);
-          this.showToast('Error loading session file. Invalid JSON format.', 'error');
+          this.showToast(`Load failed: ${err.message || err}`, 'error');
         }
         e.target.value = '';
       };
@@ -3916,6 +3888,7 @@ class SpatialStudio {
 
     // Node Inspector Modal & IPC PostMessage Bridge
     this.activeInspectorTrack = null;
+    document.getElementById('node-modal-clear-btn').addEventListener('click', () => this.activeInspectorTrack?.clearSource());
     this.nodeInspectorModal = document.getElementById('node-inspector-modal');
     this.nodeModalCloseBtn = document.getElementById('node-modal-close-btn');
     if (this.nodeModalCloseBtn && this.nodeInspectorModal) {
@@ -4090,15 +4063,10 @@ class SpatialStudio {
     this.masterGain = this.audioCtx.createGain();
     this.masterGain.gain.value = parseFloat(this.masterVolumeSlider.value);
 
-    // Master Limiter Node — Icecast tap sits AFTER this.
-    this.masterLimiter = this.audioCtx.createDynamicsCompressor();
-    this.masterLimiter.threshold.value = -0.5;
-    this.masterLimiter.knee.value = 12.0;
-    this.masterLimiter.ratio.value = 4.0;
-    this.masterLimiter.attack.value = 0.003;
-    this.masterLimiter.release.value = 0.15;
-
-    this.masterGain.connect(this.masterLimiter);
+    // Shared protected output for speakers, WAV recording and broadcast.
+    this.masterProcessing = AetherMasterOutput.create(this.audioCtx);
+    this.masterLimiter = this.masterProcessing.output;
+    this.masterGain.connect(this.masterProcessing.input);
     this.masterLimiter.connect(this.audioCtx.destination);
 
     // Setup ScriptProcessor / Worklet for Master Recording capture (isolated with 0-gain sink to prevent duplicate delayed audio output)
@@ -4295,6 +4263,7 @@ class SpatialStudio {
       this.audioCtx = null;
       this.masterGain = null;
       this.masterLimiter = null;
+      this.masterProcessing = null;
       this.masterRecorderNode = null;
       this.recorderZeroGain = null;
       this.icecastCaptureNode = null;
@@ -4818,9 +4787,9 @@ class SpatialStudio {
   }
 
   _armMasterRecorder() {
-    if (this._masterRecorderArmed || !this.masterGain || !this.masterRecorderNode || !this.recorderZeroGain || !this.audioCtx) return;
+    if (this._masterRecorderArmed || !this.masterLimiter || !this.masterRecorderNode || !this.recorderZeroGain || !this.audioCtx) return;
     try {
-      this.masterGain.connect(this.masterRecorderNode);
+      this.masterLimiter.connect(this.masterRecorderNode);
       this.masterRecorderNode.connect(this.recorderZeroGain);
       this.recorderZeroGain.connect(this.audioCtx.destination);
       this._masterRecorderArmed = true;
@@ -4829,7 +4798,7 @@ class SpatialStudio {
 
   _disarmMasterRecorder() {
     if (!this._masterRecorderArmed) return;
-    try { this.masterGain.disconnect(this.masterRecorderNode); } catch (e) {}
+    try { this.masterLimiter.disconnect(this.masterRecorderNode); } catch (e) {}
     try { this.masterRecorderNode.disconnect(); } catch (e) {}
     try { this.recorderZeroGain.disconnect(); } catch (e) {}
     this._masterRecorderArmed = false;
@@ -4925,8 +4894,15 @@ class SpatialStudio {
 
   // --- DAW PROJECT SAVE & LOAD (MACOS FINDER) ---
   async getCurrentSessionData(name = 'Untitled Project') {
+    if (this._projectLoadPending || this.tracks.some(t => t._fileLoadPending)) throw new Error('Wait for the current source or project to finish loading.');
+    const masterVolume = parseFloat(this.masterVolumeSlider.value);
+    const decoder = new OfflineAudioContext(1, 1, 48000);
+    const snapshots = this.tracks.map(t => ({ ...t, playlist: [...t.playlist],
+      motionPath: t.motionPath.map(p => ({ ...p })), eqValues: { ...t.eqValues },
+      customNodeBundle: t.customNodeBundle ? JSON.parse(JSON.stringify(t.customNodeBundle)) : null,
+      customNodeDSP: t.customNodeDSP ? { params: { ...t.customNodeDSP.params } } : null }));
     const tracksData = [];
-    for (const t of this.tracks) {
+    for (const t of snapshots) {
       let sampleData = null;
       let customNodeZipBase64 = t.customNodeZipBase64 || null;
       if (t.isCustomNode) {
@@ -4936,11 +4912,30 @@ class SpatialStudio {
             if (customNodeZipBase64) t.customNodeZipBase64 = customNodeZipBase64;
           } catch (e) {}
         }
-      } else if (t.audioBuffer) {
+      }
+      if (t.audioBuffer) {
         try {
           sampleData = await audioBufferToBase64(t.audioBuffer);
         } catch (e) {
-          console.warn(`Could not serialize audio buffer for track ${t.index + 1}:`, e);
+          throw new Error(`Track ${t.index + 1}: could not save recorded audio (${e.message || e}).`);
+        }
+      }
+      if (t.isCustomNode && !customNodeZipBase64 && !t.customNodeBundle) {
+        throw new Error(`Track ${t.index + 1}: instrument bundle is unavailable.`);
+      }
+      if (t.isLoaded && !t.audioBuffer && !t.playlist.length && !t.isCustomNode && !t.isLiveIn && !t.isStream) {
+        throw new Error(`Track ${t.index + 1}: loaded source has no portable audio.`);
+      }
+      const playlist = [];
+      for (const file of (t.playlist || [])) {
+        try {
+          const bytes = await file.arrayBuffer();
+          if (!bytes.byteLength) throw new Error('empty audio file');
+          // Refuse a save that this Mac cannot decode again.
+          await decoder.decodeAudioData(bytes.slice(0));
+          playlist.push({ name: file.name, type: file.type || '', data: arrayBufferToBase64(bytes) });
+        } catch (e) {
+          throw new Error(`Track ${t.index + 1}: could not save playlist file "${file.name}" (${e.message || e}).`);
         }
       }
       tracksData.push({
@@ -4949,11 +4944,14 @@ class SpatialStudio {
         sampleName: t.sampleName || t.name,
         filePath: t.filePath || '',
         sampleData: sampleData,
+        playlist,
+        playlistIndex: t.playlistIndex || 0,
+        isShuffle: !!t.isShuffle,
         isCustomNode: !!t.isCustomNode,
         customNodeBundle: t.customNodeBundle || null,
         customNodeParams: (t.customNodeDSP && t.customNodeDSP.params) ? { ...t.customNodeDSP.params } : null,
         customNodeZipBase64: customNodeZipBase64,
-        isLiveIn: !!t.isLiveIn,
+        isLiveIn: !!(t.isLiveIn || t._projectExternal?.isLiveIn),
         x: t.x,
         y: t.y,
         z: t.z,
@@ -4963,17 +4961,22 @@ class SpatialStudio {
         motionPath: t.motionPath,
         eq: { ...t.eqValues },
         stripGainDb: t.stripGainDb,
-        isStream: t.isStream,
-        streamUrl: t.streamUrl
+        isStream: !!(t.isStream || t._projectExternal?.isStream),
+        streamUrl: t.streamUrl || t._projectExternal?.streamUrl
       });
     }
 
+    if (this.tracks.some((t, i) => t._sourceRevision !== snapshots[i]._sourceRevision ||
+        t.playlistIndex !== snapshots[i].playlistIndex || t.isShuffle !== snapshots[i].isShuffle ||
+        t.playlist.length !== snapshots[i].playlist.length || t.playlist.some((f, n) => f !== snapshots[i].playlist[n]))) {
+      throw new Error('A source changed during saving. Please save again.');
+    }
     return {
-      version: '3.0',
+      version: '3.1',
       type: 'aether_project',
       name: name,
       timestamp: new Date().toISOString(),
-      masterVolume: parseFloat(this.masterVolumeSlider.value),
+      masterVolume,
       tracks: tracksData
     };
   }
@@ -4993,8 +4996,15 @@ class SpatialStudio {
 
   async exportSession() {
     this.showToast('💾 Opening Finder Save As...', 'info');
-    const sessionData = await this.getCurrentSessionData('Untitled Project');
-    const jsonString = JSON.stringify(sessionData, null, 2);
+    let sessionData, jsonString;
+    try {
+      sessionData = await this.getCurrentSessionData('Untitled Project');
+      jsonString = JSON.stringify(sessionData, null, 2);
+    } catch (e) {
+      this.showToast(`Save failed: ${e.message || e}`, 'error');
+      return;
+    }
+    const native = !!(window.__TAURI__ || window.__TAURI_INTERNALS__);
 
     let savedPath = null;
     // 1. Native macOS Finder Save As Dialog via Tauri backend
@@ -5003,8 +5013,12 @@ class SpatialStudio {
         content: jsonString,
         defaultName: 'Untitled_Project.aether'
       });
+      if (native && !savedPath) return;
     } catch (e) {
-      console.warn('Tauri save_project_dialog error, falling back:', e);
+      if (native) {
+        this.showToast(`Save failed; previous save retained: ${e.message || e}`, 'error');
+        return;
+      }
     }
 
     // 2. Web File System Access API Fallback (outside Tauri)
@@ -5022,7 +5036,8 @@ class SpatialStudio {
         await writable.close();
         savedPath = handle.name || 'Untitled_Project.aether';
       } catch (err) {
-        if (err.name === 'AbortError') return; // User cancelled
+        if (err.name !== 'AbortError') this.showToast(`Save failed: ${err.message || err}`, 'error');
+        return;
       }
     }
 
@@ -5040,7 +5055,9 @@ class SpatialStudio {
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
         }, 1000);
-        savedPath = 'Untitled_Project.aether';
+        this.showToast('Project download requested. Check your Downloads folder.');
+        this.reportProjectLimits(sessionData);
+        return;
       } catch (e) {
         console.error('Download fallback error:', e);
       }
@@ -5050,6 +5067,7 @@ class SpatialStudio {
       const displayFilename = typeof savedPath === 'string' ? savedPath.split('/').pop() : 'Project';
       this.showToast(`✅ Saved project: ${displayFilename}`);
       this.flashButtonSuccess(this.exportSessionBtn, 'Saved!');
+      this.reportProjectLimits(sessionData);
     }
   }
 
@@ -5067,7 +5085,10 @@ class SpatialStudio {
         return; // User cancelled Finder dialog
       }
     } catch (e) {
-      console.warn('Tauri load_project_dialog error, falling back:', e);
+      if (window.__TAURI__ || window.__TAURI_INTERNALS__) {
+        this.showToast(`Load failed: ${e.message || e}`, 'error');
+        return;
+      }
     }
 
     // 2. Web File System Access API Fallback
@@ -5085,7 +5106,8 @@ class SpatialStudio {
         session = JSON.parse(text);
         fileName = file.name;
       } catch (err) {
-        if (err.name === 'AbortError') return;
+        if (err.name !== 'AbortError') this.showToast(`Load failed: ${err.message || err}`, 'error');
+        return;
       }
     }
 
@@ -5097,23 +5119,97 @@ class SpatialStudio {
     }
 
     if (session) {
-      await this.applySession(session);
-      this.showToast(`✅ Loaded "${fileName}" from Finder!`);
-      this.flashButtonSuccess(this.importSessionBtn, 'Loaded!');
+      try {
+        await this.applySession(session);
+      } catch (e) {
+        this.showToast(`Load failed: ${e.message || e}`, 'error');
+      }
     }
   }
 
+  reportProjectLimits(session, failures = []) {
+    const notes = [...failures];
+    if (session.tracks.some(t => t.isLiveIn || t.isStream)) {
+      notes.push('Live inputs and streams are external. Reconnect them after loading; their future audio is not stored in the project.');
+    }
+    if (session.tracks.some(t => t.isCustomNode || t.customNodeBundle || t.customNodeZipBase64)) {
+      notes.push('Instrument bundles and exposed parameters are stored. Private instrument state (such as internally captured samples or random state) may not be restored.');
+    }
+    if (notes.length) window.alert('Project notes\n\n' + notes.join('\n\n'));
+  }
+
+  async prepareSession(session) {
+    // Validate and stage without touching track sources or transport.
+    if (!session || !Array.isArray(session.tracks) || !session.tracks.length || session.tracks.length > 4 ||
+        (session.type !== undefined && session.type !== 'aether_project')) throw new Error('Not a supported Aether project.');
+    const seen = new Set();
+    const finite = (v) => typeof v === 'number' && Number.isFinite(v);
+    if (session.masterVolume !== undefined && (!finite(session.masterVolume) || session.masterVolume < 0 || session.masterVolume > 1)) throw new Error('Invalid master volume.');
+    for (const saved of session.tracks) {
+      if (!saved || !Number.isInteger(saved.index ?? 0) || !this.tracks[saved.index ?? 0] || seen.has(saved.index ?? 0)) throw new Error('Invalid or duplicate track index.');
+      seen.add(saved.index ?? 0);
+      for (const key of ['x', 'y', 'z', 'motionSpeed', 'stripGainDb']) {
+        if (saved[key] !== undefined && !finite(saved[key])) throw new Error(`Invalid ${key}.`);
+      }
+      if (saved.eq && ['low', 'mid', 'high'].some(k => saved.eq[k] !== undefined && !finite(saved.eq[k]))) throw new Error('Invalid EQ.');
+      if (saved.motionPath !== undefined && (!Array.isArray(saved.motionPath) || saved.motionPath.some(p => !p || !['t','x','y'].every(k => finite(p[k])) || (p.z !== undefined && !finite(p.z))))) throw new Error('Invalid recorded movement.');
+      if (saved.playlist !== undefined && (!Array.isArray(saved.playlist) || saved.playlist.some(f => !f || typeof f.name !== 'string' || typeof f.data !== 'string' || !f.data))) throw new Error('Invalid playlist.');
+      if (saved.playlist?.length && (!Number.isInteger(saved.playlistIndex) || saved.playlistIndex < 0 || saved.playlistIndex >= saved.playlist.length)) throw new Error('Invalid selected playlist sample.');
+    }
+    const decoder = new OfflineAudioContext(1, 1, 48000);
+    const prepared = [];
+    for (const saved of session.tracks) {
+      try {
+        const item = { ...saved, _playlist: [], _decoded: null, _bundle: null };
+        for (const entry of (saved.playlist || [])) {
+          const bytes = Uint8Array.from(atob(entry.data), c => c.charCodeAt(0));
+          const decoded = await decoder.decodeAudioData(bytes.buffer.slice(0));
+          item._playlist.push(new File([bytes], entry.name, { type: entry.type || '' }));
+          if (item._playlist.length - 1 === saved.playlistIndex) item._decoded = decoded;
+        }
+        if (saved.sampleData) item._decoded = await base64ToAudioBuffer(saved.sampleData, decoder);
+        const node = saved.isCustomNode || saved.customNodeBundle || saved.customNodeZipBase64 || /\.aethernode$/i.test(saved.filePath || '');
+        if (node) {
+          item._bundle = saved.customNodeBundle;
+          if (!item._bundle && saved.customNodeZipBase64) item._bundle = await invokeTauri('load_node_bundle_from_base64', { base64: saved.customNodeZipBase64, filename: saved.sampleName || 'custom.aethernode' });
+          if (!item._bundle && saved.filePath) item._bundle = await invokeTauri('load_node_bundle_from_path', { path: saved.filePath });
+          if (!item._bundle?.manifest || !item._bundle.dsp_js) throw new Error('Instrument bundle has no supported JavaScript DSP.');
+          new Function(item._bundle.dsp_js); // Syntax check only; do not run incoming instruments during validation.
+        } else if (!item._decoded && saved.filePath && !saved.isLiveIn && !saved.isStream) {
+          // Compatibility with older path-only projects.
+          let data;
+          try { data = await invokeTauri('read_audio_file', { path: saved.filePath }); }
+          catch (_) {
+            const response = await fetch(saved.filePath);
+            if (!response.ok) throw new Error('Original sample is unavailable.');
+            data = arrayBufferToBase64(await response.arrayBuffer());
+          }
+          item._decoded = await base64ToAudioBuffer(data, decoder);
+        }
+        prepared.push(item);
+      } catch (e) { throw new Error(`Track ${(saved.index ?? 0) + 1}: ${e.message || e}`); }
+    }
+    return prepared;
+  }
+
   async applySession(session) {
-    if (!session) return;
+    if (this._projectLoadPending) throw new Error('A project is already loading.');
+    this._projectLoadPending = true;
+    try { return await this._applySession(session); }
+    finally { this._projectLoadPending = false; }
+  }
 
-    // 1. Halt active audio & canvas engines
-    this.stopMaster();
-
+  async _applySession(session) {
+    const loadRevision = this._projectLoadRevision = (this._projectLoadRevision || 0) + 1;
+    const sourceRevisions = this.tracks.map(t => t._sourceRevision);
+    const prepared = await this.prepareSession(session);
+    if (loadRevision !== this._projectLoadRevision || this.tracks.some((t, i) => t._sourceRevision !== sourceRevisions[i])) {
+      throw new Error('A source changed while checking the project. Please load again.');
+    }
     await this.ensureAudioRunning();
-    const ctx = this.audioCtx;
-
-    // 2. Display loading state in UI
-    this.showToast('⏳ Hydrating project & loading audio samples...', 'info');
+    this.stopMaster();
+    const failures = [];
+    this.showToast('Loading project...', 'info');
 
     // 3. Hydrate Master Controls
     if (session.masterVolume !== undefined) {
@@ -5124,16 +5220,28 @@ class SpatialStudio {
 
     // 4. Hydrate Tracks & Audio Buffers
     if (session.tracks && Array.isArray(session.tracks)) {
-      for (const saved of session.tracks) {
+      for (const saved of prepared) {
         const idx = saved.index !== undefined ? saved.index : 0;
         const t = this.tracks[idx];
         if (!t) continue;
 
         // Clear existing sound sources
+        t._sourceRevision++;
         t.cleanupSources();
+        t.playlist = [];
+        t.playlistIndex = 0;
+        t.isShuffle = false;
+        t.duration = 0;
         t.isLoaded = false;
         t.useMediaElement = false;
         t.statusEl.textContent = 'Loading sample...';
+        if (t.htmlAudio) {
+          t.htmlAudio.onloadedmetadata = null;
+          t.htmlAudio.onerror = null;
+          if (t.htmlAudio.src.startsWith('blob:')) URL.revokeObjectURL(t.htmlAudio.src);
+          t.htmlAudio.removeAttribute('src');
+          t.htmlAudio.load();
+        }
 
         // 3D Spatial Position
         const posX = saved.x !== undefined ? saved.x : 0.5;
@@ -5186,142 +5294,39 @@ class SpatialStudio {
           t.setMotionSpeed(parseFloat(saved.motionSpeed));
         }
 
-        // Check if Track is a Custom Node or Audio File/Stream
-        const rawFileName = (saved.filePath || saved.sampleName || saved.name || '').split('/').pop() || '';
-        const pathLooksLikeNode = (saved.filePath || '').toLowerCase().endsWith('.aethernode') || rawFileName.toLowerCase().endsWith('.aethernode');
-        const wantsCustomNode = !!(saved.isCustomNode || saved.customNodeBundle || saved.customNodeZipBase64 || pathLooksLikeNode);
-        if (wantsCustomNode) {
-          try {
-            let bundle = null;
-            let zipBase64 = saved.customNodeZipBase64 || null;
-            if (zipBase64) {
-              try {
-                bundle = await invokeTauri('load_node_bundle_from_base64', {
-                  base64: zipBase64,
-                  filename: saved.sampleName || 'custom.aethernode'
-                });
-              } catch (zipErr) {
-                console.warn('Session zip unpack failed for track ' + (idx + 1) + ':', zipErr);
-              }
-            }
-            if (!bundle && (pathLooksLikeNode || saved.filePath)) {
-              try {
-                bundle = await invokeTauri('load_node_bundle_from_path', { path: saved.filePath || rawFileName });
-                if (!zipBase64 && saved.filePath) {
-                  try { zipBase64 = await invokeTauri('read_audio_file', { path: saved.filePath }); } catch (e) {}
-                }
-              } catch (pathErr) {
-                console.warn('Session path unpack failed for track ' + (idx + 1) + ':', pathErr);
-              }
-            }
-            if (!bundle && saved.customNodeBundle) {
-              bundle = saved.customNodeBundle;
-            }
-            // Fallback: Fetch bundle via HTTP server
-            if (!bundle) {
-              const nodeFileName = rawFileName.toLowerCase().endsWith('.aethernode') ? rawFileName : `${rawFileName}.aethernode`;
-              const candidateUrls = [
-                `/nodes/${nodeFileName}`,
-                `/Aether%204.0%20UI/nodes/${nodeFileName}`,
-                `../nodes/${nodeFileName}`
-              ];
-              for (const url of candidateUrls) {
-                try {
-                  const resp = await fetch(url);
-                  if (resp.ok) {
-                    const buf = await resp.arrayBuffer();
-                    const b64 = arrayBufferToBase64(buf);
-                    bundle = await invokeTauri('load_node_bundle_from_base64', {
-                      base64: b64,
-                      filename: nodeFileName
-                    });
-                    if (bundle) {
-                      zipBase64 = b64;
-                      break;
-                    }
-                  }
-                } catch (_) {}
-              }
-            }
-            if (!bundle) throw new Error('No custom node bundle, zip, or path available');
-            await t.loadNodeBundle(bundle, false);
-            if (zipBase64) t.customNodeZipBase64 = zipBase64;
-            if (saved.customNodeParams && t.customNodeDSP) {
-              for (const [paramId, val] of Object.entries(saved.customNodeParams)) {
-                if (typeof t.customNodeDSP.setParameter === 'function') {
-                  t.customNodeDSP.setParameter(paramId, val);
-                } else if (t.customNodeDSP.params) {
-                  t.customNodeDSP.params[paramId] = val;
-                }
-              }
-            }
-            if (!this.isPlaying && t.customNodeDSP && typeof t.customNodeDSP.stop === 'function') {
-              t.customNodeDSP.stop();
-            }
+        try {
+          if (saved._decoded) {
+            t.audioBuffer = saved._decoded;
+            t.duration = saved._decoded.duration;
             t.isLoaded = true;
-            t.statusEl.textContent = '⚡ Aether Node Active';
-          } catch (nodeErr) {
-            console.error('Error hydrating custom node on track ' + (idx + 1) + ':', nodeErr);
-            t.statusEl.textContent = 'Node Load Error';
+            t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
+          } else {
+            t.statusEl.textContent = saved.isLiveIn ? 'Reconnect live input' : saved.isStream ? 'Reconnect stream' : 'No file loaded';
           }
-        } else {
-          // Asynchronous Audio Sample Buffer Loading
-          try {
-            if (saved.sampleData) {
-              // Case A: Embedded Base64 WAV sample data
-              const decodedBuffer = await base64ToAudioBuffer(saved.sampleData, ctx);
-              t.audioBuffer = decodedBuffer;
-              t.duration = decodedBuffer.duration;
-              t.isLoaded = true;
-              t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
-            } else if (saved.filePath) {
-              // Case B: Local disk file path via Tauri backend read
-              let loaded = false;
-              try {
-                const base64Str = await invokeTauri('read_audio_file', { path: saved.filePath });
-                if (base64Str) {
-                  const decodedBuffer = await base64ToAudioBuffer(base64Str, ctx);
-                  t.audioBuffer = decodedBuffer;
-                  t.duration = decodedBuffer.duration;
-                  t.isLoaded = true;
-                  t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
-                  loaded = true;
-                }
-              } catch (fsErr) {
-                console.warn(`Could not read audio file directly via Tauri for track ${idx + 1}:`, fsErr);
+          if (saved._bundle) {
+            await t.loadNodeBundle(saved._bundle, false);
+            if (!t.isCustomNode || t.customNodeBundle !== saved._bundle) throw new Error('Instrument could not start.');
+            t.customNodeZipBase64 = saved.customNodeZipBase64 || null;
+            if (saved.customNodeParams && t.customNodeDSP) {
+              for (const [id, value] of Object.entries(saved.customNodeParams)) {
+                if (typeof t.customNodeDSP.setParameter === 'function') t.customNodeDSP.setParameter(id, value);
+                else if (t.customNodeDSP.params) t.customNodeDSP.params[id] = value;
               }
-
-              // Fallback: Web fetch if it's a URL or server path
-              if (!loaded) {
-                try {
-                  const resp = await fetch(saved.filePath);
-                  if (resp.ok) {
-                    const arrBuf = await resp.arrayBuffer();
-                    const decoded = await ctx.decodeAudioData(arrBuf);
-                    t.audioBuffer = decoded;
-                    t.duration = decoded.duration;
-                    t.isLoaded = true;
-                    t.statusEl.textContent = `${t.duration.toFixed(1)}s • Loaded`;
-                    loaded = true;
-                  }
-                } catch (fetchErr) {
-                  console.warn(`Could not fetch audio file for track ${idx + 1}:`, fetchErr);
-                }
-              }
-
-              if (!loaded) {
-                t.statusEl.textContent = 'Sample missing';
-              }
-            } else if (saved.isStream && saved.streamUrl) {
-              // Case C: Live stream URL
-              t.loadStreamUrl(saved.streamUrl);
-            } else {
-              t.statusEl.textContent = 'No file loaded';
             }
-          } catch (sampleErr) {
-            console.error(`Error loading sample for track ${idx + 1}:`, sampleErr);
-            t.statusEl.textContent = 'Decode error';
+            if (typeof t.customNodeDSP?.stop === 'function') t.customNodeDSP.stop();
           }
+          // Restore after node setup, which resets the playlist.
+          t.playlist = saved._playlist;
+          t.playlistIndex = saved.playlistIndex || 0;
+          t.isShuffle = !!saved.isShuffle;
+          t.updatePlaylistUI();
+          // Keep external-source intent for a subsequent save without auto-connecting.
+          t._projectExternal = { isLiveIn: !!saved.isLiveIn, isStream: !!saved.isStream, streamUrl: saved.streamUrl || '' };
+        } catch (e) {
+          failures.push(`Track ${idx + 1}: ${e.message || e}`);
+          t.cleanupSources();
+          t.isLoaded = false;
+          t.statusEl.textContent = 'Project source load failed';
         }
 
         // Re-calculate DSP spatial panning & filter nodes
@@ -5332,7 +5337,9 @@ class SpatialStudio {
       this.updateSoloState();
     }
 
-    this.showToast('✅ Project hydrated and ready!', 'info');
+    this.showToast(failures.length ? 'Project loaded with errors. See project notes.' : 'Project loaded.', failures.length ? 'error' : 'info');
+    this.reportProjectLimits(session, failures);
+    return { failures };
   }
 
   // --- MASTER PLAYBACK ---
@@ -5518,7 +5525,6 @@ class SpatialStudio {
   findHoverGearNodeIndex(pxX, pxY) {
     for (let i = this.tracks.length - 1; i >= 0; i--) {
       const t = this.tracks[i];
-      if (!t.isCustomNode) continue;
       const nodePxX = t.x * this.width;
       const nodePxY = (1.0 - t.y) * this.height;
       const nodeRadius = t.getVisualRadius();
@@ -5574,7 +5580,7 @@ class SpatialStudio {
         this.canvas.style.cursor = 'grabbing';
         const track = this.tracks[hitIdx];
         if (track.isRecordingMotion) {
-          track.motionPath = [];
+          track.motionPath = [{ t: 0, x: track.x, y: track.y, z: track.z }];
           track.recordStartTime = performance.now();
         }
       }
@@ -5627,6 +5633,11 @@ class SpatialStudio {
       if (hitIdx !== -1) {
         isDragging = true;
         this.activeDragNodeIndex = hitIdx;
+        const track = this.tracks[hitIdx];
+        if (track.isRecordingMotion) {
+          track.motionPath = [{ t: 0, x: track.x, y: track.y, z: track.z }];
+          track.recordStartTime = performance.now();
+        }
       }
     }, { passive: true });
 
@@ -5636,10 +5647,16 @@ class SpatialStudio {
       this.tracks[this.activeDragNodeIndex].setPosition(coords.normX, coords.normY);
     }, { passive: true });
 
-    window.addEventListener('touchend', () => {
+    const finishTouchMotion = () => {
+      if (isDragging && this.activeDragNodeIndex !== -1) {
+        const track = this.tracks[this.activeDragNodeIndex];
+        if (track.isRecordingMotion) track.toggleRecordMotion();
+      }
       isDragging = false;
       this.activeDragNodeIndex = -1;
-    });
+    };
+    window.addEventListener('touchend', finishTouchMotion);
+    window.addEventListener('touchcancel', finishTouchMotion);
 
     // Double-click to inspect custom .aethernode DSP and visual controls
     this.canvas.addEventListener('dblclick', (e) => {
@@ -5657,14 +5674,17 @@ class SpatialStudio {
   }
 
   openNodeInspector(track) {
-    if (!track || !track.customNodeBundle) return;
+    if (!track) return;
     this.activeInspectorTrack = track;
     const modal = document.getElementById('node-inspector-modal');
     const title = document.getElementById('node-modal-title');
     const frame = document.getElementById('node-inspector-frame');
     if (modal && frame && title) {
-      title.innerHTML = `<span>⚡</span> T${track.index + 1}: ${track.customNodeBundle.manifest.name || 'Aether Node'}`;
-      if (track.customNodeBundle.ui_html) {
+      title.textContent = `T${track.index + 1}: ${track.customNodeBundle?.manifest?.name || track.sampleName || track.name || 'Track settings'}`;
+      frame.onload = null;
+      frame.srcdoc = '';
+      frame.style.display = track.customNodeBundle?.ui_html ? 'block' : 'none';
+      if (track.customNodeBundle?.ui_html) {
         let uiHtml = track.customNodeBundle.ui_html;
         const isDark = document.body.classList.contains('theme-dark');
         
@@ -5776,16 +5796,25 @@ class SpatialStudio {
         this.ctx.strokeStyle = t.color;
         this.ctx.globalAlpha = this.isDark ? 0.6 : 0.4;
         this.ctx.lineWidth = 2;
-        this.ctx.setLineDash([4, 4]);
+        const returnIndex = t.motionPath.findIndex(pt => pt.generatedReturn === true);
+        const drawPath = (from, to, dash) => {
+          this.ctx.beginPath();
+          this.ctx.setLineDash(dash);
+          for (let idx = from; idx < to; idx++) {
+            const pt = t.motionPath[idx];
+            const px = pt.x * w, py = (1.0 - pt.y) * h;
+            if (idx === from) this.ctx.moveTo(px, py);
+            else this.ctx.lineTo(px, py);
+          }
+          this.ctx.stroke();
+        };
+        if (returnIndex > 0) {
+          drawPath(0, returnIndex, [4, 4]);
+          drawPath(returnIndex - 1, t.motionPath.length, [2, 6]);
+        } else {
+          drawPath(0, t.motionPath.length, [4, 4]);
+        }
 
-        t.motionPath.forEach((pt, idx) => {
-          const ptPxX = pt.x * w;
-          const ptPxY = (1.0 - pt.y) * h;
-          if (idx === 0) this.ctx.moveTo(ptPxX, ptPxY);
-          else this.ctx.lineTo(ptPxX, ptPxY);
-        });
-
-        this.ctx.stroke();
         this.ctx.setLineDash([]);
         this.ctx.globalAlpha = 1.0;
       }
@@ -5838,7 +5867,16 @@ class SpatialStudio {
       const rawAnim = t.customNodeBundle?.manifest?.canvas_animation;
       const animType = typeof rawAnim === 'string' ? rawAnim : rawAnim?.type;
 
-      if (animType === 'interference_wave' && t.isLoaded && (t.isPlaying || progress > 0)) {
+      // Art registry (bloom family etc). Also accept canvas_animation:'bloom' + manifest.art.settings.
+      const artSettings = (typeof rawAnim === 'object' && rawAnim?.settings)
+        || (animType === 'bloom' ? t.customNodeBundle?.manifest?.art?.settings : null)
+        || (t.customNodeBundle?.manifest?.art?.settings?.family ? t.customNodeBundle.manifest.art.settings : null)
+        || null;
+      const wantsArt = (animType === 'art' || animType === 'bloom' || (artSettings && artSettings.family === 'bloom'));
+      if (wantsArt && t.isLoaded && (t.isPlaying || progress > 0) && typeof AetherNodeArt !== 'undefined' && AetherNodeArt.draw) {
+        const settings = artSettings || { family: 'bloom', energy: 0.71, spread: 0.87, detail: 0.88, speed: 1.26, hue: -71, fade: 0.75 };
+        AetherNodeArt.draw(this.ctx, { x: pxX, y: pxY, radius: ringRadius, color: t.color, time: performance.now(), settings });
+      } else if (animType === 'interference_wave' && t.isLoaded && (t.isPlaying || progress > 0)) {
         const nowMs = performance.now();
         const baseRadius = ringRadius;
         
@@ -5865,25 +5903,7 @@ class SpatialStudio {
         this.ctx.shadowBlur = 0;
         this.ctx.globalAlpha = 1.0;
       } else if (animType === 'ripple' && t.isLoaded && (t.isPlaying || progress > 0)) {
-        const nowMs = performance.now();
-        for (let j = 0; j < 4; j++) {
-          const wavePhase = (nowMs * 0.0025) + (j * 1.57);
-          const rippleExpansion = ((nowMs * 0.018 + j * 6.5) % 22);
-          const jitter = Math.sin(wavePhase) * 3;
-          const currentRadius = ringRadius + rippleExpansion + jitter;
-          const alpha = Math.max(0, (1.0 - (rippleExpansion / 22)) * 0.5);
-
-          this.ctx.beginPath();
-          this.ctx.arc(pxX, pxY, currentRadius, 0, 2 * Math.PI);
-          this.ctx.strokeStyle = t.color;
-          this.ctx.globalAlpha = alpha;
-          this.ctx.lineWidth = 2.0;
-          this.ctx.shadowColor = t.color;
-          this.ctx.shadowBlur = 8;
-          this.ctx.stroke();
-        }
-        this.ctx.shadowBlur = 0;
-        this.ctx.globalAlpha = 1.0;
+        AetherRipple.draw(this.ctx, { x: pxX, y: pxY, radius: ringRadius, color: t.color, time: performance.now(), settings: rawAnim?.settings });
       } else if (animType === 'pulse' && t.isLoaded && (t.isPlaying || progress > 0)) {
         const dsp = t.customNodeDSP;
         const params = dsp && dsp.params;
@@ -6211,7 +6231,7 @@ class SpatialStudio {
       this.ctx.stroke();
 
       // Dedicated Gear Icon Badge on Canvas Node
-      if (t.isCustomNode) {
+      {
         const gearX = pxX + nodeRadius * 0.72;
         const gearY = pxY - nodeRadius * 0.72;
         const gearR = 9;

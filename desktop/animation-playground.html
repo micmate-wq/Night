@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aether · Animation playground</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#111217;color:#e9e7ef;font:16px system-ui}main{max-width:1050px;margin:40px auto;padding:24px}h1{font-size:28px;font-weight:500}p{color:#aaa8ba;line-height:1.6}.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}canvas{width:100%;aspect-ratio:1;background:#181922;border-radius:24px}label{display:grid;grid-template-columns:1fr 65px;gap:8px;margin:18px 0}input[type=range]{grid-column:1/3;width:100%;accent-color:#ae9acb}button{background:#292735;color:inherit;border:1px solid #625971;border-radius:8px;padding:10px 14px;cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #d5c1f2}textarea{width:100%;height:180px;background:#181922;color:#ded5ec;border:1px solid #625971;border-radius:8px;padding:12px}small{color:#aaa8ba}@media(max-width:700px){.grid{grid-template-columns:1fr}}
+</style>
+<main><small>AETHER / ANIMATION PLAYGROUND</small><h1>Shape the ripple.</h1><p>The same drawing code used by Aether’s granular ripple. Explore a variation beside the original. This preview is silent; movement is time-driven.</p>
+<div class="grid"><section><canvas id="preview" width="600" height="600" aria-label="Original and proposed granular ripple animations"></canvas><p>Original · left &nbsp; / &nbsp; Your variation · right</p><button id="pause">Pause</button> <button id="reset">Reset variation</button></section><section id="controls"></section></div>
+<p>Keep a variation for review. This does not change your installed instruments.</p><button id="save">Download animation settings</button><p id="status" role="status"></p><textarea id="settings" readonly aria-label="Animation settings"></textarea></main>
+<script src="node-ripple.js"></script><script>
+const values = {...AetherRipple.defaults};
+const controls = [['layers','Layers',1,8,1],['spread','Spread',4,40,1],['softness','Softness',0,20,1],['irregularity','Uneven spacing',0,10,.1],['speed','Motion speed',0,3,.05],['width','Line weight',.5,4,.1]];
+const output=document.getElementById('settings');
+function update(){output.value=JSON.stringify({type:'ripple',settings:values},null,2)}
+for(const [key,name,min,max,step] of controls){const label=document.createElement('label');label.textContent=name;const number=document.createElement('output');number.textContent=values[key];const input=document.createElement('input');Object.assign(input,{type:'range',min,max,step,value:values[key]});input.setAttribute('aria-label',name);input.dataset.key=key;input.oninput=()=>{values[key]=Number(input.value);number.textContent=input.value;update()};label.append(number,input);document.getElementById('controls').append(label)}
+let paused=false,time=0,last=null;
+document.getElementById('pause').onclick=e=>{paused=!paused;e.target.textContent=paused?'Resume':'Pause'};
+document.getElementById('reset').onclick=()=>{Object.assign(values,AetherRipple.defaults);for(const input of document.querySelectorAll('input')){input.value=values[input.dataset.key];input.previousElementSibling.textContent=input.value}update()};
+document.getElementById('save').onclick=()=>{const url=URL.createObjectURL(new Blob([output.value],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='aether-ripple-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);document.getElementById('status').textContent='Settings downloaded for review.'};
+const canvas=document.getElementById('preview'),ctx=canvas.getContext('2d');
+function frame(now){if(last!==null&&!paused)time+=Math.min(now-last,100);last=now;ctx.clearRect(0,0,600,600);for(const [x,settings] of [[160,AetherRipple.defaults],[440,values]]){AetherRipple.draw(ctx,{x,y:300,radius:47,color:'#ae9acb',time,settings});ctx.beginPath();ctx.arc(x,300,40,0,Math.PI*2);ctx.fillStyle='#ae9acb';ctx.fill()}requestAnimationFrame(frame)}update();requestAnimationFrame(frame);
+</script></html>

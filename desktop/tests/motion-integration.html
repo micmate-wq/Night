@@ -1,0 +1,37 @@
+<!doctype html><meta charset="utf-8"><title>Aether motion integration checks</title>
+<button id="run">Run motion integration checks</button><pre id="results">Ready</pre>
+<iframe id="app" src="../index.html" style="width:1280px;height:800px"></iframe>
+<script>
+const out=document.querySelector('#results');
+const check=(ok,message)=>{if(!ok)throw Error(message);out.textContent+='\nPASS '+message};
+document.querySelector('#run').onclick=async()=>{
+ out.textContent='Running';
+ try{
+ const w=document.querySelector('#app').contentWindow,s=w.studio,t=s.tracks[0];
+ t.clearMotion();t.setPosition(.2,.3,0);t.toggleRecordMotion();
+ await new Promise(r=>setTimeout(r,30));t.setPosition(.8,.9,10);
+ const prefix=JSON.stringify(t.motionPath);
+ await new Promise(r=>setTimeout(r,30));t.toggleRecordMotion();
+ const idx=t.motionPath.findIndex(p=>p.generatedReturn),end=t.motionPath[idx-1],first=t.motionPath[0],last=t.motionPath.at(-1);
+ check(idx>=3,'recording contains initial position, movement and release hold');
+ check(JSON.stringify(t.motionPath.slice(0,idx-1))===prefix,'original movement timestamps and positions retained');
+ check(Math.abs(last.t-end.t-w.AetherMotionLoop.estimateReturnTime(t.motionPath.slice(0,idx)))<1e-9,'return time follows the recorded gesture');
+ check(last.x===first.x&&last.y===first.y&&last.z===first.z,'return meets start in pan, volume and depth: '+JSON.stringify({first,last}));
+ check(t.motionAccumulatedTime===end.t&&t.x===end.x&&t.y===end.y,'release starts the return without snapping');
+ check(t.isPlayingMotion,'release automatically starts playback');
+ t.togglePlayMotion();check(!t.isPlayingMotion,'pause');t.togglePlayMotion();check(t.isPlayingMotion,'resume');t.togglePlayMotion();
+ const saved=JSON.parse(JSON.stringify(await s.getCurrentSessionData('Motion test'))),expected=JSON.stringify(t.motionPath);
+ await s.applySession(saved);t.isPlayingMotion=false;
+ check(JSON.stringify(t.motionPath)===expected,'new loop survives save/reopen without another return');
+ await s.applySession(saved);t.isPlayingMotion=false;
+ check(JSON.stringify(t.motionPath)===expected,'repeated reopen does not lengthen loop');
+ const legacy=[{t:0,x:.1,y:.2,z:0},{t:2,x:.9,y:.8,z:0}];saved.tracks[0].motionPath=legacy;
+ await s.applySession(saved);t.isPlayingMotion=false;
+ check(JSON.stringify(t.motionPath)===JSON.stringify(legacy),'older saved jumping loop stays unchanged');
+ t.clearMotion();check(t.motionPath.length===0&&!t.isPlayingMotion,'clear removes gesture and return');
+ t.toggleRecordMotion();t.toggleRecordMotion();check(t.motionPath.every(p=>Number.isFinite(p.t)&&Number.isFinite(p.x)),'very short recording remains finite');
+ t.clearMotion();s.tracks.forEach(t=>t.isPlayingMotion=false);
+ out.textContent+='\nALL PASSED — no sound sources loaded';
+ }catch(e){out.textContent+='\nFAIL '+e.stack}
+};
+</script>
