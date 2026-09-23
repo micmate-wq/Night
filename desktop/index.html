@@ -981,6 +981,7 @@ body {
         </button>
         <input type="file" id="import-session-file" accept=".aether,.json,application/json" style="display:none;">
 
+        <button id="match-loudness" class="header-btn" title="Listen for 12 seconds and match average level. Click again to cancel; Option-click to reset.">Match loudness</button>
         <div class="master-vol-control">
           <span>VOL</span>
           <input type="range" id="master-volume" min="0" max="1" step="0.01" value="0.8" class="header-slider">
@@ -1377,6 +1378,7 @@ body {
   <script src="node-ripple.js"></script>
   <script src="node-art.js"></script>
   <script src="master-output.js"></script>
+<script src="loudness-match.js"></script>
   <script>
 // Top-level reload shortcut for Tauri Desktop Webview
 function closeStudioAudioForUnload() {
@@ -3346,7 +3348,7 @@ class AudioTrack {
   }
 
   getVisualRadius() {
-    return Math.max(this.baseRadius - (this.z * 0.32), 10);
+    return Math.max(this.baseRadius - (this.z * 0.32), 10) * 1.2;
   }
 
   updateAudioParamsFromPosition() {
@@ -3779,6 +3781,12 @@ class SpatialStudio {
     this.masterRecBtn = document.getElementById('master-rec-btn');
     this.recBtnText = document.getElementById('rec-btn-text');
 
+    this.matchButton = document.getElementById('match-loudness');
+    this.matchButton.addEventListener('click', e => {
+      if(e.altKey) { this.cancelLoudnessMatch(); this.setLoudnessDb(0); return; }
+      if(this._matchTimer) { this.cancelLoudnessMatch(); return; }
+      this.matchLoudness();
+    });
     this.masterVolumeSlider = document.getElementById('master-volume');
     this.masterVolVal = document.getElementById('master-vol-val');
     this.masterTimeEl = document.getElementById('master-time');
@@ -4066,7 +4074,10 @@ class SpatialStudio {
     // Shared protected output for speakers, WAV recording and broadcast.
     this.masterProcessing = AetherMasterOutput.create(this.audioCtx);
     this.masterLimiter = this.masterProcessing.output;
-    this.masterGain.connect(this.masterProcessing.input);
+    this.matchGain = this.audioCtx.createGain();
+    this.matchGain.gain.value = Math.pow(10,(this.loudnessDb || 0)/20);
+    this.masterGain.connect(this.matchGain);
+    this.matchGain.connect(this.masterProcessing.input);
     this.masterLimiter.connect(this.audioCtx.destination);
 
     // Setup ScriptProcessor / Worklet for Master Recording capture (isolated with 0-gain sink to prevent duplicate delayed audio output)
@@ -4139,6 +4150,73 @@ class SpatialStudio {
         };
       } catch (e) {}
     });
+  }
+
+  setLoudnessDb(db) {
+    this.loudnessDb = Math.max(-18, Math.min(12, db));
+    if(this.matchGain && this.audioCtx) {
+      const p=this.matchGain.gain, now=this.audioCtx.currentTime;
+      const target=Math.pow(10,this.loudnessDb/20);
+      // Keep an existing fade running when only refreshing the button/status.
+      if(this._loudnessRampParam !== p || this._loudnessRampTarget !== target) {
+        const current=Math.max(0.000001,p.value);
+        if(typeof p.cancelAndHoldAtTime === 'function') p.cancelAndHoldAtTime(now);
+        else { p.cancelScheduledValues(now); p.setValueAtTime(current,now); }
+        // Exponential gain interpolation gives a steady change in dB.
+        p.exponentialRampToValueAtTime(target,now+10);
+        this._loudnessRampParam=p;
+        this._loudnessRampTarget=target;
+      }
+    }
+    this.matchButton.textContent = this.loudnessDb ? `Matched ${this.loudnessDb>0?'+':''}${this.loudnessDb.toFixed(1)} dB` : 'Match loudness';
+  }
+
+  cancelLoudnessMatch() {
+    clearInterval(this._matchTimer); this._matchTimer=null;
+    if(this._matchAnalyser) {
+      try { this._matchSource.disconnect(this._matchAnalyser); } catch(_) {}
+      this._matchAnalyser.disconnect(); this._matchAnalyser=null;
+      for(const meter of this._matchMeters || []) meter.disconnect(); this._matchMeters=[];
+    }
+    this.setLoudnessDb(this.loudnessDb || 0);
+  }
+
+  async matchLoudness() {
+    await this.ensureAudioRunning();
+    if(this._matchTimer) return;
+    if(!this.isPlaying || !this.audioCtx || this.audioCtx.state!=='running') {
+      this.showToast('Play a representative part of your session first.', 'info'); return;
+    }
+    const volume=Number(this.masterVolumeSlider.value);
+    if(volume<0.05) { this.showToast('Raise master volume above 5% before matching.', 'info'); return; }
+    const ctx=this.audioCtx, analyser=ctx.createChannelSplitter(2);
+    const meters=[ctx.createAnalyser(),ctx.createAnalyser()];
+    meters.forEach((meter,i)=> { meter.fftSize=2048; analyser.connect(meter,i); });
+    this._matchMeters=meters;
+    this._matchAnalyser=analyser; this._matchSource=this.masterGain;
+    this.masterGain.connect(analyser);
+    const samples=new Float32Array(2048), powers=[];
+    const started=ctx.currentTime;
+    this._matchTimer=setInterval(()=> {
+      if(ctx!==this.audioCtx || ctx.state!=='running' || !this.isPlaying || Number(this.masterVolumeSlider.value)!==volume) {
+        this.cancelLoudnessMatch(); this.showToast('Matching cancelled. Keep playback and master volume steady while measuring.', 'info'); return;
+      }
+      let sum=0;
+      for(const meter of meters) {
+        meter.getFloatTimeDomainData(samples);
+        for(const sample of samples) sum+=(sample/volume)**2;
+      }
+      const power=sum/(samples.length*2);
+      if(power>1e-6) powers.push(power);
+      const elapsed=ctx.currentTime-started;
+      this.matchButton.textContent=`Listening ${Math.max(0,Math.ceil(12-elapsed))}s · Cancel`;
+      if(elapsed<12) return;
+      this.cancelLoudnessMatch();
+      const db=AetherLoudness.measure(powers);
+      if(db===null) { this.showToast('Too little audible material to match. Try a fuller passage.', 'info'); return; }
+      this.setLoudnessDb(db);
+      this.showToast('Loudness measured. Fading to the matched level over 10 seconds; Option-click Match to reset.', 'success');
+    },40);
   }
 
   async ensureAudioRunning() {
@@ -4977,6 +5055,7 @@ class SpatialStudio {
       name: name,
       timestamp: new Date().toISOString(),
       masterVolume,
+      loudnessDb: this.loudnessDb || 0,
       tracks: tracksData
     };
   }
@@ -5144,6 +5223,7 @@ class SpatialStudio {
         (session.type !== undefined && session.type !== 'aether_project')) throw new Error('Not a supported Aether project.');
     const seen = new Set();
     const finite = (v) => typeof v === 'number' && Number.isFinite(v);
+    if (session.loudnessDb !== undefined && (!finite(session.loudnessDb) || session.loudnessDb < -18 || session.loudnessDb > 12)) throw new Error('Invalid loudness adjustment.');
     if (session.masterVolume !== undefined && (!finite(session.masterVolume) || session.masterVolume < 0 || session.masterVolume > 1)) throw new Error('Invalid master volume.');
     for (const saved of session.tracks) {
       if (!saved || !Number.isInteger(saved.index ?? 0) || !this.tracks[saved.index ?? 0] || seen.has(saved.index ?? 0)) throw new Error('Invalid or duplicate track index.');
@@ -5210,6 +5290,8 @@ class SpatialStudio {
     this.stopMaster();
     const failures = [];
     this.showToast('Loading project...', 'info');
+
+    this.setLoudnessDb(session.loudnessDb || 0);
 
     // 3. Hydrate Master Controls
     if (session.masterVolume !== undefined) {
@@ -5374,6 +5456,7 @@ class SpatialStudio {
   }
 
   pauseMaster() {
+    this.cancelLoudnessMatch();
     this.isPlaying = false;
     this.masterPlayBtn.classList.remove('playing');
     this.masterPlayBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
@@ -5530,7 +5613,7 @@ class SpatialStudio {
       const nodeRadius = t.getVisualRadius();
       const gearX = nodePxX + nodeRadius * 0.72;
       const gearY = nodePxY - nodeRadius * 0.72;
-      if (Math.hypot(gearX - pxX, gearY - pxY) <= 14) {
+      if (Math.hypot(gearX - pxX, gearY - pxY) <= 14 * 1.2) {
         return i;
       }
     }
@@ -5824,7 +5907,7 @@ class SpatialStudio {
     this.tracks.forEach((t, i) => {
       const pxX = t.x * w;
       const pxY = (1.0 - t.y) * h;
-      const nodeRadius = t.getVisualRadius();
+      const nodeRadius = t.getVisualRadius() / 1.2;
 
       // Projection lines to axes
       this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
@@ -5842,6 +5925,12 @@ class SpatialStudio {
       this.ctx.stroke();
 
       this.ctx.setLineDash([]);
+
+      // Enlarge all node artwork together around its unchanged canvas position.
+      this.ctx.save();
+      this.ctx.translate(pxX, pxY);
+      this.ctx.scale(1.2, 1.2);
+      this.ctx.translate(-pxX, -pxY);
 
       // Visual 3D Depth Rings (when Z > 0)
       if (t.z > 0.5) {
@@ -5873,7 +5962,183 @@ class SpatialStudio {
         || (t.customNodeBundle?.manifest?.art?.settings?.family ? t.customNodeBundle.manifest.art.settings : null)
         || null;
       const wantsArt = (animType === 'art' || animType === 'bloom' || (artSettings && artSettings.family === 'bloom'));
-      if (wantsArt && t.isLoaded && (t.isPlaying || progress > 0) && typeof AetherNodeArt !== 'undefined' && AetherNodeArt.draw) {
+      const bundleId = (t.customNodeBundle?.manifest?.id || '').toLowerCase();
+      const bundleName = (t.customNodeBundle?.manifest?.name || '').toLowerCase();
+      const isTapeDegrade = (animType === 'pulse_wave' || animType === 'pulse-wave')
+        || bundleId.includes('tape-degrade')
+        || bundleName.includes('tape degrade')
+        || (t.customNodeDSP && t.customNodeDSP.params && t.customNodeDSP.params.wobble !== undefined);
+
+      if (isTapeDegrade && (t.isLoaded || t.isCustomNode)) {
+        const nowMs = performance.now();
+        const lastFrame = t._tapeLastFrame || nowMs;
+        const dt = Math.min(0.1, Math.max(0.001, (nowMs - lastFrame) * 0.001));
+        t._tapeLastFrame = nowMs;
+
+        const isRunning = Boolean(t.isPlaying || (this.isPlaying && (progress > 0 || t.audioBuffer || t.isLiveIn)));
+        const targetSpeed = isRunning ? 1.0 : 0.0;
+
+        // Analog tape motor inertia: smoothly coasts to 0 on stop and accelerates on start
+        if (t._tapeMotorSpeed == null) t._tapeMotorSpeed = isRunning ? 1.0 : 0.0;
+        const rampRate = isRunning ? 2.8 : 2.0; // take off in ~0.5s, coast down in ~0.8s
+        t._tapeMotorSpeed += (targetSpeed - t._tapeMotorSpeed) * Math.min(1.0, dt * rampRate);
+        if (Math.abs(t._tapeMotorSpeed) < 0.001 && !isRunning) t._tapeMotorSpeed = 0.0;
+
+        const motor = t._tapeMotorSpeed;
+
+        const dsp = t.customNodeDSP;
+        const params = (dsp && dsp.params) || {};
+        const wobble = Number(params.wobble != null ? params.wobble : 0.35);
+        const damage = Number(params.damage != null ? params.damage : 0.25);
+        const wear = Number(params.wear != null ? params.wear : 0.30);
+        const noise = Number(params.noise != null ? params.noise : 0.15);
+        const comp = Number(params.compression != null ? params.compression : 0.30);
+        const mix = Number(params.mix != null ? params.mix : 1.0);
+
+        // Accumulate rotation and wave phase strictly from motor speed so motion halts when stopped
+        t._tapeWaveTime = (t._tapeWaveTime || 0) + dt * 0.16 * motor;
+        t._tapeSpokeAngle = (t._tapeSpokeAngle || 0) + dt * (4.6 + wobble * 0.9) * motor;
+        t._tapeSpliceAngle = (t._tapeSpliceAngle || 0) + dt * 0.55 * motor;
+
+        const time = t._tapeWaveTime;
+
+        // Map tape degradation parameters:
+        let activity = 0.15 + comp * 0.55 + damage * 0.30;
+        if (motor > 0.01) {
+          activity += 0.15 * (1.0 + Math.sin(time * 2.0)) * motor;
+        }
+        const timbre = 0.15 + wear * 0.55 + noise * 0.30;
+
+        const scale = ringRadius / 3.6;
+        // Slow, soothing breathing cycle (freezes still when stopped)
+        const cycleFreq = 0.45 + activity * 0.55;
+        const expansion = Math.sin(time * cycleFreq) * (0.15 + 0.55 * activity) * scale;
+        // Position outside the node orb and progress ring
+        const baseR = ringRadius + 8 + expansion;
+        const halfThick = Math.max(2.4, (0.05 + timbre * 0.20) * scale * 1.8);
+
+        const segs = 200;
+        const innerPts = [];
+        const outerPts = [];
+
+        for (let i = 0; i <= segs; i++) {
+          const theta = (i / segs) * Math.PI * 2;
+          // Smooth loose tape billowing and chewing — low-order gentle harmonics, zero sharp spikes
+          const looseWave = Math.sin(theta * 2.0 - time * 0.8) * (0.08 + 0.18 * timbre) * scale;
+          const chewSag = Math.sin(theta * 3.0 + time * 0.6) * Math.cos(theta * 1.0 - time * 0.3) * (0.18 * (0.35 + wobble * 1.5)) * scale;
+          const tapeFold = Math.cos(theta * 4.0 - time * 0.5) * (damage * 0.22 + wear * 0.14) * scale;
+
+          const rIn = baseR - halfThick + looseWave + chewSag + tapeFold;
+          const rOut = baseR + halfThick + looseWave + chewSag + tapeFold;
+          innerPts.push({ x: pxX + Math.cos(theta) * rIn, y: pxY + Math.sin(theta) * rIn });
+          outerPts.push({ x: pxX + Math.cos(theta) * rOut, y: pxY + Math.sin(theta) * rOut });
+        }
+
+        const tapeColor = '#FD9B76';
+        const tapeAlpha = Math.max(0.15, mix);
+
+        this.ctx.save();
+        this.ctx.lineJoin = 'round';
+        this.ctx.lineCap = 'round';
+
+        // Ribbon polygon fill
+        this.ctx.beginPath();
+        for (let i = 0; i <= segs; i++) {
+          const p = outerPts[i];
+          if (i === 0) this.ctx.moveTo(p.x, p.y);
+          else this.ctx.lineTo(p.x, p.y);
+        }
+        for (let i = segs; i >= 0; i--) {
+          const p = innerPts[i];
+          this.ctx.lineTo(p.x, p.y);
+        }
+        this.ctx.closePath();
+        this.ctx.fillStyle = tapeColor;
+        this.ctx.globalAlpha = (0.24 + activity * 0.22) * tapeAlpha;
+        this.ctx.shadowColor = tapeColor;
+        this.ctx.shadowBlur = (10 + activity * 8) * tapeAlpha;
+        this.ctx.fill();
+
+        // Outer contour stroke
+        this.ctx.beginPath();
+        for (let i = 0; i <= segs; i++) {
+          const p = outerPts[i];
+          if (i === 0) this.ctx.moveTo(p.x, p.y);
+          else this.ctx.lineTo(p.x, p.y);
+        }
+        this.ctx.strokeStyle = tapeColor;
+        this.ctx.lineWidth = 1.6;
+        this.ctx.globalAlpha = (0.70 + activity * 0.25) * tapeAlpha;
+        this.ctx.stroke();
+
+        // Inner contour stroke
+        this.ctx.beginPath();
+        for (let i = 0; i <= segs; i++) {
+          const p = innerPts[i];
+          if (i === 0) this.ctx.moveTo(p.x, p.y);
+          else this.ctx.lineTo(p.x, p.y);
+        }
+        this.ctx.lineWidth = 1.0;
+        this.ctx.globalAlpha = (0.42 + activity * 0.25) * tapeAlpha;
+        this.ctx.stroke();
+
+        // Magnetic oxide tape track (dashed centerline)
+        this.ctx.beginPath();
+        this.ctx.setLineDash([6, 5]);
+        for (let i = 0; i <= segs; i++) {
+          const mx = (innerPts[i].x + outerPts[i].x) * 0.5;
+          const my = (innerPts[i].y + outerPts[i].y) * 0.5;
+          if (i === 0) this.ctx.moveTo(mx, my);
+          else this.ctx.lineTo(mx, my);
+        }
+        this.ctx.strokeStyle = tapeColor;
+        this.ctx.lineWidth = 1.0;
+        this.ctx.globalAlpha = (0.35 + damage * 0.35) * tapeAlpha;
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+
+        // 3 rotating cassette tape hub spokes with guide rollers (spins at cassette speed, coasts to stop)
+        const reelAngle = t._tapeSpokeAngle + (motor > 0.01 ? Math.sin(time * 15.0) * (wobble * 0.12 * motor) : 0);
+        for (let s = 0; s < 3; s++) {
+          const spokeA = reelAngle + (s * Math.PI * 2 / 3);
+          const cosA = Math.cos(spokeA);
+          const sinA = Math.sin(spokeA);
+          const innerR = ringRadius * 0.85;
+          const outerR = baseR + halfThick * 0.9;
+          this.ctx.beginPath();
+          this.ctx.moveTo(pxX + cosA * innerR, pxY + sinA * innerR);
+          this.ctx.lineTo(pxX + cosA * outerR, pxY + sinA * outerR);
+          this.ctx.strokeStyle = tapeColor;
+          this.ctx.lineWidth = 1.2;
+          this.ctx.globalAlpha = (0.32 + wobble * 0.35) * tapeAlpha;
+          this.ctx.stroke();
+
+          // Tape guide roller dot
+          const rollerR = innerR + (outerR - innerR) * 0.55;
+          this.ctx.beginPath();
+          this.ctx.arc(pxX + cosA * rollerR, pxY + sinA * rollerR, 2.0, 0, Math.PI * 2);
+          this.ctx.fillStyle = tapeColor;
+          this.ctx.globalAlpha = (0.55 + wobble * 0.35) * tapeAlpha;
+          this.ctx.fill();
+        }
+
+        // Tape splice mark traversing the ribbon (halts when stopped)
+        const spliceAngle = (t._tapeSpliceAngle || 0) % (Math.PI * 2);
+        const spliceIdx = Math.floor((spliceAngle / (Math.PI * 2)) * segs) % segs;
+        if (innerPts[spliceIdx] && outerPts[spliceIdx]) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(innerPts[spliceIdx].x, innerPts[spliceIdx].y);
+          this.ctx.lineTo(outerPts[spliceIdx].x, outerPts[spliceIdx].y);
+          this.ctx.strokeStyle = '#ffffff';
+          this.ctx.lineWidth = 1.8;
+          this.ctx.globalAlpha = 0.70 * tapeAlpha;
+          this.ctx.stroke();
+        }
+
+        this.ctx.restore();
+        this.ctx.shadowBlur = 0;
+        this.ctx.globalAlpha = 1.0;
+      } else if (wantsArt && t.isLoaded && (t.isPlaying || progress > 0) && typeof AetherNodeArt !== 'undefined' && AetherNodeArt.draw) {
         const settings = artSettings || { family: 'bloom', energy: 0.71, spread: 0.87, detail: 0.88, speed: 1.26, hue: -71, fade: 0.75 };
         AetherNodeArt.draw(this.ctx, { x: pxX, y: pxY, radius: ringRadius, color: t.color, time: performance.now(), settings });
       } else if (animType === 'interference_wave' && t.isLoaded && (t.isPlaying || progress > 0)) {
@@ -6270,6 +6535,7 @@ class SpatialStudio {
       else if (t.isLiveIn) statusExtra = ' [LIVE]';
 
       this.ctx.fillText(`V:${volPct}% P:${panStr} Z:${t.z.toFixed(1)}${statusExtra}`, pxX, pxY + nodeRadius + 16);
+      this.ctx.restore();
     });
   }
 }

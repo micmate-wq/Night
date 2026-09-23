@@ -539,7 +539,7 @@ pub fn icecast_connect(
     sample_rate: u32,
 ) -> Result<IcecastInfo, String> {
     if state.connected.load(Ordering::SeqCst) {
-        return Err("Icecast outbound already connected".into());
+        return Err("Connection needs resetting. Save your session, then quit and reopen Aether to connect.".into());
     }
     let creds = load_creds()?;
     let in_rate = if (8000..=192_000).contains(&sample_rate) {
@@ -573,7 +573,7 @@ pub fn icecast_connect(
     {
         let mut guard = state.live.lock().map_err(|e| e.to_string())?;
         if guard.is_some() {
-            return Err("Icecast outbound already connected".into());
+            return Err("Connection needs resetting. Save your session, then quit and reopen Aether to connect.".into());
         }
         *guard = Some(Live { tx });
     }
