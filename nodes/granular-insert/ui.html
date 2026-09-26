@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Granular Insert</title>
+  <style>
+    :root {
+      --bg: var(--aether-bg, var(--bg-main, #0A0A0A));
+      --panel: var(--aether-panel, var(--bg-card, #141414));
+      --accent: var(--track-color, var(--aether-accent, #FFFFFF));
+      --text: var(--aether-text, var(--text-main, #FFFFFF));
+      --muted: var(--aether-text-muted, var(--text-muted, #888));
+      --border: var(--aether-border, var(--border-light, #333));
+      --font-h: var(--aether-font-heading, 'Space Grotesk', sans-serif);
+      --font-m: var(--aether-font-mono, 'JetBrains Mono', monospace);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--font-h); font-size: 11px;
+      width: 100vw; height: 100vh; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    header {
+      padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .title { font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; font-size: 11px; }
+    .badge { font-family: var(--font-m); font-size: 9px; opacity: 0.6; letter-spacing: 0.08em; }
+    .ring-wrap {
+      margin: 10px 12px 0; height: 96px; border: 1px solid var(--border);
+      position: relative; overflow: hidden; background: rgba(255,255,255,0.02);
+    }
+    #ring { width: 100%; height: 100%; display: block; }
+    .grid { padding: 10px 12px 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+    label { display: flex; flex-direction: column; gap: 4px; }
+    .row { display: flex; justify-content: space-between; color: var(--muted); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .val { font-family: var(--font-m); color: var(--text); }
+    input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: #222; border: 1px solid var(--border); outline: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--text); cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">Granular Insert</div>
+    <div class="badge" id="scale-badge">MAJOR</div>
+  </header>
+  <div class="ring-wrap"><canvas id="ring"></canvas></div>
+  <div class="grid">
+    <label><div class="row"><span>Density</span><span class="val" id="v-density">0.72</span></div>
+      <input id="density" type="range" min="0" max="1" step="0.01" value="0.72"></label>
+    <label><div class="row"><span>Smear</span><span class="val" id="v-smear">0.48</span></div>
+      <input id="smear" type="range" min="0" max="1" step="0.01" value="0.48"></label>
+    <label><div class="row"><span>Pitch</span><span class="val" id="v-pitch">0.00 st</span></div>
+      <input id="pitch" type="range" min="0" max="1" step="0.01" value="0.5"></label>
+    <label><div class="row"><span>Scale</span><span class="val" id="v-scale">Major</span></div>
+      <input id="scale" type="range" min="0" max="1" step="0.01" value="0.28"></label>
+    <label><div class="row"><span>Delay</span><span class="val" id="v-delay">0.38</span></div>
+      <input id="delay" type="range" min="0" max="1" step="0.01" value="0.38"></label>
+    <label><div class="row"><span>Space</span><span class="val" id="v-space">0.52</span></div>
+      <input id="space" type="range" min="0" max="1" step="0.01" value="0.52"></label>
+  </div>
+  <script>
+    const SCALE_NAMES = ['Chromatic', 'Major', 'Minor', 'Penta Maj', 'Penta Min', 'Fifths', 'Maj7'];
+    const state = { density: 0.72, smear: 0.48, pitch: 0.5, scale: 0.28, delay: 0.38, space: 0.52 };
+    const badge = document.getElementById('scale-badge');
+    const canvas = document.getElementById('ring');
+    const ctx = canvas.getContext('2d');
+    const sparks = [];
+    const echoes = [];
+    let swell = 1;
+    let lastSpawn = 0;
+    let lastEcho = 0;
+    let cssW = 1;
+    let cssH = 1;
+
+    function notify(id, value) {
+      window.parent.postMessage({ type: 'aether:param-change', paramId: id, value: value }, '*');
+    }
+
+    function scaleName(v) {
+      const idx = Math.min(6, Math.floor(Math.max(0, Math.min(0.999, v)) * 7));
+      return SCALE_NAMES[idx];
+    }
+
+    function scaleIdx(v) {
+      return Math.min(6, Math.floor(Math.max(0, Math.min(0.999, v)) * 7));
+    }
+
+    function pitchLabel(v) {
+      const st = (Math.max(0, Math.min(1, v)) - 0.5) * 48;
+      const s = (st >= 0 ? '+' : '') + st.toFixed(1);
+      return s + ' st';
+    }
+
+    function fmt(n) { return Number(n).toFixed(2); }
+
+    function paintLabels() {
+      document.getElementById('v-density').textContent = fmt(state.density);
+      document.getElementById('v-smear').textContent = fmt(state.smear);
+      document.getElementById('v-pitch').textContent = pitchLabel(state.pitch);
+      document.getElementById('v-scale').textContent = scaleName(state.scale);
+      document.getElementById('v-delay').textContent = fmt(state.delay);
+      document.getElementById('v-space').textContent = fmt(state.space);
+      badge.textContent = scaleName(state.scale).toUpperCase();
+    }
+
+    function bind(id) {
+      const el = document.getElementById(id);
+      el.addEventListener('input', () => {
+        const n = parseFloat(el.value);
+        state[id] = n;
+        paintLabels();
+        notify(id, n);
+      });
+    }
+    ['density', 'smear', 'pitch', 'scale', 'delay', 'space'].forEach(bind);
+    paintLabels();
+
+    function resize() {
+      const r = canvas.parentElement.getBoundingClientRect();
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      cssW = Math.max(1, r.width);
+      cssH = Math.max(1, r.height);
+      canvas.width = Math.max(1, Math.floor(cssW * dpr));
+      canvas.height = Math.max(1, Math.floor(cssH * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function spawnSparks(now) {
+      const dens = state.density;
+      const n = dens > 0.85 ? 4 : dens > 0.6 ? 3 : dens > 0.3 ? 2 : 1;
+      const pitchBias = (state.pitch - 0.5) * 0.35;
+      const notes = 3 + scaleIdx(state.scale);
+      for (let i = 0; i < n; i++) {
+        if (sparks.length > 120) sparks.shift();
+        const slot = Math.floor(Math.random() * notes);
+        const a = (slot / notes) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+        sparks.push({
+          a: a,
+          r: 0.42 + Math.random() * 0.5 + Math.abs(pitchBias) * 0.15,
+          life: 0,
+          max: 0.35 + state.smear * 0.85 + Math.random() * 0.4,
+          size: 0.9 + state.smear * 2.8 + Math.random() * 1.8,
+          spin: (Math.random() * 2 - 1) * (0.25 + dens * 0.9) + pitchBias * 1.4,
+          flare: Math.random() > 0.62,
+          born: now
+        });
+      }
+    }
+
+    function spawnEcho(now) {
+      if (state.delay < 0.04) return;
+      echoes.push({
+        life: 0,
+        max: 0.55 + state.delay * 1.15 + state.space * 0.45,
+        born: now
+      });
+      if (echoes.length > 8) echoes.shift();
+    }
+
+    function draw(now) {
+      const w = cssW;
+      const h = cssH;
+      ctx.clearRect(0, 0, w, h);
+
+      const cx = w * 0.5;
+      const cy = h * 0.5;
+      const R = Math.min(w, h) * 0.34;
+
+      // Pad swell — space + soft breath
+      const breath = 0.5 + 0.5 * Math.sin(now * (0.0007 + state.space * 0.0011));
+      swell = 0.88 + 0.12 * breath + state.space * 0.08;
+
+      // Soft core glow (reverb / pad bed)
+      const coreAlpha = 0.035 + state.density * 0.07 + state.space * 0.05;
+      const core = ctx.createRadialGradient(cx, cy, 1, cx, cy, R * (0.85 + state.space * 0.35));
+      core.addColorStop(0, 'rgba(255,255,255,' + coreAlpha.toFixed(3) + ')');
+      core.addColorStop(0.55, 'rgba(255,255,255,' + (coreAlpha * 0.35).toFixed(3) + ')');
+      core.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * (0.9 + state.space * 0.35) * swell, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Nested soft halo rings — space thickens / spreads them
+      const ringCount = 3 + Math.round(state.space * 3);
+      for (let i = 0; i < ringCount; i++) {
+        const t = i / Math.max(1, ringCount - 1);
+        const rad = R * (0.55 + t * (0.55 + state.space * 0.35)) * swell;
+        const wobble = Math.sin(now * 0.0018 + i * 1.3) * (1.2 + state.smear * 2.5);
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad + wobble, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.045 + (1 - t) * 0.07 + state.space * 0.04).toFixed(3) + ')';
+        ctx.lineWidth = 1.2 + state.density * 2.2 * (1 - t * 0.5) + state.smear * 1.5;
+        ctx.stroke();
+      }
+
+      // Delay echo rings — expand outward at delay tempo
+      const echoPeriod = Math.max(120, 220 + (1 - state.delay) * 780);
+      if (now - lastEcho >= echoPeriod) {
+        lastEcho = now;
+        spawnEcho(now);
+      }
+      for (let i = echoes.length - 1; i >= 0; i--) {
+        const e = echoes[i];
+        e.life += 0.016;
+        const t = e.life / e.max;
+        if (t >= 1) { echoes.splice(i, 1); continue; }
+        const fade = Math.sin(Math.min(1, t) * Math.PI);
+        const rad = R * (0.5 + t * (0.85 + state.delay * 0.9)) * swell;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.05 + fade * (0.12 + state.delay * 0.18)).toFixed(3) + ')';
+        ctx.lineWidth = 1 + (1 - t) * (1.5 + state.space * 2);
+        ctx.stroke();
+      }
+
+      // Scale ticks — discrete note slots around the pad
+      const notes = 3 + scaleIdx(state.scale);
+      for (let i = 0; i < notes; i++) {
+        const a = (i / notes) * Math.PI * 2 + now * 0.00015;
+        const rr = R * 0.72 * swell;
+        const x = cx + Math.cos(a) * rr;
+        const y = cy + Math.sin(a) * rr;
+        ctx.beginPath();
+        ctx.arc(x, y, 1.1 + state.pitch * 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,' + (0.12 + state.density * 0.18).toFixed(3) + ')';
+        ctx.fill();
+      }
+
+      // Spark / grain particles — density drives spawn rate
+      const spawnEvery = Math.max(12, 95 - state.density * 78);
+      if (now - lastSpawn >= spawnEvery) {
+        lastSpawn = now;
+        spawnSparks(now);
+      }
+
+      const pitchSpin = 1 + (state.pitch - 0.5) * 1.6;
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const g = sparks[i];
+        g.life += 0.016;
+        g.a += g.spin * 0.014 * pitchSpin;
+        const t = g.life / g.max;
+        if (t >= 1) { sparks.splice(i, 1); continue; }
+        const fade = Math.sin(Math.min(1, t) * Math.PI);
+        const smearStretch = 1 + state.smear * 0.55 * Math.sin(t * Math.PI);
+        const rr = R * g.r * (0.82 + fade * 0.28) * swell;
+        const x = cx + Math.cos(g.a) * rr;
+        const y = cy + Math.sin(g.a) * rr;
+        const sz = g.size * fade * smearStretch;
+
+        // Soft spark bloom
+        const bloom = ctx.createRadialGradient(x, y, 0, x, y, sz * 3.2);
+        bloom.addColorStop(0, 'rgba(255,255,255,' + (0.22 + fade * 0.45).toFixed(3) + ')');
+        bloom.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = bloom;
+        ctx.beginPath();
+        ctx.arc(x, y, sz * 3.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(0.6, sz), 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,' + (0.25 + fade * 0.6).toFixed(3) + ')';
+        ctx.fill();
+
+        // Cross-flare glints on denser pads
+        if (g.flare && fade > 0.45 && state.density > 0.35) {
+          const fl = sz * (2.2 + state.density);
+          ctx.strokeStyle = 'rgba(255,255,255,' + (fade * 0.45).toFixed(3) + ')';
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(x - fl, y);
+          ctx.lineTo(x + fl, y);
+          ctx.moveTo(x, y - fl);
+          ctx.lineTo(x, y + fl);
+          ctx.stroke();
+        }
+      }
+
+      // Outer busy pad rim — density thickens
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * (1.05 + state.space * 0.12) * swell, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,' + (0.06 + state.density * 0.1).toFixed(3) + ')';
+      ctx.lineWidth = 3 + state.density * 9 + state.smear * 2;
+      ctx.stroke();
+
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+
+    window.addEventListener('message', (event) => {
+      if (!event.data || event.data.type !== 'aether:param-update') return;
+      const { paramId, value } = event.data;
+      if (state[paramId] === undefined) return;
+      state[paramId] = value;
+      const el = document.getElementById(paramId);
+      if (el) el.value = value;
+      paintLabels();
+    });
+  </script>
+</body>
+</html>

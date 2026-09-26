@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Beat-reactive WebGL sketch</title>
+  <style>
+    :root { color-scheme: dark; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    #hud {
+      position: fixed;
+      left: 16px;
+      bottom: 16px;
+      z-index: 2;
+      color: #c8ffd4;
+      font-size: 13px;
+      line-height: 1.45;
+      text-shadow: 0 1px 8px #000;
+      pointer-events: none;
+    }
+    #bar {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 2;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button {
+      background: #111;
+      color: #eee;
+      border: 1px solid #333;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      border-color: #6f6;
+    }
+  </style>
+</head>
+<body>
+  <div id="bar">
+    <button id="mic">Enable mic (beat)</button>
+    <button id="next">Randomize look</button>
+  </div>
+  <div id="hud">GPU fragment shader · CPU only feeds time + bass<br>Click canvas if animation is paused</div>
+  <canvas id="c"></canvas>
+  <script>
+    const vs = `#version 300 es
+in vec2 a;
+void main(){
+  gl_Position = vec4(a,0.0,1.0);
+}`;
+
+    const fs = `#version 300 es
+precision highp float;
+out vec4 o;
+uniform vec2 uR;
+uniform float uT, uBass, uMode;
+uniform vec3 uPal;
+uniform vec4 uParams;
+
+vec3 pal(float t, vec3 p){
+  return 0.55 + 0.45 * cos(6.28318 * (t + p));
+}
+
+void main(){
+  vec2 uv = (gl_FragCoord.xy - 0.5 * uR) / min(uR.x, uR.y);
+  float t = uT;
+  float b = uBass;
+  float mode = floor(mod(uMode, 5.0));
+
+  vec3 col = vec3(0.0);
+
+  if (mode < 0.5) {
+    // plasma / vortex tunnel
+    float r = length(uv);
+    float a = atan(uv.y, uv.x);
+    float z = uParams.z / (r + 0.08);
+    float p = sin(uParams.x * r - t * uParams.y + b * 6.0) + sin(a * 5.0 + t + z) + sin(uParams.w * uv.x + t * 0.7);
+    col = pal(p * 0.18 + t * 0.05 + b * 0.25, uPal);
+    col *= smoothstep(1.2, 0.05, r) * (0.55 + 0.7 * b);
+    col += vec3(0.15, 0.4, 1.0) * pow(max(0.0, 1.0 - r * 2.2), 6.0) * (0.2 + b);
+  } else if (mode < 1.5) {
+    // kaleidoscope / lattice
+    vec2 p = uv * (uParams.x + b * 3.0);
+    float ang = atan(p.y, p.x);
+    float d = length(p);
+    ang = mod(ang, 3.14159 / 3.0) - (3.14159 / 6.0);
+    p = vec2(cos(ang), sin(ang)) * d;
+    p = abs(fract(p + vec2(t * uParams.y, -t * 0.05)) - 0.5);
+    float g = min(p.x, p.y);
+    float line = smoothstep(0.04 * uParams.z, 0.0, g);
+    col = pal(uv.x * 0.4 + t * 0.08 + uParams.w, uPal) * line * (0.4 + b);
+    col += pal(0.6 + t * 0.1, uPal.zyx) * 0.12 / (0.15 + length(uv));
+  } else if (mode < 2.5) {
+    // dynamic orbs
+    for (int i = 0; i < 7; i++){
+      float fi = float(i);
+      vec2 c = vec2(sin(t * uParams.y + fi * uParams.x), cos(t * 0.5 + fi * 1.1)) * (0.35 + 0.15 * sin(t + fi));
+      float d = length(uv - c);
+      col += pal(fi * 0.17 + t * 0.04, uPal) * 0.08 / (d * d * uParams.w + 0.04) * (0.6 + b * 1.4);
+    }
+    col += vec3(0.02);
+  } else if (mode < 3.5) {
+    // liquid waves / gyroid ripples
+    vec2 p = uv * uParams.x;
+    float v = sin(p.x + t * uParams.y + sin(p.y * uParams.z + t));
+    v += cos(p.y * 1.5 - t + cos(p.x * 2.0 + t * 0.8));
+    v += sin(length(p) * 2.0 - t * 2.0 + b * 5.0);
+    col = pal(v * 0.2 + t * 0.05, uPal) * (0.5 + 0.6 * b);
+    col += pal(v * 0.3 + 0.5, uPal.yzx) * smoothstep(0.8, 0.0, abs(sin(v * 3.0)));
+  } else {
+    // cyber spiral / radial mandala
+    float r = length(uv);
+    float a = atan(uv.y, uv.x);
+    float s = sin(a * uParams.x + t * uParams.y + uParams.z / (r + 0.05) + b * 4.0);
+    float rings = sin(r * uParams.w - t * 2.0);
+    float pat = abs(s * rings);
+    col = pal(pat * 0.3 + r * 0.5 + t * 0.05, uPal) * (0.5 + b);
+    col += pal(t * 0.1, uPal) * 0.05 / (r + 0.02);
+  }
+
+  // cheap filmic compress
+  col = col / (col + vec3(1.0));
+  col = pow(col, vec3(0.9));
+  o = vec4(col, 1.0);
+}`;
+
+    const canvas = document.getElementById('c');
+    const gl = canvas.getContext('webgl2', { antialias: false, powerPreference: 'high-performance' });
+    if (!gl) {
+      document.getElementById('hud').textContent = 'Need WebGL2';
+      throw 0;
+    }
+
+    function compile(type, src) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(s);
+      return s;
+    }
+
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+
+    const loc = gl.getAttribLocation(prog, 'a');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+    const uR = gl.getUniformLocation(prog, 'uR');
+    const uT = gl.getUniformLocation(prog, 'uT');
+    const uBass = gl.getUniformLocation(prog, 'uBass');
+    const uMode = gl.getUniformLocation(prog, 'uMode');
+    const uPal = gl.getUniformLocation(prog, 'uPal');
+    const uParams = gl.getUniformLocation(prog, 'uParams');
+
+    let lookCount = 1;
+    let curMode = 0;
+    let curPal = [0.0, 0.33, 0.67];
+    let curParams = [8.0, 1.6, 0.35, 12.0];
+    const modeNames = ['Vortex Tunnel', 'Kaleido Lattice', 'Orbital Cluster', 'Liquid Gyroid', 'Cyber Mandala'];
+
+    function randomizeLook() {
+      curMode = Math.floor(Math.random() * 5);
+      curPal = [Math.random(), Math.random(), Math.random()];
+      if (curMode === 0) {
+        curParams = [5.0 + Math.random() * 10.0, 0.8 + Math.random() * 1.5, 0.2 + Math.random() * 0.4, 6.0 + Math.random() * 10.0];
+      } else if (curMode === 1) {
+        curParams = [3.0 + Math.random() * 5.0, 0.04 + Math.random() * 0.1, 0.8 + Math.random() * 1.2, Math.random() * 2.0];
+      } else if (curMode === 2) {
+        curParams = [1.2 + Math.random() * 1.5, 0.3 + Math.random() * 0.6, 0.2, 12.0 + Math.random() * 15.0];
+      } else if (curMode === 3) {
+        curParams = [2.5 + Math.random() * 4.0, 0.8 + Math.random() * 1.5, 1.0 + Math.random() * 2.0, 1.0];
+      } else {
+        curParams = [3.0 + Math.floor(Math.random() * 6.0), 1.0 + Math.random() * 1.5, 0.2 + Math.random() * 0.5, 10.0 + Math.random() * 15.0];
+      }
+      lookCount++;
+    }
+
+    let bass = 0, analyser = null, freq = null;
+
+    function resize() {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const w = Math.floor(innerWidth * dpr);
+      const h = Math.floor(innerHeight * dpr);
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+        gl.viewport(0, 0, w, h);
+      }
+    }
+
+    async function enableMic() {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      const ctx = new AudioContext();
+      const src = ctx.createMediaStreamSource(stream);
+      analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      src.connect(analyser);
+      freq = new Uint8Array(analyser.frequencyBinCount);
+    }
+
+    document.getElementById('mic').onclick = () => enableMic().catch(e => alert(e));
+    document.getElementById('next').onclick = () => randomizeLook();
+
+    let frames = 0, lastFps = performance.now(), fps = 0;
+
+    function frame(now) {
+      resize();
+
+      if (analyser && freq) {
+        analyser.getByteFrequencyData(freq);
+        let s = 0;
+        for (let i = 0; i < 10; i++) s += freq[i];
+        const target = s / (10 * 255);
+        bass += (target - bass) * 0.25;
+      } else {
+        bass = 0.35 + 0.25 * Math.sin(now * 0.002);
+      }
+
+      gl.uniform2f(uR, canvas.width, canvas.height);
+      gl.uniform1f(uT, now * 0.001);
+      gl.uniform1f(uBass, bass);
+      gl.uniform1f(uMode, curMode);
+      gl.uniform3f(uPal, curPal[0], curPal[1], curPal[2]);
+      gl.uniform4f(uParams, curParams[0], curParams[1], curParams[2], curParams[3]);
+
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+      frames++;
+      if (now - lastFps > 500) {
+        fps = Math.round(frames * 1000 / (now - lastFps));
+        frames = 0;
+        lastFps = now;
+        document.getElementById('hud').innerHTML = `look #${lookCount} (${modeNames[curMode]}) · bass ${bass.toFixed(2)} · ~${fps} fps<br>GPU does the picture · CPU only updates a few uniforms`;
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>

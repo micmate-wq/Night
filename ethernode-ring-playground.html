@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ethernode Outer Ring — Visualization Playground</title>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
+    }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #07090e;
+      --panel-bg: rgba(13, 18, 27, 0.82);
+      --panel-border: rgba(38, 54, 76, 0.65);
+      --accent-synth: #00ffc8;
+      --accent-sample: #ff4785;
+      --text: #e6edf3;
+      --text-muted: #8b9bb4;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg);
+      font-family: var(--font);
+      color: var(--text);
+    }
+
+    #webgl-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      z-index: 1;
+    }
+
+    /* UI Control Panel */
+    #control-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 320px;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      z-index: 10;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    #control-panel::-webkit-scrollbar {
+      width: 4px;
+    }
+    #control-panel::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #control-panel::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .section-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 2px 0;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mini-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .mini-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: #667e9e;
+    }
+    .mini-btn.active {
+      background: rgba(0, 255, 200, 0.2);
+      border-color: var(--accent-node);
+      color: #fff;
+    }
+    .action-btn.active {
+      background: rgba(0, 255, 200, 0.25);
+      border-color: var(--accent-node);
+      color: #fff;
+    }
+    body.light-mode .action-btn.active,
+    body.light-mode .mini-btn.active {
+      background: rgba(0, 180, 100, 0.2);
+      border-color: #00a850;
+      color: #0f172a;
+    }
+
+    /* Header Actions Row */
+    .header-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: #667e9e;
+    }
+
+    .action-btn.active {
+      background: rgba(0, 255, 200, 0.2);
+      border-color: var(--accent-synth);
+      color: var(--accent-synth);
+    }
+
+    .action-btn.copied {
+      background: rgba(0, 210, 106, 0.25) !important;
+      border-color: #00d26a !important;
+      color: #00d26a !important;
+    }
+
+    /* Light Mode Variables & Overrides */
+    body.light-mode {
+      --bg: #f4f6fa;
+      --panel-bg: rgba(255, 255, 255, 0.90);
+      --panel-border: rgba(200, 210, 225, 0.85);
+      --text: #1a202c;
+      --text-muted: #5a6a80;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+
+    body.light-mode #control-panel {
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    body.light-mode #hud {
+      background: rgba(255, 255, 255, 0.85);
+      color: #4a5568;
+      border-color: rgba(200, 210, 225, 0.85);
+    }
+
+    body.light-mode #hud span {
+      color: #1a202c;
+    }
+
+    body.light-mode select {
+      background: rgba(240, 243, 248, 0.95);
+      color: #1a202c;
+      border-color: #cbd5e1;
+    }
+
+    body.light-mode .toggle-group,
+    body.light-mode .node-btn {
+      background: rgba(240, 243, 248, 0.9);
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+
+    body.light-mode .behavior-info {
+      background: rgba(240, 243, 248, 0.85);
+    }
+
+    body.light-mode .behavior-info strong {
+      color: #0f172a;
+    }
+
+    body.light-mode .panel-title {
+      color: #0f172a;
+    }
+
+    body.light-mode .section-title {
+      color: #475569;
+    }
+
+    body.light-mode .section-divider {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    body.light-mode .mini-btn,
+    body.light-mode .action-btn {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+
+    body.light-mode .mini-btn:hover,
+    body.light-mode .action-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .panel-header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 12px;
+    }
+
+    body.light-mode .panel-header {
+      border-bottom-color: rgba(0, 0, 0, 0.08);
+    }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title .indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-synth);
+      box-shadow: 0 0 10px var(--accent-synth);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .control-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .value-badge {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      color: var(--accent-synth);
+      background: rgba(0, 255, 200, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 255, 200, 0.2);
+      transition: color 0.3s, background 0.3s, border 0.3s;
+    }
+
+    .state-sample .value-badge {
+      color: var(--accent-sample);
+      background: rgba(255, 71, 133, 0.1);
+      border: 1px solid rgba(255, 71, 133, 0.2);
+    }
+
+    .state-sample .panel-title .indicator {
+      background: var(--accent-sample);
+      box-shadow: 0 0 10px var(--accent-sample);
+    }
+
+    /* Form Inputs */
+    select {
+      width: 100%;
+      background: rgba(8, 12, 18, 0.8);
+      color: var(--text);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-family: var(--font);
+      outline: none;
+      cursor: pointer;
+      transition: border 0.2s, background 0.2s;
+    }
+
+    select:hover, select:focus {
+      border-color: #3b4d66;
+      background: rgba(12, 17, 26, 0.95);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      appearance: none;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-synth);
+      box-shadow: 0 0 8px var(--accent-synth);
+      cursor: pointer;
+      transition: transform 0.1s, background 0.3s, box-shadow 0.3s;
+    }
+
+    .state-sample input[type="range"]::-webkit-slider-thumb {
+      background: var(--accent-sample);
+      box-shadow: 0 0 8px var(--accent-sample);
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* Sound Source Toggle Buttons */
+    .toggle-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: rgba(8, 12, 18, 0.6);
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+    }
+
+    .toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .toggle-btn.active.synth {
+      background: rgba(0, 255, 200, 0.16);
+      color: var(--accent-synth);
+      border: 1px solid rgba(0, 255, 200, 0.4);
+      box-shadow: 0 0 10px rgba(0, 255, 200, 0.2);
+    }
+
+    .toggle-btn.active.sample {
+      background: rgba(255, 71, 133, 0.16);
+      color: var(--accent-sample);
+      border: 1px solid rgba(255, 71, 133, 0.4);
+      box-shadow: 0 0 10px rgba(255, 71, 133, 0.2);
+    }
+
+    /* Node Track Preset Grid */
+    .node-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .node-btn {
+      background: rgba(8, 12, 18, 0.6);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+      padding: 7px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .node-btn .node-color-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .node-btn:hover {
+      border-color: #4b6282;
+      background: rgba(18, 25, 38, 0.8);
+    }
+
+    .node-btn.active {
+      border-color: #fff;
+      background: rgba(255, 255, 255, 0.14);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Behavior Description Card */
+    .behavior-info {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      border-left: 3px solid var(--accent-synth);
+      transition: border-left-color 0.3s;
+    }
+
+    .state-sample .behavior-info {
+      border-left-color: var(--accent-sample);
+    }
+
+    .behavior-info strong {
+      color: #fff;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* HUD overlay */
+    #hud {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 10;
+      font-size: 12px;
+      color: var(--text-muted);
+      pointer-events: none;
+      line-height: 1.6;
+      background: rgba(13, 18, 27, 0.6);
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(8px);
+    }
+
+    #hud span {
+      color: #fff;
+      font-family: ui-monospace, monospace;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="webgl-canvas"></canvas>
+
+  <div id="control-panel">
+    <div class="panel-header">
+      <div class="header-top-row">
+        <div class="panel-title">
+          <span class="indicator" id="state-indicator"></span>
+          aether
+        </div>
+        <div class="header-actions">
+          <button id="btn-theme-toggle" class="action-btn" title="Toggle Light / Dark mode">☀️ Light</button>
+          <button id="btn-behind-toggle" class="action-btn" title="Toggle animation fully behind node or enveloping it">🪐 Enveloping</button>
+          <button id="btn-refine-aether" class="action-btn" title="Refine a 2D interpretation with the shared Aether renderer">Refine for Aether ↗</button>
+          <button id="btn-copy-code" class="action-btn" title="Copy reusable code snippet for active behavior">📋 3D reference code</button>
+        </div>
+      </div>
+      <div class="panel-subtitle">Algorithmic Behavior Playground</div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label-row" for="node-palette">Node palette</label>
+      <select id="node-palette">
+        <option value="original">Original</option>
+        <option value="kiln">Kiln / enamel</option>
+        <option value="blueprint">Midnight blueprint</option>
+        <option value="chromatic">Chromatic ledger</option>
+        <option value="oxide">Oxide observatory</option>
+        <option value="risograph">Riso fieldwork</option>
+      </select>
+      <div id="palette-swatches" style="display:flex;gap:8px;margin-top:8px" aria-label="Palette colours"></div>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Choose a colour below to preview its node. Sync Node also colours the ring.</p>
+    </div>
+
+    <!-- Behavior Selector -->
+    <div class="control-group">
+      <label class="control-label-row" for="behavior-select">
+        <span>Behavior Algorithm</span>
+      </label>
+      <select id="behavior-select">
+        <option value="A">Behavior A: The Orbit (Timid)</option>
+        <option value="B">Behavior B: The Pulse-Wave (Controlled)</option>
+        <option value="C" selected>Behavior C: The Granular Cloud (Dynamic)</option>
+        <option value="D">Behavior D: The Field Distorter (Interesting)</option>
+        <option value="E">Behavior E: The Fracture-Nova (Wild)</option>
+      </select>
+    </div>
+
+    <!-- Activity Slider -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Activity (RMS / Loudness)</span>
+        <span class="value-badge" id="activity-val">0.50</span>
+      </div>
+      <input type="range" id="slider-activity" min="0" max="1" step="0.01" value="0.5" />
+    </div>
+
+    <!-- Timbre Slider -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Timbre (Spectral Brightness)</span>
+        <span class="value-badge" id="timbre-val">0.50</span>
+      </div>
+      <input type="range" id="slider-timbre" min="0" max="1" step="0.01" value="0.5" />
+    </div>
+
+    <!-- Sound Source State Toggle -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Sound Source State</span>
+      </div>
+      <div class="toggle-group">
+        <button id="btn-synth" class="toggle-btn active synth">Synth</button>
+        <button id="btn-sample" class="toggle-btn sample">Sample</button>
+      </div>
+    </div>
+
+    <!-- Aethernode Track Preset (Matching 2D Canvas) -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Aethernode Track</span>
+        <span class="value-badge" id="node-badge-val">T4 (Green)</span>
+      </div>
+      <div class="node-grid">
+        <button id="btn-node-t1" class="node-btn" data-node="T1" title="Node T1: Red">
+          <span class="node-color-dot" style="background: #ff4d4d;"></span>
+          T1
+        </button>
+        <button id="btn-node-t2" class="node-btn" data-node="T2" title="Node T2: Yellow">
+          <span class="node-color-dot" style="background: #ffd000;"></span>
+          T2
+        </button>
+        <button id="btn-node-t3" class="node-btn" data-node="T3" title="Node T3: Purple">
+          <span class="node-color-dot" style="background: #9d7ae2;"></span>
+          T3
+        </button>
+        <button id="btn-node-t4" class="node-btn active" data-node="T4" title="Node T4: Green">
+          <span class="node-color-dot" style="background: #00d26a;"></span>
+          T4
+        </button>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+    <div class="section-title">
+      <span>Spherical Envelope & Geometry</span>
+    </div>
+
+    <!-- Ring Layer Placement (Behind Node vs Enveloping) -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Ring Layer Placement</span>
+        <button id="btn-depth-toggle" class="mini-btn" title="Toggle between 3D Enveloping and Fully Behind Node">Enveloping</button>
+      </div>
+    </div>
+
+    <!-- 1. Ring Multiplication (Spherical Envelope) -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Ring Copies (Spherical Multiplier)</span>
+        <span class="value-badge" id="ring-count-val">10</span>
+      </div>
+      <input type="range" id="slider-ring-count" min="1" max="10" step="1" value="10" />
+    </div>
+
+    <!-- 2. Elevation (Saturn Center) -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Elevation (Saturn Dead-Center)</span>
+        <span class="value-badge" id="elevation-val">0.00</span>
+      </div>
+      <input type="range" id="slider-elevation" min="-2.0" max="2.0" step="0.05" value="0.0" />
+    </div>
+
+    <!-- 3. Axial Tilt -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Axial Tilt (Inclination)</span>
+        <span class="value-badge" id="tilt-val">20°</span>
+      </div>
+      <input type="range" id="slider-tilt" min="-60" max="60" step="1" value="20" />
+    </div>
+
+    <!-- Auto-Rotation Speed (Bidirectional: Center Static, Left/Right spin) -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Auto-Rotation (Orbital Spin)</span>
+        <span class="value-badge" id="auto-rotate-val">0.0 (Static)</span>
+      </div>
+      <input type="range" id="slider-auto-rotate" min="-3.0" max="3.0" step="0.1" value="0.0" />
+    </div>
+
+    <!-- Orbital Precession (Dynamic 3D Tilt Movement) -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Orbital Precession (Tilt Drift)</span>
+        <span class="value-badge" id="orbital-drift-val">0.0 (Static)</span>
+      </div>
+      <input type="range" id="slider-orbital-drift" min="-2.0" max="2.0" step="0.1" value="0.0" />
+    </div>
+
+    <!-- Behavior D Line Thickness -->
+    <div class="control-group" id="group-line-thickness">
+      <div class="control-label-row">
+        <span>Behavior D Line Thickness</span>
+        <span class="value-badge" id="thickness-val">0.06</span>
+      </div>
+      <input type="range" id="slider-line-thickness" min="0.01" max="0.35" step="0.01" value="0.06" />
+    </div>
+
+    <!-- 4. Distort (Wobble) -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Distort (Wobble Ripple)</span>
+        <span class="value-badge" id="distort-val">0.00</span>
+      </div>
+      <input type="range" id="slider-distort" min="0" max="1" step="0.01" value="0.0" />
+    </div>
+
+    <!-- 5. Color Hue & Sync -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Ring Color Hue</span>
+        <div style="display: flex; gap: 4px; align-items: center;">
+          <button id="btn-sync-node-color" class="mini-btn active" title="Automatically match selected Node color">Sync Node</button>
+          <span class="value-badge" id="hue-val">150°</span>
+        </div>
+      </div>
+      <input type="range" id="slider-hue" min="0" max="360" step="1" value="150" />
+    </div>
+
+    <!-- 6. Radius Scale -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Radius Scale (Boundary Distance)</span>
+        <span class="value-badge" id="radius-val">1.00x</span>
+      </div>
+      <input type="range" id="slider-radius" min="0.6" max="2.2" step="0.02" value="1.0" />
+    </div>
+
+    <!-- 7. Opacity -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Ring Opacity (Glow Density)</span>
+        <span class="value-badge" id="opacity-val">0.85</span>
+      </div>
+      <input type="range" id="slider-opacity" min="0.1" max="1.0" step="0.02" value="0.85" />
+    </div>
+
+    <!-- 8. Speed Multiplier -->
+    <div class="control-group">
+      <div class="control-label-row">
+        <span>Harmonic Speed Rate</span>
+        <span class="value-badge" id="speed-val">1.00x</span>
+      </div>
+      <input type="range" id="slider-speed" min="0.2" max="3.0" step="0.1" value="1.0" />
+    </div>
+
+    <!-- Behavior Description -->
+    <div class="behavior-info" id="behavior-desc">
+      <strong id="desc-title">Behavior C: The Granular Cloud</strong>
+      <div id="desc-body">Loose particle cloud. Activity controls spread and density; Timbre dictates turbulence; Sample introduces organic breathing.</div>
+    </div>
+  </div>
+
+  <div id="hud">
+    Drag to rotate scene · Scroll to zoom<br>
+    FPS: <span id="fps-display">60</span> · Core Radius: <span>2.0</span> · Ring Radius: <span>3.6</span>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // State Model
+    const state = {
+      behavior: 'C',
+      activity: 0.5,
+      timbre: 0.5,
+      source: 'Synth', // 'Synth' or 'Sample'
+      // Spherical Envelope & Geometry Controls
+      ringCount: 10,
+      elevation: 0.0,
+      tilt: 20.0,
+      distort: 0.0,
+      colorHue: 150, // Matches T4 green by default
+      syncNodeColor: true,
+      radiusScale: 1.0,
+      opacity: 0.85,
+      speed: 1.0,
+      // Rotation dynamics & Behavior D line thickness
+      autoRotate: 0.0,
+      orbitalDrift: 0.0,
+      lineThickness: 0.06,
+      lightMode: false,
+      fullyBehind: false
+    };
+
+    const behaviorDescriptions = {
+      A: {
+        title: "Behavior A: The Orbit (Timid)",
+        body: "Simple orbiting particle ring. Activity drives orbital speed and subtle radius pulses; Timbre adds slight particle size variation."
+      },
+      B: {
+        title: "Behavior B: The Pulse-Wave (Controlled)",
+        body: "Cohesive expanding/contracting band. Activity drives expansion cycles; Timbre alters thickness. Synth yields pure geometric waves, Sample introduces glitch jitter."
+      },
+      C: {
+        title: "Behavior C: The Granular Cloud (Dynamic)",
+        body: "Loose particle cloud. Activity expands radial dispersion; Timbre triggers Brownian turbulence; Sample causes organic breathing variance."
+      },
+      D: {
+        title: "Behavior D: The Field Distorter (Interesting)",
+        body: "Circumferential magnetic ripples. Activity drives wave velocity and propagation; Timbre adds harmonic interference. Synth creates standing waves; Sample introduces explosive shocks."
+      },
+      E: {
+        title: "Behavior E: The Fracture-Nova (Wild)",
+        body: "Rigid shards that break away and reassemble. Activity shatters shards outward; Timbre controls shard jaggedness. Synth gives orderly harmonic reassembly; Sample produces violent bursts and snap-backs."
+      }
+    };
+
+    // 1. Scene, Camera & Renderer Setup
+    const canvas = document.getElementById('webgl-canvas');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x07090e, 0.035);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 4.5, 10.5);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 3;
+    controls.maxDistance = 25;
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const pointLight = new THREE.PointLight(0x00ffc8, 2, 20);
+    scene.add(pointLight);
+
+    // 2. The Core: Solid Aethernode from the 2D Canvas (Static shape, physical occlusion)
+    const nodeDefs = {
+      T1: { id: "T1", name: "T1 (Red)", color: "#ff4d4d", textColor: "#ffffff", darkRing: "rgba(0,0,0,0.3)", subText: "V:45% P:L8 Z:12.2 [0.20x]" },
+      T2: { id: "T2", name: "T2 (Yellow)", color: "#ffd000", textColor: "#000000", darkRing: "rgba(0,0,0,0.35)", subText: "V:78% P:L10 Z:8.0 [0.16x]" },
+      T3: { id: "T3", name: "T3 (Purple)", color: "#9d7ae2", textColor: "#ffffff", darkRing: "rgba(0,0,0,0.25)", subText: "V:64% P:R17 Z:0.0 [0.07x]" },
+      T4: { id: "T4", name: "T4 (Green)", color: "#00d26a", textColor: "#000000", darkRing: "rgba(0,0,0,0.35)", subText: "V:42% P:R34 Z:0.0 [0.20x]" }
+    };
+
+    let activeNodeKey = 'T4';
+
+    function renderNodeCanvas(def) {
+      const cvs = document.createElement('canvas');
+      cvs.width = 1024;
+      cvs.height = 1024;
+      const ctx = cvs.getContext('2d');
+      const cx = 512;
+      const cy = 470;
+      const radius = 380;
+
+      ctx.clearRect(0, 0, 1024, 1024);
+
+      // Outer concentric dashed/fine guide ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius + 55, 0, Math.PI * 2);
+      ctx.strokeStyle = state.lightMode ? "rgba(0, 0, 0, 0.25)" : "rgba(255, 255, 255, 0.22)";
+      ctx.lineWidth = 4;
+      ctx.setLineDash([12, 12]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Main solid disc body (opaque to occlude rear animation)
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fillStyle = def.color;
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.75)";
+      ctx.lineWidth = 14;
+      ctx.stroke();
+
+      // Inner concentric dark ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius * 0.72, 0, Math.PI * 2);
+      ctx.strokeStyle = def.darkRing;
+      ctx.lineWidth = 9;
+      ctx.stroke();
+
+      // Orbital indicator knob at 45 degrees
+      const knobAngle = -Math.PI / 4;
+      const knobX = cx + Math.cos(knobAngle) * radius;
+      const knobY = cy + Math.sin(knobAngle) * radius;
+
+      ctx.beginPath();
+      ctx.arc(knobX, knobY, 40, 0, Math.PI * 2);
+      ctx.fillStyle = def.color;
+      ctx.fill();
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 10;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(knobX, knobY, 16, 0, Math.PI * 2);
+      ctx.fillStyle = def.textColor;
+      ctx.fill();
+
+      // Bold centered track ID
+      ctx.fillStyle = def.textColor;
+      ctx.font = '900 165px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(def.id, cx, cy + 8);
+
+      // Sub-label below the node (matching 2D canvas readout)
+      ctx.fillStyle = state.lightMode ? 'rgba(0, 0, 0, 0.65)' : 'rgba(255, 255, 255, 0.75)';
+      ctx.font = '600 32px ui-monospace, SFMono-Regular, Menlo, monospace';
+      ctx.fillText(def.subText, cx, 955);
+
+      return cvs;
+    }
+
+    const coreGroup = new THREE.Group();
+    scene.add(coreGroup);
+
+    const nodeCanvas = renderNodeCanvas(nodeDefs[activeNodeKey]);
+    const nodeTexture = new THREE.CanvasTexture(nodeCanvas);
+    nodeTexture.minFilter = THREE.LinearFilter;
+    nodeTexture.generateMipmaps = false;
+
+    // Solid camera-facing plane with alphaTest so transparent border allows ring through,
+    // while the solid circular node writes depth to cleanly obscure the back of the ring
+    const nodeGeo = new THREE.PlaneGeometry(4.8, 4.8);
+    const nodeMat = new THREE.MeshBasicMaterial({
+      map: nodeTexture,
+      transparent: true,
+      alphaTest: 0.05,
+      depthWrite: true,
+      depthTest: true,
+      side: THREE.DoubleSide
+    });
+    const nodeMesh = new THREE.Mesh(nodeGeo, nodeMat);
+    nodeMesh.renderOrder = 0;
+    coreGroup.add(nodeMesh);
+
+    function updateActiveNode(key) {
+      activeNodeKey = key;
+      const def = nodeDefs[key];
+      const updatedCanvas = renderNodeCanvas(def);
+      const ctx = nodeCanvas.getContext('2d');
+      ctx.clearRect(0, 0, 1024, 1024);
+      ctx.drawImage(updatedCanvas, 0, 0);
+      nodeTexture.needsUpdate = true;
+
+      // Update UI badge
+      const badge = document.getElementById('node-badge-val');
+      if (badge) badge.innerText = def.name;
+
+      // Update active button state
+      document.querySelectorAll('.node-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.node === key);
+      });
+
+      if (state.syncNodeColor) {
+        applyActiveColor();
+      }
+    }
+
+    // 3. The Outer Ring Container & Multi-Layer Spherical Architecture
+    const ringGroup = new THREE.Group();
+    scene.add(ringGroup);
+
+    const RING_BASE_RADIUS = 3.6;
+
+    // --- Color Management & Node Sync ---
+    function getActiveColor() {
+      let col;
+      if (state.syncNodeColor) {
+        const def = nodeDefs[activeNodeKey];
+        col = new THREE.Color(def.color);
+        if (state.lightMode && activeNodeKey === 'T2') {
+          col.set('#e6a100'); // Deep amber gold for clear contrast on light background
+        }
+      } else {
+        const lightness = state.lightMode ? 0.44 : 0.58;
+        col = new THREE.Color().setHSL(state.colorHue / 360, 0.95, lightness);
+      }
+      return col;
+    }
+
+    function applyActiveColor() {
+      const col = getActiveColor();
+      orbitMat.color.copy(col);
+      pulseMat.color.copy(col);
+      cloudMat.color.copy(col);
+      fieldMat.color.copy(col);
+      shardMat.color.copy(col);
+      pointLight.color.copy(col);
+
+      // In NormalBlending (light mode), maintain solid opacity so colors do not wash out into the light background
+      const baseAlpha = state.lightMode ? Math.max(state.opacity, 0.70) : state.opacity;
+      orbitMat.opacity = baseAlpha;
+      pulseMat.opacity = baseAlpha;
+      cloudMat.opacity = baseAlpha * 0.9;
+      fieldMat.opacity = Math.min(1.0, baseAlpha * 1.1);
+      shardMat.opacity = baseAlpha;
+
+      const hexStr = `#${col.getHexString()}`;
+      const stateInd = document.getElementById('state-indicator');
+      if (stateInd) {
+        stateInd.style.background = hexStr;
+        stateInd.style.boxShadow = `0 0 10px ${hexStr}`;
+      }
+
+      const syncBtn = document.getElementById('btn-sync-node-color');
+      if (syncBtn) {
+        syncBtn.classList.toggle('active', state.syncNodeColor);
+      }
+
+      if (state.syncNodeColor) {
+        const hsl = {};
+        col.getHSL(hsl);
+        state.colorHue = Math.round(hsl.h * 360);
+        const hueSlider = document.getElementById('slider-hue');
+        const hueVal = document.getElementById('hue-val');
+        if (hueSlider) hueSlider.value = state.colorHue;
+        if (hueVal) hueVal.innerText = `${state.colorHue}°`;
+      }
+    }
+
+    // --- Shared Geometries & Materials across Multi-Rings ---
+    // Smooth anti-aliased circular particle texture for points
+    function createPointTexture() {
+      const c = document.createElement('canvas');
+      c.width = 64;
+      c.height = 64;
+      const ctx = c.getContext('2d');
+      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, 'rgba(255,255,255,1)');
+      grad.addColorStop(0.65, 'rgba(255,255,255,0.85)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(32, 32, 32, 0, Math.PI * 2);
+      ctx.fill();
+      const tex = new THREE.CanvasTexture(c);
+      return tex;
+    }
+    const pointTexture = createPointTexture();
+
+    // A: Orbit
+    const orbitCount = 500;
+    const orbitAngles = new Float32Array(orbitCount);
+    const orbitOffsets = new Float32Array(orbitCount);
+    const orbitGeo = new THREE.BufferGeometry();
+    const orbitPositions = new Float32Array(orbitCount * 3);
+
+    for (let i = 0; i < orbitCount; i++) {
+      orbitAngles[i] = (i / orbitCount) * Math.PI * 2;
+      orbitOffsets[i] = (Math.random() - 0.5) * 0.12;
+      const r = RING_BASE_RADIUS + orbitOffsets[i];
+      orbitPositions[i * 3] = Math.cos(orbitAngles[i]) * r;
+      orbitPositions[i * 3 + 1] = (Math.random() - 0.5) * 0.08;
+      orbitPositions[i * 3 + 2] = Math.sin(orbitAngles[i]) * r;
+    }
+    orbitGeo.setAttribute('position', new THREE.BufferAttribute(orbitPositions, 3));
+    const orbitMat = new THREE.PointsMaterial({
+      map: pointTexture,
+      color: 0x00d26a,
+      size: 0.14,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
+      depthTest: true,
+      depthWrite: false
+    });
+
+    // B: Pulse-Wave
+    const pulseSegments = 360;
+    const pulseRibbonGeo = new THREE.BufferGeometry();
+    const pulsePositions = new Float32Array(pulseSegments * 2 * 3);
+    const pulseIndices = [];
+
+    for (let i = 0; i < pulseSegments; i++) {
+      const next = (i + 1) % pulseSegments;
+      const i0 = i * 2;
+      const i1 = i * 2 + 1;
+      const i2 = next * 2;
+      const i3 = next * 2 + 1;
+      pulseIndices.push(i0, i1, i2);
+      pulseIndices.push(i1, i3, i2);
+    }
+    pulseRibbonGeo.setIndex(pulseIndices);
+    pulseRibbonGeo.setAttribute('position', new THREE.BufferAttribute(pulsePositions, 3));
+
+    const pulseMat = new THREE.MeshBasicMaterial({
+      color: 0x00d26a,
+      wireframe: false,
+      transparent: true,
+      opacity: 0.85,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthTest: true,
+      depthWrite: false
+    });
+
+    // C: Granular Cloud
+    const cloudCount = 1400;
+    const cloudGeo = new THREE.BufferGeometry();
+    const cloudBaseAngle = new Float32Array(cloudCount);
+    const cloudRadJitter = new Float32Array(cloudCount);
+    const cloudZJitter = new Float32Array(cloudCount);
+    const cloudPositions = new Float32Array(cloudCount * 3);
+
+    for (let i = 0; i < cloudCount; i++) {
+      cloudBaseAngle[i] = Math.random() * Math.PI * 2;
+      cloudRadJitter[i] = (Math.random() - 0.5) * 2;
+      cloudZJitter[i] = (Math.random() - 0.5) * 2;
+      const r = RING_BASE_RADIUS + cloudRadJitter[i] * 0.2;
+      cloudPositions[i * 3] = Math.cos(cloudBaseAngle[i]) * r;
+      cloudPositions[i * 3 + 1] = cloudZJitter[i] * 0.1;
+      cloudPositions[i * 3 + 2] = Math.sin(cloudBaseAngle[i]) * r;
+    }
+    cloudGeo.setAttribute('position', new THREE.BufferAttribute(cloudPositions, 3));
+
+    const cloudMat = new THREE.PointsMaterial({
+      map: pointTexture,
+      color: 0x00d26a,
+      size: 0.10,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending,
+      depthTest: true,
+      depthWrite: false
+    });
+
+    // D: Field Distorter (Ribbon mesh with adjustable line thickness)
+    const fieldSegs = 400;
+    const fieldGeo = new THREE.BufferGeometry();
+    const fieldPositions = new Float32Array(fieldSegs * 2 * 3);
+    const fieldIndices = [];
+    for (let i = 0; i < fieldSegs; i++) {
+      const next = (i + 1) % fieldSegs;
+      const i0 = i * 2;
+      const i1 = i * 2 + 1;
+      const i2 = next * 2;
+      const i3 = next * 2 + 1;
+      fieldIndices.push(i0, i1, i2);
+      fieldIndices.push(i1, i3, i2);
+    }
+    fieldGeo.setIndex(fieldIndices);
+    fieldGeo.setAttribute('position', new THREE.BufferAttribute(fieldPositions, 3));
+
+    const fieldMat = new THREE.MeshBasicMaterial({
+      color: 0x00d26a,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.95,
+      blending: THREE.AdditiveBlending,
+      depthTest: true,
+      depthWrite: false
+    });
+
+    // E: Fracture-Nova
+    const shardCount = 42;
+    const shardGeo = new THREE.BufferGeometry();
+    const shapePoints = [
+      -0.12, 0, -0.04,
+       0.12, 0, -0.04,
+       0.08, 0,  0.04,
+      -0.08, 0,  0.04
+    ];
+    shardGeo.setAttribute('position', new THREE.Float32BufferAttribute(shapePoints, 3));
+    shardGeo.setIndex([0, 1, 2, 0, 2, 3]);
+
+    const shardMat = new THREE.MeshBasicMaterial({
+      color: 0x00d26a,
+      wireframe: true,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.9,
+      depthTest: true,
+      depthWrite: false
+    });
+
+    const shardData = [];
+    for (let i = 0; i < shardCount; i++) {
+      shardData.push({
+        baseAngle: (i / shardCount) * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 4,
+        burstPhase: Math.random() * Math.PI * 2
+      });
+    }
+
+    // --- Build Multi-Ring Layers (Spherical Curvature Multiplication) ---
+    const MAX_RINGS = 12;
+    const ringLayers = [];
+
+    for (let k = 0; k < MAX_RINGS; k++) {
+      const layerGroup = new THREE.Group();
+      layerGroup.renderOrder = 1;
+      ringGroup.add(layerGroup);
+
+      // Behavior A: Orbit
+      const orbitPoints = new THREE.Points(orbitGeo, orbitMat);
+      orbitPoints.renderOrder = 1;
+      layerGroup.add(orbitPoints);
+
+      // Behavior B: Pulse-Wave
+      const pulseMesh = new THREE.Mesh(pulseRibbonGeo, pulseMat);
+      pulseMesh.renderOrder = 1;
+      layerGroup.add(pulseMesh);
+
+      // Behavior C: Granular Cloud
+      const cloudPoints = new THREE.Points(cloudGeo, cloudMat);
+      cloudPoints.renderOrder = 1;
+      layerGroup.add(cloudPoints);
+
+      // Behavior D: Field Distorter
+      const fieldLine = new THREE.Mesh(fieldGeo, fieldMat);
+      fieldLine.renderOrder = 1;
+      layerGroup.add(fieldLine);
+
+      // Behavior E: Fracture-Nova
+      const shardGroup = new THREE.Group();
+      shardGroup.renderOrder = 1;
+      const shardMeshes = [];
+      for (let i = 0; i < shardCount; i++) {
+        const m = new THREE.Mesh(shardGeo, shardMat);
+        m.renderOrder = 1;
+        shardGroup.add(m);
+        shardMeshes.push(m);
+      }
+      layerGroup.add(shardGroup);
+
+      ringLayers.push({
+        group: layerGroup,
+        orbit: orbitPoints,
+        pulse: pulseMesh,
+        cloud: cloudPoints,
+        field: fieldLine,
+        shardsGroup: shardGroup,
+        shardMeshes: shardMeshes
+      });
+    }
+
+    // --- Spherical Envelope & Elevation Alignment ---
+    let autoRotAngle = 0;
+    let precessionAngle = 0;
+
+    function updateRingLayersTransform(delta = 0) {
+      const N = state.ringCount;
+      const baseR = RING_BASE_RADIUS * state.radiusScale;
+      const maxLat = THREE.MathUtils.degToRad(65); // Spherical latitude distribution (smaller polar rings)
+
+      ringLayers.forEach((layer, k) => {
+        if (k >= N) {
+          layer.group.visible = false;
+          return;
+        }
+        layer.group.visible = true;
+
+        let phi = 0;
+        if (N > 1) {
+          const u = (k / (N - 1)) * 2 - 1; // -1 to +1
+          phi = u * maxLat;
+        }
+
+        // Spherical surface coordinates conforming to node curvature:
+        // Y = R * sin(phi) + elevation
+        // XZ Radius = R * cos(phi)
+        const y = baseR * Math.sin(phi) + state.elevation;
+        const scaleXZ = Math.cos(phi) * state.radiusScale;
+        const scaleY = state.radiusScale;
+
+        layer.group.position.set(0, y, 0);
+        layer.group.scale.set(scaleXZ, scaleY, scaleXZ);
+      });
+
+      // Continuous Auto-Rotation around ring Y axis (center 0.0 is static)
+      if (delta > 0 && Math.abs(state.autoRotate) > 0.001) {
+        autoRotAngle += delta * state.autoRotate * 1.5;
+      }
+      ringGroup.rotation.y = autoRotAngle;
+
+      // Dynamic orbital precession / tilt drift
+      if (delta > 0 && Math.abs(state.orbitalDrift) > 0.001) {
+        precessionAngle += delta * state.orbitalDrift * 1.5;
+      }
+      const baseTiltX = THREE.MathUtils.degToRad(state.tilt);
+      const baseTiltZ = THREE.MathUtils.degToRad(state.tilt * 0.32);
+      const precAmp = Math.min(Math.abs(state.orbitalDrift), 2.0) * 0.25;
+
+      ringGroup.rotation.x = baseTiltX + Math.sin(precessionAngle) * precAmp;
+      ringGroup.rotation.z = baseTiltZ + Math.cos(precessionAngle) * precAmp;
+    }
+
+    // --- Animation Updates with Distort (Wobble) Modulation ---
+    function updateOrbit(time, delta) {
+      const positions = orbitGeo.attributes.position.array;
+      const speed = 0.6 + state.activity * 2.8;
+      const pulseAmp = 0.18 * state.activity;
+      const distortAmp = state.distort * 0.45;
+
+      for (let i = 0; i < orbitCount; i++) {
+        orbitAngles[i] += delta * speed * (0.85 + 0.3 * (i % 3));
+        const pulse = Math.sin(time * 3.5 + orbitAngles[i] * 2.0) * pulseAmp
+                    + Math.sin(orbitAngles[i] * 4.0 + time * 4.0) * distortAmp;
+        const r = RING_BASE_RADIUS + orbitOffsets[i] + pulse;
+
+        const wobbleY = Math.cos(orbitAngles[i] * 5.0 - time * 3.0) * state.distort * 0.28;
+        positions[i * 3] = Math.cos(orbitAngles[i]) * r;
+        positions[i * 3 + 1] = Math.sin(orbitAngles[i] * 3.0 + time) * (0.04 + 0.06 * state.activity) + wobbleY;
+        positions[i * 3 + 2] = Math.sin(orbitAngles[i]) * r;
+      }
+      orbitGeo.attributes.position.needsUpdate = true;
+      orbitMat.size = 0.1 + state.timbre * 0.14;
+    }
+
+    function updatePulseWave(time, delta) {
+      const positions = pulseRibbonGeo.attributes.position.array;
+      const cycleFreq = 2.0 + state.activity * 3.2;
+      const expansion = Math.sin(time * cycleFreq) * (0.2 + 0.85 * state.activity);
+      const baseR = RING_BASE_RADIUS + expansion;
+      const halfThick = 0.04 + state.timbre * 0.22;
+
+      for (let i = 0; i < pulseSegments; i++) {
+        const theta = (i / pulseSegments) * Math.PI * 2;
+        let waveMod = 0;
+        let glitchMod = 0;
+
+        if (state.source === 'Synth') {
+          waveMod = Math.sin(theta * 8.0 + time * 4.0) * (0.05 + 0.2 * state.timbre);
+        } else {
+          const jitterRand = Math.sin(i * 99.3 + Math.floor(time * 18.0));
+          glitchMod = (jitterRand > 0.4 ? jitterRand * 0.35 : 0) * state.timbre;
+          waveMod = Math.sin(theta * 5.0 + time * 3.0) * 0.1;
+        }
+
+        // Wobble perturbation
+        const wobbleR = Math.sin(theta * 6.0 + time * 4.0) * Math.cos(theta * 2.0 - time * 2.5) * state.distort * 0.5;
+        const wobbleY = Math.sin(theta * 7.0 + time * 3.0) * state.distort * 0.35;
+
+        const rInner = baseR - halfThick + waveMod - glitchMod + wobbleR;
+        const rOuter = baseR + halfThick + waveMod + glitchMod + wobbleR;
+
+        // Inner vertex
+        positions[i * 6] = Math.cos(theta) * rInner;
+        positions[i * 6 + 1] = Math.sin(theta * 4.0) * (0.05 * state.activity) + wobbleY;
+        positions[i * 6 + 2] = Math.sin(theta) * rInner;
+
+        // Outer vertex
+        positions[i * 6 + 3] = Math.cos(theta) * rOuter;
+        positions[i * 6 + 4] = Math.sin(theta * 4.0) * (0.05 * state.activity) + wobbleY;
+        positions[i * 6 + 5] = Math.sin(theta) * rOuter;
+      }
+      pulseRibbonGeo.attributes.position.needsUpdate = true;
+      pulseMat.wireframe = state.source === 'Sample' && state.timbre > 0.6;
+    }
+
+    function updateGranularCloud(time, delta) {
+      const positions = cloudGeo.attributes.position.array;
+      const spreadR = 0.1 + state.activity * 1.1;
+      const spreadZ = 0.06 + state.activity * 0.9;
+      const breathe = (state.source === 'Sample')
+        ? (1.0 + 0.35 * Math.sin(time * 2.2) * Math.cos(time * 3.7))
+        : 1.0;
+      const turbulence = state.timbre * 0.25;
+
+      for (let i = 0; i < cloudCount; i++) {
+        cloudBaseAngle[i] += delta * (0.4 + 0.3 * Math.sin(i));
+        const angle = cloudBaseAngle[i];
+
+        const brownianR = (Math.sin(i * 12.3 + time * 6.0)) * turbulence
+                        + Math.sin(angle * 7.0 + time * 5.0) * state.distort * 0.4;
+        const brownianZ = (Math.cos(i * 34.5 + time * 6.0)) * turbulence
+                        + Math.cos(angle * 6.0 - time * 4.0) * state.distort * 0.35;
+
+        const r = RING_BASE_RADIUS + (cloudRadJitter[i] * spreadR * breathe) + brownianR;
+        const z = (cloudZJitter[i] * spreadZ * breathe) + brownianZ;
+
+        positions[i * 3] = Math.cos(angle) * r;
+        positions[i * 3 + 1] = z;
+        positions[i * 3 + 2] = Math.sin(angle) * r;
+      }
+      cloudGeo.attributes.position.needsUpdate = true;
+      cloudMat.size = 0.06 + state.activity * 0.06;
+    }
+
+    function updateFieldDistorter(time, delta) {
+      const positions = fieldGeo.attributes.position.array;
+      const waveSpeed = (2.5 + state.activity * 7.0);
+      const halfThick = state.lineThickness * 0.5;
+
+      for (let i = 0; i < fieldSegs; i++) {
+        const theta = (i / fieldSegs) * Math.PI * 2;
+        let deltaR = 0;
+        let deltaY = 0;
+
+        if (state.source === 'Synth') {
+          const modeK = 6;
+          const standingWave = Math.sin(modeK * theta) * Math.cos(time * waveSpeed);
+          const harmonic = Math.sin(modeK * 2 * theta) * Math.sin(time * waveSpeed * 1.5) * state.timbre;
+          deltaR = (standingWave + harmonic * 0.5) * (0.15 + state.activity * 0.65);
+          deltaY = Math.cos(modeK * theta + time * 2.0) * (0.1 + state.activity * 0.4);
+        } else {
+          const shock = Math.sin(theta * 14.0 - time * waveSpeed * 1.8);
+          const interference = Math.sin(theta * 27.0 + time * waveSpeed * 2.5) * state.timbre;
+          const explosivePulse = (Math.sin(theta * 3.0 + time * 1.5) > 0.8 ? 0.7 : 0) * state.activity;
+          deltaR = (shock * 0.3 + interference * 0.4 + explosivePulse) * (0.1 + state.activity * 0.8);
+          deltaY = Math.sin(theta * 9.0 + time * 4.0) * (0.2 + state.timbre * 0.4);
+        }
+
+        // Wobble perturbation
+        const distortR = Math.sin(theta * 8.0 - time * 3.5) * state.distort * 0.55;
+        const distortY = Math.cos(theta * 6.0 + time * 3.0) * state.distort * 0.38;
+
+        const baseR = RING_BASE_RADIUS + deltaR + distortR;
+        const yCenter = deltaY + distortY;
+
+        const rInner = baseR - halfThick;
+        const rOuter = baseR + halfThick;
+
+        // Inner vertex
+        positions[i * 6] = Math.cos(theta) * rInner;
+        positions[i * 6 + 1] = yCenter - halfThick * 0.3;
+        positions[i * 6 + 2] = Math.sin(theta) * rInner;
+
+        // Outer vertex
+        positions[i * 6 + 3] = Math.cos(theta) * rOuter;
+        positions[i * 6 + 4] = yCenter + halfThick * 0.3;
+        positions[i * 6 + 5] = Math.sin(theta) * rOuter;
+      }
+      fieldGeo.attributes.position.needsUpdate = true;
+    }
+
+    function updateFractureNova(time, delta) {
+      const isSynth = state.source === 'Synth';
+
+      shardData.forEach((sData, idx) => {
+        let breakawayDist = 0;
+        let tumbleX = 0;
+        let tumbleY = 0;
+
+        if (isSynth) {
+          const harmonicOsc = Math.sin(time * 3.0 + sData.baseAngle * 4.0);
+          breakawayDist = Math.max(0, harmonicOsc) * state.activity * 2.2;
+          tumbleX = time * sData.rotSpeed * state.activity;
+          tumbleY = harmonicOsc * 1.5;
+        } else {
+          const burstCycle = (Math.sin(time * 4.0 + sData.burstPhase) + 1) * 0.5;
+          const snapBack = (burstCycle > 0.85) ? Math.pow(burstCycle, 4) * 3.5 : burstCycle * 0.4;
+          breakawayDist = snapBack * state.activity * 3.2;
+          tumbleX = time * (sData.rotSpeed * 4.0);
+          tumbleY = time * 2.0;
+        }
+
+        const distortBreak = Math.sin(sData.baseAngle * 5.0 + time * 3.0) * state.distort * 0.65;
+        const r = RING_BASE_RADIUS + breakawayDist + distortBreak;
+        const currentAngle = sData.baseAngle + (isSynth ? time * 0.2 : time * (0.2 + state.activity * 1.5));
+
+        const px = Math.cos(currentAngle) * r;
+        const py = Math.sin(currentAngle * 3.0) * (0.1 + state.activity * 0.5);
+        const pz = Math.sin(currentAngle) * r;
+        const jaggedScale = 1.0 + state.timbre * (0.8 + 0.4 * Math.sin(idx * 7.0));
+
+        // Update shard meshes across all active spherical layers
+        for (let k = 0; k < state.ringCount; k++) {
+          const mesh = ringLayers[k].shardMeshes[idx];
+          if (mesh) {
+            mesh.position.set(px, py, pz);
+            mesh.rotation.x = tumbleX;
+            mesh.rotation.y = tumbleY + currentAngle;
+            mesh.rotation.z = breakawayDist * 0.5;
+            mesh.scale.set(jaggedScale, 1.0, 1.0 + state.timbre * 1.2);
+          }
+        }
+      });
+    }
+
+    // Behavior visibility switch across all layers
+    function syncBehaviorVisibility() {
+      ringLayers.forEach(layer => {
+        layer.orbit.visible = (state.behavior === 'A');
+        layer.pulse.visible = (state.behavior === 'B');
+        layer.cloud.visible = (state.behavior === 'C');
+        layer.field.visible = (state.behavior === 'D');
+        layer.shardsGroup.visible = (state.behavior === 'E');
+      });
+
+      const thickGroup = document.getElementById('group-line-thickness');
+      if (thickGroup) {
+        thickGroup.style.display = (state.behavior === 'D') ? 'block' : 'none';
+      }
+
+      const desc = behaviorDescriptions[state.behavior];
+      document.getElementById('desc-title').innerText = desc.title;
+      document.getElementById('desc-body').innerText = desc.body;
+    }
+
+    syncBehaviorVisibility();
+    applyActiveColor();
+
+    // Shared visual-study palettes. Only node colours change; ring behavior is preserved.
+    const nodePalettes = {
+      original: ['#ff4d4d','#ffd000','#9d7ae2','#00d26a'],
+      kiln: ['#d86b47','#cfab36','#8b79be','#4eaa83'],
+      blueprint: ['#ed8965','#e2c453','#ad95de','#64c2a4'],
+      chromatic: ['#df654e','#d6b43e','#917ac7','#42aa89'],
+      oxide: ['#e08459','#d7b754','#af8fce','#67b795'],
+      risograph: ['#e06b58','#d4b236','#9c7fcd','#45a98c']
+    };
+    function setNodePalette(key) {
+      const colors = nodePalettes[key] || nodePalettes.original;
+      const swatches = document.getElementById('palette-swatches');
+      swatches.replaceChildren();
+      colors.forEach((color,i) => {
+        const nodeKey = 'T' + (i+1), def = nodeDefs[nodeKey];
+        def.color = color;
+        const rgb = color.slice(1).match(/../g).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);
+        const luminance = rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;
+        def.textColor = luminance > .179 ? '#000000' : '#ffffff';
+        const dot = document.querySelector(`[data-node="${nodeKey}"] .node-color-dot`);
+        if(dot) dot.style.background = color;
+        const b = document.createElement('button');
+        b.className = 'mini-btn';
+        b.style.cssText = `background:${color};color:${def.textColor};flex:1;padding:7px 0`;
+        b.textContent = nodeKey;
+        b.title = `${nodeKey}: ${color}`;
+        b.setAttribute('aria-label',`Preview ${nodeKey} ${color}`);
+        b.onclick = () => updateActiveNode(nodeKey);
+        swatches.append(b);
+      });
+      updateActiveNode(activeNodeKey);
+    }
+    const paletteSelect = document.getElementById('node-palette');
+    paletteSelect.addEventListener('change',()=>{
+      setNodePalette(paletteSelect.value);
+      try { localStorage.setItem('aether-ring-palette',paletteSelect.value); } catch {}
+    });
+    try {
+      const saved = localStorage.getItem('aether-ring-palette');
+      if(nodePalettes[saved]) paletteSelect.value = saved;
+    } catch {}
+    setNodePalette(paletteSelect.value);
+
+    // 4. UI Bindings
+    const behaviorSelect = document.getElementById('behavior-select');
+    const sliderActivity = document.getElementById('slider-activity');
+    const sliderTimbre = document.getElementById('slider-timbre');
+    const activityVal = document.getElementById('activity-val');
+    const timbreVal = document.getElementById('timbre-val');
+    const btnSynth = document.getElementById('btn-synth');
+    const btnSample = document.getElementById('btn-sample');
+    const panel = document.getElementById('control-panel');
+    const fpsDisplay = document.getElementById('fps-display');
+
+    behaviorSelect.addEventListener('change', (e) => {
+      state.behavior = e.target.value;
+      syncBehaviorVisibility();
+    });
+
+    sliderActivity.addEventListener('input', (e) => {
+      state.activity = parseFloat(e.target.value);
+      activityVal.innerText = state.activity.toFixed(2);
+    });
+
+    sliderTimbre.addEventListener('input', (e) => {
+      state.timbre = parseFloat(e.target.value);
+      timbreVal.innerText = state.timbre.toFixed(2);
+    });
+
+    function setSource(source) {
+      state.source = source;
+      if (source === 'Synth') {
+        btnSynth.classList.add('active');
+        btnSample.classList.remove('active');
+        panel.classList.remove('state-sample');
+      } else {
+        btnSample.classList.add('active');
+        btnSynth.classList.remove('active');
+        panel.classList.add('state-sample');
+      }
+      applyActiveColor();
+    }
+
+    btnSynth.addEventListener('click', () => setSource('Synth'));
+    btnSample.addEventListener('click', () => setSource('Sample'));
+
+    // Aethernode Track Preset Buttons
+    document.querySelectorAll('.node-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const nodeKey = e.currentTarget.dataset.node;
+        if (nodeKey) updateActiveNode(nodeKey);
+      });
+    });
+
+    // New Slider Bindings
+    const sliderRingCount = document.getElementById('slider-ring-count');
+    const ringCountVal = document.getElementById('ring-count-val');
+    sliderRingCount.addEventListener('input', (e) => {
+      state.ringCount = parseInt(e.target.value);
+      ringCountVal.innerText = state.ringCount;
+      updateRingLayersTransform();
+    });
+
+    const sliderElevation = document.getElementById('slider-elevation');
+    const elevationVal = document.getElementById('elevation-val');
+    sliderElevation.addEventListener('input', (e) => {
+      state.elevation = parseFloat(e.target.value);
+      elevationVal.innerText = state.elevation.toFixed(2);
+      updateRingLayersTransform();
+    });
+
+    const sliderTilt = document.getElementById('slider-tilt');
+    const tiltVal = document.getElementById('tilt-val');
+    sliderTilt.addEventListener('input', (e) => {
+      state.tilt = parseFloat(e.target.value);
+      tiltVal.innerText = `${state.tilt}°`;
+      updateRingLayersTransform();
+    });
+
+    const sliderDistort = document.getElementById('slider-distort');
+    const distortVal = document.getElementById('distort-val');
+    sliderDistort.addEventListener('input', (e) => {
+      state.distort = parseFloat(e.target.value);
+      distortVal.innerText = state.distort.toFixed(2);
+    });
+
+    const sliderHue = document.getElementById('slider-hue');
+    const hueVal = document.getElementById('hue-val');
+    sliderHue.addEventListener('input', (e) => {
+      state.colorHue = parseInt(e.target.value);
+      state.syncNodeColor = false;
+      hueVal.innerText = `${state.colorHue}°`;
+      applyActiveColor();
+    });
+
+    const btnSyncColor = document.getElementById('btn-sync-node-color');
+    btnSyncColor.addEventListener('click', () => {
+      state.syncNodeColor = true;
+      applyActiveColor();
+    });
+
+    const sliderRadius = document.getElementById('slider-radius');
+    const radiusVal = document.getElementById('radius-val');
+    sliderRadius.addEventListener('input', (e) => {
+      state.radiusScale = parseFloat(e.target.value);
+      radiusVal.innerText = `${state.radiusScale.toFixed(2)}x`;
+      updateRingLayersTransform();
+    });
+
+    const sliderOpacity = document.getElementById('slider-opacity');
+    const opacityVal = document.getElementById('opacity-val');
+    sliderOpacity.addEventListener('input', (e) => {
+      state.opacity = parseFloat(e.target.value);
+      opacityVal.innerText = state.opacity.toFixed(2);
+      applyActiveColor();
+    });
+
+    const sliderSpeed = document.getElementById('slider-speed');
+    const speedVal = document.getElementById('speed-val');
+    sliderSpeed.addEventListener('input', (e) => {
+      state.speed = parseFloat(e.target.value);
+      speedVal.innerText = `${state.speed.toFixed(2)}x`;
+    });
+
+    // Auto-Rotation Slider Listener
+    const sliderAutoRotate = document.getElementById('slider-auto-rotate');
+    const autoRotateVal = document.getElementById('auto-rotate-val');
+    sliderAutoRotate.addEventListener('input', (e) => {
+      state.autoRotate = parseFloat(e.target.value);
+      if (Math.abs(state.autoRotate) < 0.05) {
+        autoRotateVal.innerText = '0.0 (Static)';
+      } else {
+        autoRotateVal.innerText = `${state.autoRotate > 0 ? '+' : ''}${state.autoRotate.toFixed(1)}x`;
+      }
+    });
+
+    // Orbital Precession (Tilt Drift) Slider Listener
+    const sliderOrbitalDrift = document.getElementById('slider-orbital-drift');
+    const orbitalDriftVal = document.getElementById('orbital-drift-val');
+    sliderOrbitalDrift.addEventListener('input', (e) => {
+      state.orbitalDrift = parseFloat(e.target.value);
+      if (Math.abs(state.orbitalDrift) < 0.05) {
+        orbitalDriftVal.innerText = '0.0 (Static)';
+      } else {
+        orbitalDriftVal.innerText = `${state.orbitalDrift > 0 ? '+' : ''}${state.orbitalDrift.toFixed(1)}x`;
+      }
+    });
+
+    // Behavior D Line Thickness Slider Listener
+    const sliderLineThickness = document.getElementById('slider-line-thickness');
+    const thicknessVal = document.getElementById('thickness-val');
+    sliderLineThickness.addEventListener('input', (e) => {
+      state.lineThickness = parseFloat(e.target.value);
+      thicknessVal.innerText = state.lineThickness.toFixed(2);
+    });
+
+    // Theme Toggle (Light / Dark Mode)
+    function setTheme(isLight) {
+      state.lightMode = isLight;
+      document.body.classList.toggle('light-mode', isLight);
+      const bgColor = isLight ? 0xf4f6fa : 0x07090e;
+      scene.fog.color.setHex(bgColor);
+      scene.fog.density = isLight ? 0.005 : 0.035;
+      renderer.setClearColor(bgColor, 1);
+      ambientLight.intensity = isLight ? 1.05 : 0.6;
+      const themeBtn = document.getElementById('btn-theme-toggle');
+      if (themeBtn) {
+        themeBtn.innerText = isLight ? '🌙 Dark' : '☀️ Light';
+      }
+
+      // Switch material blending: NormalBlending ensures rich saturated colors on light backgrounds
+      // without washing out into white (which AdditiveBlending causes when adding color to white)
+      const blendMode = isLight ? THREE.NormalBlending : THREE.AdditiveBlending;
+      [orbitMat, pulseMat, cloudMat, fieldMat, shardMat].forEach(mat => {
+        mat.blending = blendMode;
+        mat.fog = !isLight;
+        mat.needsUpdate = true;
+      });
+      nodeMat.fog = !isLight;
+      nodeMat.needsUpdate = true;
+
+      // Re-render node canvas with high-contrast text for light mode
+      updateActiveNode(activeNodeKey);
+      applyActiveColor();
+    }
+
+    const btnThemeToggle = document.getElementById('btn-theme-toggle');
+    btnThemeToggle.addEventListener('click', () => {
+      setTheme(!state.lightMode);
+    });
+
+    // Ring Depth Layering Mode (Enveloping vs Fully Behind Node)
+    function setDepthMode(fullyBehind) {
+      state.fullyBehind = fullyBehind;
+
+      if (fullyBehind) {
+        // Rings render at renderOrder 0, then node disc renders on top at renderOrder 10
+        nodeMesh.renderOrder = 10;
+        nodeMat.depthTest = false;
+        nodeMat.depthWrite = false;
+        ringLayers.forEach(layer => {
+          layer.group.renderOrder = 0;
+          layer.orbit.renderOrder = 0;
+          layer.pulse.renderOrder = 0;
+          layer.cloud.renderOrder = 0;
+          layer.field.renderOrder = 0;
+          layer.shardsGroup.renderOrder = 0;
+          layer.shardMeshes.forEach(m => m.renderOrder = 0);
+        });
+      } else {
+        // Enveloping mode: nodeMesh at renderOrder 0 writes depth, rings at renderOrder 1 test depth
+        nodeMesh.renderOrder = 0;
+        nodeMat.depthTest = true;
+        nodeMat.depthWrite = true;
+        ringLayers.forEach(layer => {
+          layer.group.renderOrder = 1;
+          layer.orbit.renderOrder = 1;
+          layer.pulse.renderOrder = 1;
+          layer.cloud.renderOrder = 1;
+          layer.field.renderOrder = 1;
+          layer.shardsGroup.renderOrder = 1;
+          layer.shardMeshes.forEach(m => m.renderOrder = 1);
+        });
+      }
+
+      nodeMat.needsUpdate = true;
+
+      const headerBtn = document.getElementById('btn-behind-toggle');
+      if (headerBtn) {
+        headerBtn.innerText = fullyBehind ? '🛡️ Behind Node' : '🪐 Enveloping';
+        headerBtn.classList.toggle('active', fullyBehind);
+      }
+      const depthBtn = document.getElementById('btn-depth-toggle');
+      if (depthBtn) {
+        depthBtn.innerText = fullyBehind ? 'Behind Node' : 'Enveloping';
+        depthBtn.classList.toggle('active', fullyBehind);
+      }
+    }
+
+    const btnBehindToggle = document.getElementById('btn-behind-toggle');
+    if (btnBehindToggle) {
+      btnBehindToggle.addEventListener('click', () => {
+        setDepthMode(!state.fullyBehind);
+      });
+    }
+
+    const btnDepthToggle = document.getElementById('btn-depth-toggle');
+    if (btnDepthToggle) {
+      btnDepthToggle.addEventListener('click', () => {
+        setDepthMode(!state.fullyBehind);
+      });
+    }
+
+    // Copy Clean Reusable Code for Active Behavior
+    function copyActiveBehaviorCode() {
+      const b = state.behavior;
+      const col = getActiveColor();
+      const hexColor = `0x${col.getHexString()}`;
+      const blendModeStr = state.lightMode ? 'THREE.NormalBlending' : 'THREE.AdditiveBlending';
+
+      let behaviorCode = '';
+      if (b === 'A') {
+        behaviorCode = `// --- Behavior A: The Orbit ---
+const orbitCount = 500;
+const orbitAngles = new Float32Array(orbitCount);
+const orbitOffsets = new Float32Array(orbitCount);
+const orbitGeo = new THREE.BufferGeometry();
+const orbitPositions = new Float32Array(orbitCount * 3);
+
+for (let i = 0; i < orbitCount; i++) {
+  orbitAngles[i] = (i / orbitCount) * Math.PI * 2;
+  orbitOffsets[i] = (Math.random() - 0.5) * 0.12;
+}
+
+const orbitMat = new THREE.PointsMaterial({
+  color: ${hexColor},
+  size: ${(0.1 + state.timbre * 0.14).toFixed(3)},
+  transparent: true,
+  opacity: ${state.opacity.toFixed(2)},
+  blending: ${blendModeStr},
+  depthTest: true,
+  depthWrite: false
+});
+
+function updateOrbit(time, delta, activity = ${state.activity.toFixed(2)}, timbre = ${state.timbre.toFixed(2)}, distort = ${state.distort.toFixed(2)}) {
+  const positions = orbitGeo.attributes.position.array;
+  const speed = 0.6 + activity * 2.8;
+  const pulseAmp = 0.18 * activity;
+  const distortAmp = distort * 0.45;
+
+  for (let i = 0; i < orbitCount; i++) {
+    orbitAngles[i] += delta * speed * (0.85 + 0.3 * (i % 3));
+    const pulse = Math.sin(time * 3.5 + orbitAngles[i] * 2.0) * pulseAmp + Math.sin(orbitAngles[i] * 4.0 + time * 4.0) * distortAmp;
+    const r = ${RING_BASE_RADIUS} * ${state.radiusScale.toFixed(2)} + orbitOffsets[i] + pulse;
+    const wobbleY = Math.cos(orbitAngles[i] * 5.0 - time * 3.0) * distort * 0.28;
+
+    positions[i * 3] = Math.cos(orbitAngles[i]) * r;
+    positions[i * 3 + 1] = Math.sin(orbitAngles[i] * 3.0 + time) * (0.04 + 0.06 * activity) + wobbleY;
+    positions[i * 3 + 2] = Math.sin(orbitAngles[i]) * r;
+  }
+  orbitGeo.attributes.position.needsUpdate = true;
+}`;
+      } else if (b === 'B') {
+        behaviorCode = `// --- Behavior B: The Pulse-Wave ---
+const pulseSegments = 360;
+const pulseRibbonGeo = new THREE.BufferGeometry();
+const pulsePositions = new Float32Array(pulseSegments * 2 * 3);
+const pulseIndices = [];
+for (let i = 0; i < pulseSegments; i++) {
+  const next = (i + 1) % pulseSegments;
+  pulseIndices.push(i * 2, i * 2 + 1, next * 2, i * 2 + 1, next * 2 + 1, next * 2);
+}
+pulseRibbonGeo.setIndex(pulseIndices);
+
+const pulseMat = new THREE.MeshBasicMaterial({
+  color: ${hexColor},
+  wireframe: ${state.source === 'Sample' && state.timbre > 0.6},
+  transparent: true,
+  opacity: ${state.opacity.toFixed(2)},
+  side: THREE.DoubleSide,
+  blending: ${blendModeStr},
+  depthTest: true,
+  depthWrite: false
+});
+
+function updatePulseWave(time, delta, activity = ${state.activity.toFixed(2)}, timbre = ${state.timbre.toFixed(2)}, isSynth = ${state.source === 'Synth'}) {
+  const positions = pulseRibbonGeo.attributes.position.array;
+  const cycleFreq = 2.0 + activity * 3.2;
+  const expansion = Math.sin(time * cycleFreq) * (0.2 + 0.85 * activity);
+  const baseR = ${RING_BASE_RADIUS} * ${state.radiusScale.toFixed(2)} + expansion;
+  const halfThick = 0.04 + timbre * 0.22;
+
+  for (let i = 0; i < pulseSegments; i++) {
+    const theta = (i / pulseSegments) * Math.PI * 2;
+    const waveMod = isSynth ? Math.sin(theta * 8.0 + time * 4.0) * (0.05 + 0.2 * timbre) : Math.sin(theta * 5.0 + time * 3.0) * 0.1;
+    const wobbleR = Math.sin(theta * 6.0 + time * 4.0) * Math.cos(theta * 2.0 - time * 2.5) * ${state.distort.toFixed(2)} * 0.5;
+    const rInner = baseR - halfThick + waveMod + wobbleR;
+    const rOuter = baseR + halfThick + waveMod + wobbleR;
+
+    positions[i * 6] = Math.cos(theta) * rInner;
+    positions[i * 6 + 1] = Math.sin(theta * 4.0) * (0.05 * activity);
+    positions[i * 6 + 2] = Math.sin(theta) * rInner;
+
+    positions[i * 6 + 3] = Math.cos(theta) * rOuter;
+    positions[i * 6 + 4] = Math.sin(theta * 4.0) * (0.05 * activity);
+    positions[i * 6 + 5] = Math.sin(theta) * rOuter;
+  }
+  pulseRibbonGeo.attributes.position.needsUpdate = true;
+}`;
+      } else if (b === 'C') {
+        behaviorCode = `// --- Behavior C: The Granular Cloud ---
+const cloudCount = 1400;
+const cloudGeo = new THREE.BufferGeometry();
+const cloudBaseAngle = new Float32Array(cloudCount);
+const cloudRadJitter = new Float32Array(cloudCount);
+const cloudZJitter = new Float32Array(cloudCount);
+const cloudPositions = new Float32Array(cloudCount * 3);
+
+for (let i = 0; i < cloudCount; i++) {
+  cloudBaseAngle[i] = Math.random() * Math.PI * 2;
+  cloudRadJitter[i] = (Math.random() - 0.5) * 2;
+  cloudZJitter[i] = (Math.random() - 0.5) * 2;
+}
+
+const cloudMat = new THREE.PointsMaterial({
+  color: ${hexColor},
+  size: ${(0.06 + state.activity * 0.06).toFixed(3)},
+  transparent: true,
+  opacity: ${(state.opacity * 0.9).toFixed(2)},
+  blending: ${blendModeStr},
+  depthTest: true,
+  depthWrite: false
+});
+
+function updateGranularCloud(time, delta, activity = ${state.activity.toFixed(2)}, timbre = ${state.timbre.toFixed(2)}, distort = ${state.distort.toFixed(2)}) {
+  const positions = cloudGeo.attributes.position.array;
+  const spreadR = 0.1 + activity * 1.1;
+  const spreadZ = 0.06 + activity * 0.9;
+  const turbulence = timbre * 0.25;
+
+  for (let i = 0; i < cloudCount; i++) {
+    cloudBaseAngle[i] += delta * (0.4 + 0.3 * Math.sin(i));
+    const angle = cloudBaseAngle[i];
+    const brownianR = Math.sin(i * 12.3 + time * 6.0) * turbulence + Math.sin(angle * 7.0 + time * 5.0) * distort * 0.4;
+    const brownianZ = Math.cos(i * 34.5 + time * 6.0) * turbulence + Math.cos(angle * 6.0 - time * 4.0) * distort * 0.35;
+    const r = ${RING_BASE_RADIUS} * ${state.radiusScale.toFixed(2)} + (cloudRadJitter[i] * spreadR) + brownianR;
+
+    positions[i * 3] = Math.cos(angle) * r;
+    positions[i * 3 + 1] = (cloudZJitter[i] * spreadZ) + brownianZ;
+    positions[i * 3 + 2] = Math.sin(angle) * r;
+  }
+  cloudGeo.attributes.position.needsUpdate = true;
+}`;
+      } else if (b === 'D') {
+        behaviorCode = `// --- Behavior D: The Field Distorter (Ribbon Mesh) ---
+const fieldSegs = 400;
+const fieldGeo = new THREE.BufferGeometry();
+const fieldPositions = new Float32Array(fieldSegs * 2 * 3);
+const fieldIndices = [];
+for (let i = 0; i < fieldSegs; i++) {
+  const next = (i + 1) % fieldSegs;
+  fieldIndices.push(i * 2, i * 2 + 1, next * 2, i * 2 + 1, next * 2 + 1, next * 2);
+}
+fieldGeo.setIndex(fieldIndices);
+
+const fieldMat = new THREE.MeshBasicMaterial({
+  color: ${hexColor},
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: ${state.opacity.toFixed(2)},
+  blending: ${blendModeStr},
+  depthTest: true,
+  depthWrite: false
+});
+
+function updateFieldDistorter(time, delta, activity = ${state.activity.toFixed(2)}, timbre = ${state.timbre.toFixed(2)}, thickness = ${state.lineThickness.toFixed(2)}, isSynth = ${state.source === 'Synth'}) {
+  const positions = fieldGeo.attributes.position.array;
+  const waveSpeed = 2.5 + activity * 7.0;
+  const halfThick = thickness * 0.5;
+
+  for (let i = 0; i < fieldSegs; i++) {
+    const theta = (i / fieldSegs) * Math.PI * 2;
+    let deltaR = 0, deltaY = 0;
+    if (isSynth) {
+      const modeK = 6;
+      deltaR = (Math.sin(modeK * theta) * Math.cos(time * waveSpeed) + Math.sin(modeK * 2 * theta) * Math.sin(time * waveSpeed * 1.5) * timbre * 0.5) * (0.15 + activity * 0.65);
+      deltaY = Math.cos(modeK * theta + time * 2.0) * (0.1 + activity * 0.4);
+    } else {
+      deltaR = (Math.sin(theta * 14.0 - time * waveSpeed * 1.8) * 0.3 + Math.sin(theta * 27.0 + time * waveSpeed * 2.5) * timbre * 0.4) * (0.1 + activity * 0.8);
+      deltaY = Math.sin(theta * 9.0 + time * 4.0) * (0.2 + timbre * 0.4);
+    }
+
+    const baseR = ${RING_BASE_RADIUS} * ${state.radiusScale.toFixed(2)} + deltaR;
+    const rInner = baseR - halfThick;
+    const rOuter = baseR + halfThick;
+
+    positions[i * 6] = Math.cos(theta) * rInner;
+    positions[i * 6 + 1] = deltaY - halfThick * 0.3;
+    positions[i * 6 + 2] = Math.sin(theta) * rInner;
+
+    positions[i * 6 + 3] = Math.cos(theta) * rOuter;
+    positions[i * 6 + 4] = deltaY + halfThick * 0.3;
+    positions[i * 6 + 5] = Math.sin(theta) * rOuter;
+  }
+  fieldGeo.attributes.position.needsUpdate = true;
+}`;
+      } else {
+        behaviorCode = `// --- Behavior E: The Fracture-Nova ---
+const shardCount = 42;
+const shardGeo = new THREE.BufferGeometry();
+shardGeo.setAttribute('position', new THREE.Float32BufferAttribute([
+  -0.12, 0, -0.04,  0.12, 0, -0.04,  0.08, 0,  0.04, -0.08, 0,  0.04
+], 3));
+shardGeo.setIndex([0, 1, 2, 0, 2, 3]);
+
+const shardMat = new THREE.MeshBasicMaterial({
+  color: ${hexColor},
+  wireframe: true,
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: ${state.opacity.toFixed(2)},
+  depthTest: true,
+  depthWrite: false
+});`;
+      }
+
+      const fullSnippet = `/**
+ * Ethernode Outer Ring - ${behaviorDescriptions[b].title}
+ * Active Parameters:
+ * - Activity: ${state.activity.toFixed(2)} | Timbre: ${state.timbre.toFixed(2)} | Source: ${state.source}
+ * - Rings: ${state.ringCount} | Elevation: ${state.elevation.toFixed(2)} | Tilt: ${state.tilt}°
+ * - Auto-Rotate: ${state.autoRotate.toFixed(1)}x | Orbital Precession: ${state.orbitalDrift.toFixed(1)}x
+ * - Radius Scale: ${state.radiusScale.toFixed(2)}x | Opacity: ${state.opacity.toFixed(2)} | Speed: ${state.speed.toFixed(2)}x
+ * - Depth Layer: ${state.fullyBehind ? 'Behind Node' : '3D Enveloping'}
+ */
+${behaviorCode}
+`;
+
+      navigator.clipboard.writeText(fullSnippet).then(() => {
+        const copyBtn = document.getElementById('btn-copy-code');
+        if (copyBtn) {
+          const orig = copyBtn.innerText;
+          copyBtn.innerText = '✓ Copied!';
+          copyBtn.style.borderColor = 'var(--accent-node)';
+          setTimeout(() => {
+            copyBtn.innerText = orig;
+            copyBtn.style.borderColor = '';
+          }, 1800);
+        }
+      }).catch(err => {
+        console.error('Failed to copy code: ', err);
+      });
+    }
+
+    document.getElementById('btn-refine-aether').onclick = () => {
+      const query = new URLSearchParams({from:state.behavior,activity:String(state.activity),timbre:String(state.timbre),speed:String(state.speed)});
+      location.href = 'aether-animation-lab.html?' + query.toString();
+    };
+    const btnCopyCode = document.getElementById('btn-copy-code');
+    btnCopyCode.addEventListener('click', () => {
+      copyActiveBehaviorCode();
+    });
+
+    // Resize handling
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    });
+
+    // 5. Main Animation Loop
+    let lastTime = performance.now();
+    let animTime = 0;
+    let frameCount = 0;
+    let lastFpsUpdate = performance.now();
+
+    function animate(currentTime) {
+      requestAnimationFrame(animate);
+
+      const realDelta = Math.min((currentTime - lastTime) / 1000, 0.1);
+      lastTime = currentTime;
+      const delta = realDelta * state.speed;
+      animTime += delta;
+
+      // FPS tracking
+      frameCount++;
+      if (currentTime - lastFpsUpdate > 500) {
+        fpsDisplay.innerText = Math.round((frameCount * 1000) / (currentTime - lastFpsUpdate));
+        frameCount = 0;
+        lastFpsUpdate = currentTime;
+      }
+
+      // Central Node: Stays strictly in one shape (no pulsation), aligned to face camera
+      coreGroup.scale.set(1.0, 1.0, 1.0);
+      nodeMesh.quaternion.copy(camera.quaternion);
+
+      // Spherical Envelope and Tilt updates
+      updateRingLayersTransform(delta);
+
+      // Active Behavior Update
+      switch (state.behavior) {
+        case 'A':
+          updateOrbit(animTime, delta);
+          break;
+        case 'B':
+          updatePulseWave(animTime, delta);
+          break;
+        case 'C':
+          updateGranularCloud(animTime, delta);
+          break;
+        case 'D':
+          updateFieldDistorter(animTime, delta);
+          break;
+        case 'E':
+          updateFractureNova(animTime, delta);
+          break;
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

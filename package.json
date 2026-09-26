@@ -1,7 +1,7 @@
 {
   "name": "aether-desktop",
-  "version": "4.2.1",
-  "description": "Aether Desktop — Standalone 4-Track Spatial Audio Studio & Motion Automation Workstation",
+  "version": "5.1.1",
+  "description": "Aether Desktop 5.1.1 Codex-AGY — Standalone 4-Track Spatial Audio Studio & Motion Automation Workstation",
   "main": "index.html",
   "scripts": {
     "start": "python3 -m http.server 3456",

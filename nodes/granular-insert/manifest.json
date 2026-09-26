@@ -1,0 +1,71 @@
+{
+  "id": "com.aether.node.granular-insert",
+  "name": "Granular Insert",
+  "version": "1.0.1",
+  "author": "Aether",
+  "description": "Dense granular insert pad from the track sample. Scale-quantized pitch, feedback delay, lush space. A bed for another EtherNode on top.",
+  "category": "Granular / Insert",
+  "inputs": 1,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "density",
+      "name": "Density",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.72,
+      "unit": "norm"
+    },
+    {
+      "id": "smear",
+      "name": "Smear",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.48,
+      "unit": "norm"
+    },
+    {
+      "id": "pitch",
+      "name": "Pitch",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.5,
+      "unit": "norm"
+    },
+    {
+      "id": "scale",
+      "name": "Scale",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.28,
+      "unit": "norm"
+    },
+    {
+      "id": "delay",
+      "name": "Delay",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.38,
+      "unit": "norm"
+    },
+    {
+      "id": "space",
+      "name": "Space",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.52,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": "prism_sparkle"
+}

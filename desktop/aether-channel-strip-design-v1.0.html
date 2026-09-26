@@ -1,0 +1,1167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aether Channel Strip Design v1.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ==========================================================================
+       AETHER "NUMBERS ARE CONTROLS" DESIGN SYSTEM
+       ========================================================================== */
+    :root {
+      --bg-page: #f7f7f5;
+      --bg-panel: #fafaf8;
+      --bg-panel-hover: #ffffff;
+      --border-panel: #dcdcd8;
+      --border-subtle: #ecece8;
+      --grid-line: rgba(36, 39, 37, 0.05);
+      --text-main: #242725;
+      --text-muted: #787e77;
+      --text-faint: #a6aba5;
+      --accent-track: #FC4037; /* Default T1 Coral */
+      --active-drag: #101211;
+
+      --track-1: #FC4037;
+      --track-2: #FFEA00;
+      --track-3: #8B68B9;
+      --track-4: #00D600;
+
+      --font-display: 'Space Grotesk', -apple-system, sans-serif;
+      --font-ui: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body.dark {
+      --bg-page: #141615;
+      --bg-panel: #1b1e1d;
+      --bg-panel-hover: #212523;
+      --border-panel: #2f3431;
+      --border-subtle: #242926;
+      --grid-line: rgba(255, 255, 255, 0.04);
+      --text-main: #e8eae7;
+      --text-muted: #8b928c;
+      --text-faint: #59615a;
+      --active-drag: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-page);
+      background-image: 
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 16px 16px;
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      padding: 32px 24px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+    }
+
+    /* Top Workshop Bar */
+    .workshop-header {
+      width: 100%;
+      max-width: 1240px;
+      margin-bottom: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--border-panel);
+      padding-bottom: 16px;
+    }
+
+    .header-title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+    }
+
+    .badge-b {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      background: var(--text-main);
+      color: var(--bg-page);
+      padding: 2px 9px;
+      border-radius: 4px;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .workshop-tools {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .track-picker {
+      display: inline-flex;
+      gap: 6px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      border-radius: 20px;
+      padding: 3px 8px;
+    }
+
+    .track-dot-btn {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .track-dot-btn:hover { transform: scale(1.2); }
+    .track-dot-btn.active { box-shadow: 0 0 0 2px var(--text-main); }
+
+    .tool-btn {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .tool-btn:hover { background: var(--bg-panel-hover); }
+
+    /* Comparison Stage */
+    .mockup-stage {
+      width: 100%;
+      max-width: 1240px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 28px;
+      align-items: start;
+    }
+
+    .mockup-column {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .version-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0 4px;
+    }
+
+    .version-tag {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .version-desc {
+      font-size: 11px;
+      color: var(--text-faint);
+    }
+
+    /* ==========================================================================
+       THE "NUMBERS ARE CONTROLS" CARD CONTAINER
+       ========================================================================== */
+    .track-panel-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      padding: 18px 20px 22px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .track-panel-card:hover {
+      background: var(--bg-panel-hover);
+      border-color: #c4c4be;
+    }
+
+    /* Hover-Only Reveals */
+    .hover-reveal {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+    }
+    .track-panel-card:hover .hover-reveal {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Header & Marquee */
+    .card-header-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .track-title-left {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .track-id {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-track);
+    }
+
+    .track-filename {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-main);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-subtitle {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-close-subtle {
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .btn-close-subtle:hover { color: var(--text-main); background: rgba(0,0,0,0.06); }
+
+    /* Source Selector Bar */
+    .source-actions-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .source-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: color 0.15s ease;
+    }
+    .source-item:hover, .source-item.active:hover {
+      color: var(--text-main);
+    }
+    .source-item.active {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .source-arrow {
+      display: inline-block;
+      stroke: currentColor;
+      transition: transform 0.15s ease, stroke 0.15s ease;
+    }
+    .source-item:hover .source-arrow {
+      stroke: var(--text-main);
+      transform: translateX(1px);
+    }
+
+    /* Large Master Readout (Timer) */
+    .hero-timer-display {
+      font-family: var(--font-display);
+      font-size: 52px;
+      font-weight: 300;
+      line-height: 1.0;
+      letter-spacing: -1.5px;
+      color: var(--accent-track);
+      margin: 4px 0 16px;
+      cursor: pointer;
+      display: inline-block;
+      transition: opacity 0.15s ease;
+    }
+    .hero-timer-display:hover {
+      opacity: 0.85;
+    }
+
+    /* Sample Progress Bar Line */
+    .sample-progress-wrap {
+      width: 100%;
+      padding: 4px 0 14px;
+      cursor: ew-resize;
+      position: relative;
+    }
+    .sample-progress-track {
+      width: 100%;
+      height: 2px;
+      background: var(--border-subtle);
+      border-radius: 1px;
+      position: relative;
+      transition: height 0.12s ease, background 0.12s ease;
+    }
+    .sample-progress-wrap:hover .sample-progress-track,
+    .sample-progress-wrap.scrubbing .sample-progress-track {
+      height: 3px;
+      background: var(--border-panel);
+    }
+    .sample-progress-fill {
+      height: 100%;
+      background: var(--accent-track);
+      border-radius: 1px;
+      position: relative;
+    }
+    .sample-progress-thumb {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-track);
+      position: absolute;
+      right: -4px;
+      top: 50%;
+      transform: translateY(-50%) scale(0);
+      transition: transform 0.12s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    }
+    .sample-progress-wrap:hover .sample-progress-thumb,
+    .sample-progress-wrap.scrubbing .sample-progress-thumb {
+      transform: translateY(-50%) scale(1);
+    }
+
+    /* Playlist & Transport Row */
+    .transport-bar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 8px 0;
+      margin-bottom: 18px;
+    }
+
+    .playlist-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    .icon-action {
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 2px 4px;
+      border-radius: 3px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .icon-action:hover { color: var(--text-main); background: rgba(0,0,0,0.05); }
+
+    .transport-letters {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .letter-btn {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 500;
+      width: 22px;
+      height: 22px;
+      border: 1px solid var(--border-panel);
+      border-radius: 0;
+      background: var(--bg-panel);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      padding: 0;
+      transition: border-color 0.12s ease, color 0.12s ease, font-weight 0.12s ease;
+    }
+    .letter-btn:hover {
+      color: var(--text-main);
+      border-color: var(--text-main);
+    }
+    .letter-btn.active {
+      border-color: var(--accent-track);
+      color: var(--accent-track);
+      font-weight: 800;
+      box-shadow: inset 0 0 0 0.5px var(--accent-track);
+    }
+
+    .letter-btn.shuffle-btn svg,
+    .letter-btn.rec-btn svg,
+    .letter-btn.play-btn svg {
+      display: block;
+      pointer-events: none;
+    }
+    .letter-btn.rec-btn svg circle {
+      fill: transparent;
+      stroke: currentColor;
+      stroke-width: 1.4;
+      transition: fill 0.12s ease;
+    }
+    .letter-btn.rec-btn.active svg circle {
+      fill: currentColor;
+      stroke: currentColor;
+    }
+    .letter-btn.play-btn svg polygon {
+      fill: transparent;
+      stroke: currentColor;
+      stroke-width: 1.4;
+      stroke-linejoin: round;
+      transition: fill 0.12s ease;
+    }
+    .letter-btn.play-btn.active svg polygon {
+      fill: currentColor;
+      stroke: currentColor;
+    }
+    .letter-btn.clear-btn {
+      font-family: var(--font-ui), system-ui, sans-serif;
+      font-size: 13px;
+    }
+
+    /* ==========================================================================
+       DRAGGABLE NUMERICAL VALUE CELLS
+       ========================================================================== */
+    .numbers-grid-top {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .numbers-grid-bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 8px;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 14px;
+    }
+
+    .num-control-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      cursor: ns-resize;
+      position: relative;
+    }
+
+    .num-value-row {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 2px;
+      position: relative;
+    }
+
+    .num-val {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 300;
+      line-height: 1.0;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+      transition: color 0.1s ease;
+    }
+
+    .num-unit {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .num-drag-arrow {
+      font-size: 12px;
+      color: var(--accent-track);
+      margin-left: 3px;
+      opacity: 0;
+      transform: translateY(-2px);
+      transition: opacity 0.15s ease;
+    }
+    .num-control-cell:hover .num-drag-arrow { opacity: 0.6; }
+    .num-control-cell.dragging .num-drag-arrow { opacity: 1; }
+
+    /* The drag underline indicator */
+    .num-underline {
+      width: 100%;
+      height: 1.5px;
+      background: transparent;
+      margin-top: 2px;
+      margin-bottom: 4px;
+      transition: background 0.15s ease;
+    }
+    .num-control-cell:hover .num-underline { background: var(--border-panel); }
+    .num-control-cell.dragging .num-underline { background: var(--accent-track); height: 2px; }
+
+    .num-label {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* Small variant for 4-column row */
+    .num-control-cell.small .num-val {
+      font-size: 24px;
+    }
+
+    /* ==========================================================================
+       VERSION 2 SPECIFICS: COMPACT FLANKING STRIP
+       ========================================================================== */
+    .v2-strip {
+      padding: 14px 16px 18px;
+    }
+
+    .v2-strip .v2-header-compact {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .v2-time-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .v2-time-large {
+      font-family: var(--font-display);
+      font-size: 38px;
+      font-weight: 300;
+      line-height: 1;
+      color: var(--accent-track);
+    }
+
+    .v2-compact-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px 16px;
+      margin-top: 10px;
+    }
+
+    .v2-eq-matrix {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    /* ==========================================================================
+       VERSION 3 SPECIFICS: SEGMENTED PERFORMANCE TIERS
+       ========================================================================== */
+    .v3-tier {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .v3-tier:first-child { padding-top: 0; }
+    .v3-tier:last-child { border-bottom: 0; padding-bottom: 0; }
+
+    .tier-header-micro {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 8px;
+    }
+
+    /* Hint Footer */
+    .mockup-footer-note {
+      max-width: 1240px;
+      margin-top: 36px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- WORKSHOP HEADER -->
+  <header class="workshop-header">
+    <div class="header-title-group">
+      <span class="badge-b">B</span>
+      <div>
+        <h1>Numbers Are Controls</h1>
+        <div class="header-subtitle">No knobs, no sliders: big light numerals you drag, tiny caps labels, icon transport.</div>
+      </div>
+    </div>
+
+    <div class="workshop-tools">
+      <div class="track-picker" title="Switch active track color accent">
+        <span style="font-size:10px;font-family:var(--font-mono);margin-right:2px;color:var(--text-muted);">ACCENT:</span>
+        <button class="track-dot-btn active" data-color="#FC4037" style="background:#FC4037;" title="T1 Coral"></button>
+        <button class="track-dot-btn" data-color="#FFEA00" style="background:#FFEA00;" title="T2 Yellow"></button>
+        <button class="track-dot-btn" data-color="#8B68B9" style="background:#8B68B9;" title="T3 Lavender"></button>
+        <button class="track-dot-btn" data-color="#00D600" style="background:#00D600;" title="T4 Green"></button>
+      </div>
+
+      <button class="tool-btn" id="toggle-state-btn">State: Loaded</button>
+      <button class="tool-btn" id="toggle-theme-btn">Theme: Minimal Light</button>
+    </div>
+  </header>
+
+  <!-- MOCKUP STAGE: 3 VERSIONS -->
+  <main class="mockup-stage">
+
+    <!-- VERSION 1: CANONICAL REFERENCE -->
+    <section class="mockup-column">
+      <div class="version-meta">
+        <span class="version-tag">Version 1 · Canonical</span>
+        <span class="version-desc">Direct screenshot reproduction</span>
+      </div>
+
+      <div class="track-panel-card" id="card-v1">
+        <!-- Header -->
+        <div class="card-header-row">
+          <div class="track-title-left">
+            <span class="track-id">T1</span>
+            <span class="track-filename" data-field="filename">smith_bridge_rain_0412_take3.wav</span>
+            <span class="track-subtitle" data-field="subtitle">· field_recording_h4n</span>
+          </div>
+          <button class="btn-close-subtle hover-reveal" title="Close channel panel">✕</button>
+        </div>
+
+        <!-- Sources -->
+        <div class="source-actions-bar">
+          <span class="source-item active"><svg class="source-arrow" viewBox="0 0 14 10" width="12" height="9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5h10M8 2l3 3-3 3"/></svg> Load</span>
+          <span class="source-item hover-reveal"><span class="source-icon">🎤</span> Live In</span>
+          <span class="source-item hover-reveal"><span class="source-icon">📶</span> Stream</span>
+          <span style="margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--text-faint);">file · 48k</span>
+        </div>
+
+        <!-- Large Light Numeral Clock -->
+        <div class="hero-timer-display" id="v1-timer" title="Track position (click to pause/scrub)">01:24.3</div>
+
+        <!-- Sample Progress Bar Line -->
+        <div class="sample-progress-wrap" id="v1-progress-wrap" title="Sample progress (click or drag to scrub)">
+          <div class="sample-progress-track">
+            <div class="sample-progress-fill" id="v1-progress-fill" style="width: 42%;">
+              <div class="sample-progress-thumb"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Playlist & Transport -->
+        <div class="transport-bar-row">
+          <div class="playlist-inline">
+            <button class="icon-action" title="Previous stem">|◀</button>
+            <span id="v1-playlist">03/12</span>
+            <button class="icon-action" title="Next stem">▶|</button>
+            <button class="letter-btn shuffle-btn hover-reveal" title="Shuffle playlist"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5h3v3M13.5 2.5l-4 4M2.5 13.5l3-3M10.5 13.5h3v-3M13.5 13.5l-8-8M2.5 2.5l3 3"/></svg></button>
+          </div>
+
+          <div class="transport-letters">
+            <button class="letter-btn active" title="Mute track">M</button>
+            <button class="letter-btn" title="Solo track">S</button>
+            <button class="letter-btn rec-btn" title="Record motion automation"><svg viewBox="0 0 12 12" width="10" height="10"><circle cx="6" cy="6" r="4.2"/></svg></button>
+            <button class="letter-btn play-btn active" title="Play track"><svg viewBox="0 0 10 12" width="9" height="11"><polygon points="1.5,1.5 8.5,6 1.5,10.5"/></svg></button>
+            <button class="letter-btn clear-btn hover-reveal" title="Clear sound source">✕</button>
+          </div>
+        </div>
+
+        <!-- Top Numbers Tier (3 Columns) -->
+        <div class="numbers-grid-top">
+          <div class="num-control-cell" data-param="vol" data-val="80" data-min="0" data-max="100" data-unit="%" data-step="1">
+            <div class="num-value-row">
+              <span class="num-val">80</span><span class="num-unit">%</span>
+              <span class="num-drag-arrow">↕</span>
+            </div>
+            <div class="num-underline"></div>
+            <span class="num-label">VOL</span>
+          </div>
+
+          <div class="num-control-cell" data-param="pan" data-val="0" data-min="-50" data-max="50" data-unit="" data-step="1">
+            <div class="num-value-row">
+              <span class="num-val">C</span><span class="num-unit"></span>
+              <span class="num-drag-arrow">↕</span>
+            </div>
+            <div class="num-underline"></div>
+            <span class="num-label">PAN</span>
+          </div>
+
+          <div class="num-control-cell" data-param="speed" data-val="1.00" data-min="0.1" data-max="3.0" data-unit="x" data-step="0.05">
+            <div class="num-value-row">
+              <span class="num-val">1.00</span><span class="num-unit">x</span>
+              <span class="num-drag-arrow">↕</span>
+            </div>
+            <div class="num-underline"></div>
+            <span class="num-label">SPEED</span>
+          </div>
+        </div>
+
+        <!-- Bottom Numbers Tier: EQ (4 Columns) -->
+        <div class="numbers-grid-bottom">
+          <div class="num-control-cell small" data-param="bass" data-val="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+            <div class="num-value-row">
+              <span class="num-val">0</span><span class="num-unit">dB</span>
+            </div>
+            <div class="num-underline"></div>
+            <span class="num-label">BASS</span>
+          </div>
+
+          <div class="num-control-cell small" data-param="mid" data-val="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+            <div class="num-value-row">
+              <span class="num-val">0</span><span class="num-unit">dB</span>
+            </div>
+            <div class="num-underline"></div>
+            <span class="num-label">MID</span>
+          </div>
+
+          <div class="num-control-cell small" data-param="treble" data-val="2" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+            <div class="num-value-row">
+              <span class="num-val">+2</span><span class="num-unit">dB</span>
+            </div>
+            <div class="num-underline"></div>
+            <span class="num-label">TREBLE</span>
+          </div>
+
+          <div class="num-control-cell small" data-param="gain" data-val="-1" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+            <div class="num-value-row">
+              <span class="num-val">-1</span><span class="num-unit">dB</span>
+            </div>
+            <div class="num-underline"></div>
+            <span class="num-label">GAIN</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VERSION 2: COMPACT FLANKING STRIP -->
+    <section class="mockup-column">
+      <div class="version-meta">
+        <span class="version-tag">Version 2 · Compact Column</span>
+        <span class="version-desc">Fitted for narrow flanking canvas</span>
+      </div>
+
+      <div class="track-panel-card v2-strip" id="card-v2">
+        <!-- Compact Top Bar -->
+        <div class="v2-header-compact">
+          <div class="track-title-left">
+            <span class="track-id">T1</span>
+            <span class="track-filename" data-field="filename">smith_bridge_rain_0412_take3.wav</span>
+          </div>
+          <button class="btn-close-subtle hover-reveal">✕</button>
+        </div>
+
+        <!-- Inline Time and Live Transport -->
+        <div class="v2-time-row">
+          <div class="v2-time-large" id="v2-timer">01:24.3</div>
+          <div class="transport-letters">
+            <button class="letter-btn active">M</button>
+            <button class="letter-btn">S</button>
+            <button class="letter-btn rec-btn"><svg viewBox="0 0 12 12" width="10" height="10"><circle cx="6" cy="6" r="4.2"/></svg></button>
+            <button class="letter-btn play-btn active"><svg viewBox="0 0 10 12" width="9" height="11"><polygon points="1.5,1.5 8.5,6 1.5,10.5"/></svg></button>
+            <button class="letter-btn clear-btn hover-reveal">✕</button>
+          </div>
+        </div>
+
+        <!-- Sources Minimal -->
+        <div class="source-actions-bar" style="margin-bottom: 8px;">
+          <span class="source-item active"><svg class="source-arrow" viewBox="0 0 14 10" width="12" height="9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5h10M8 2l3 3-3 3"/></svg> Sample</span>
+          <span class="source-item hover-reveal"><span class="source-icon">🎤</span> Live</span>
+          <span class="source-item hover-reveal"><span class="source-icon">⚙</span> Node UI</span>
+          <span style="margin-left:auto;font-family:var(--font-mono);font-size:10px;" id="v2-playlist">03/12</span>
+        </div>
+
+        <!-- 2x2 Primary Controls -->
+        <div class="v2-compact-grid">
+          <div class="num-control-cell" data-param="vol" data-val="80" data-min="0" data-max="100" data-unit="%" data-step="1">
+            <div class="num-value-row">
+              <span class="num-val">80</span><span class="num-unit">%</span>
+              <span class="num-drag-arrow">↕</span>
+            </div>
+            <div class="num-underline"></div>
+            <span class="num-label">VOL</span>
+          </div>
+
+          <div class="num-control-cell" data-param="pan" data-val="0" data-min="-50" data-max="50" data-unit="" data-step="1">
+            <div class="num-value-row">
+              <span class="num-val">C</span><span class="num-unit"></span>
+              <span class="num-drag-arrow">↕</span>
+            </div>
+            <div class="num-underline"></div>
+            <span class="num-label">PAN</span>
+          </div>
+
+          <div class="num-control-cell" data-param="speed" data-val="1.00" data-min="0.1" data-max="3.0" data-unit="x" data-step="0.05">
+            <div class="num-value-row">
+              <span class="num-val">1.00</span><span class="num-unit">x</span>
+              <span class="num-drag-arrow">↕</span>
+            </div>
+            <div class="num-underline"></div>
+            <span class="num-label">SPEED</span>
+          </div>
+
+          <div class="num-control-cell" data-param="gain" data-val="-1" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+            <div class="num-value-row">
+              <span class="num-val">-1</span><span class="num-unit">dB</span>
+              <span class="num-drag-arrow">↕</span>
+            </div>
+            <div class="num-underline"></div>
+            <span class="num-label">GAIN</span>
+          </div>
+        </div>
+
+        <!-- 3-Band EQ Row -->
+        <div class="v2-eq-matrix">
+          <div class="num-control-cell small" data-param="bass" data-val="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+            <div class="num-value-row"><span class="num-val">0</span></div>
+            <div class="num-underline"></div>
+            <span class="num-label">BASS</span>
+          </div>
+
+          <div class="num-control-cell small" data-param="mid" data-val="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+            <div class="num-value-row"><span class="num-val">0</span></div>
+            <div class="num-underline"></div>
+            <span class="num-label">MID</span>
+          </div>
+
+          <div class="num-control-cell small" data-param="treble" data-val="2" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+            <div class="num-value-row"><span class="num-val">+2</span></div>
+            <div class="num-underline"></div>
+            <span class="num-label">TREB</span>
+          </div>
+
+          <div class="num-control-cell small" style="align-items:center;justify-content:center;cursor:pointer;" title="Reset channel values">
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">RESET</span>
+            <div class="num-underline"></div>
+            <span class="num-label">ALL</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VERSION 3: SEGMENTED PERFORMANCE TIERS -->
+    <section class="mockup-column">
+      <div class="version-meta">
+        <span class="version-tag">Version 3 · Performance Tiers</span>
+        <span class="version-desc">Explicit functional partitions</span>
+      </div>
+
+      <div class="track-panel-card" id="card-v3">
+        <!-- Tier 1: Source & Identification -->
+        <div class="v3-tier">
+          <div class="tier-header-micro">01 // SOURCE &amp; TRANSPORT</div>
+          <div class="card-header-row">
+            <div class="track-title-left">
+              <span class="track-id">T1</span>
+              <span class="track-filename" data-field="filename">smith_bridge_rain_0412_take3.wav</span>
+            </div>
+            <button class="btn-close-subtle hover-reveal">✕</button>
+          </div>
+          <div class="transport-bar-row" style="margin-bottom:0;padding-bottom:0;border-bottom:0;">
+            <div class="playlist-inline">
+              <button class="icon-action">|◀</button>
+              <span id="v3-playlist">03/12</span>
+              <button class="icon-action">▶|</button>
+            </div>
+            <div class="transport-letters">
+              <button class="letter-btn active">M</button>
+              <button class="letter-btn">S</button>
+              <button class="letter-btn rec-btn"><svg viewBox="0 0 12 12" width="10" height="10"><circle cx="6" cy="6" r="4.2"/></svg></button>
+              <button class="letter-btn play-btn active"><svg viewBox="0 0 10 12" width="9" height="11"><polygon points="1.5,1.5 8.5,6 1.5,10.5"/></svg></button>
+              <button class="letter-btn clear-btn hover-reveal">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tier 2: Spatial & Dynamics -->
+        <div class="v3-tier">
+          <div class="tier-header-micro">02 // SPATIAL &amp; PLAYBACK</div>
+          <div class="numbers-grid-top" style="margin-bottom:0;">
+            <div class="num-control-cell" data-param="vol" data-val="80" data-min="0" data-max="100" data-unit="%" data-step="1">
+              <div class="num-value-row">
+                <span class="num-val">80</span><span class="num-unit">%</span>
+                <span class="num-drag-arrow">↕</span>
+              </div>
+              <div class="num-underline"></div>
+              <span class="num-label">VOLUME</span>
+            </div>
+
+            <div class="num-control-cell" data-param="pan" data-val="0" data-min="-50" data-max="50" data-unit="" data-step="1">
+              <div class="num-value-row">
+                <span class="num-val">C</span><span class="num-unit"></span>
+                <span class="num-drag-arrow">↕</span>
+              </div>
+              <div class="num-underline"></div>
+              <span class="num-label">PAN</span>
+            </div>
+
+            <div class="num-control-cell" data-param="speed" data-val="1.00" data-min="0.1" data-max="3.0" data-unit="x" data-step="0.05">
+              <div class="num-value-row">
+                <span class="num-val">1.00</span><span class="num-unit">x</span>
+                <span class="num-drag-arrow">↕</span>
+              </div>
+              <div class="num-underline"></div>
+              <span class="num-label">SPEED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tier 3: Bipolar EQ & Gain -->
+        <div class="v3-tier">
+          <div class="tier-header-micro">03 // TONE &amp; HEADROOM</div>
+          <div class="numbers-grid-bottom" style="border-top:0;padding-top:0;">
+            <div class="num-control-cell small" data-param="bass" data-val="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <div class="num-value-row"><span class="num-val">0</span><span class="num-unit">dB</span></div>
+              <div class="num-underline"></div>
+              <span class="num-label">LOW</span>
+            </div>
+
+            <div class="num-control-cell small" data-param="mid" data-val="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <div class="num-value-row"><span class="num-val">0</span><span class="num-unit">dB</span></div>
+              <div class="num-underline"></div>
+              <span class="num-label">MID</span>
+            </div>
+
+            <div class="num-control-cell small" data-param="treble" data-val="2" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <div class="num-value-row"><span class="num-val">+2</span><span class="num-unit">dB</span></div>
+              <div class="num-underline"></div>
+              <span class="num-label">HIGH</span>
+            </div>
+
+            <div class="num-control-cell small" data-param="gain" data-val="-1" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <div class="num-value-row"><span class="num-val">-1</span><span class="num-unit">dB</span></div>
+              <div class="num-underline"></div>
+              <span class="num-label">TRIM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="mockup-footer-note">
+    💡 <strong>Interactive drag:</strong> Click and drag up or down on any number to scrub its value. Double-click to reset. Hover over the card to reveal subtle controls (close, clear, shuffle).
+  </footer>
+
+  <!-- ==========================================================================
+       INTERACTIVE LOGIC: DRAG SCRUBBING & WORKSHOP TOOLS
+       ========================================================================== -->
+  <script>
+    // 1. Draggable Numeric Scrubbing Engine
+    function initDraggableNumbers() {
+      document.querySelectorAll('.num-control-cell').forEach(cell => {
+        let isDragging = false;
+        let startY = 0;
+        let startVal = 0;
+
+        const param = cell.dataset.param;
+        const min = parseFloat(cell.dataset.min);
+        const max = parseFloat(cell.dataset.max);
+        const step = parseFloat(cell.dataset.step) || 1;
+        const unit = cell.dataset.unit || '';
+        const defaultVal = parseFloat(cell.dataset.val);
+
+        const valSpan = cell.querySelector('.num-val');
+
+        function formatDisplay(v) {
+          if (param === 'pan') {
+            if (v === 0) return 'C';
+            return v < 0 ? `L${Math.abs(v)}` : `R${v}`;
+          }
+          if (param === 'speed') return v.toFixed(2);
+          if (['bass', 'mid', 'treble', 'gain'].includes(param)) {
+            return v > 0 ? `+${v}` : `${v}`;
+          }
+          return `${Math.round(v)}`;
+        }
+
+        cell.addEventListener('pointerdown', e => {
+          isDragging = true;
+          startY = e.clientY;
+          startVal = parseFloat(cell.dataset.val);
+          cell.classList.add('dragging');
+          cell.setPointerCapture(e.pointerId);
+          e.preventDefault();
+        });
+
+        cell.addEventListener('pointermove', e => {
+          if (!isDragging) return;
+          const deltaY = startY - e.clientY;
+          const sensitivity = (max - min) / 120; // 120px full range
+          let nextVal = startVal + deltaY * sensitivity;
+
+          if (step >= 1) {
+            nextVal = Math.round(nextVal / step) * step;
+          } else {
+            nextVal = Math.round(nextVal * 20) / 20; // round to 0.05
+          }
+
+          nextVal = Math.max(min, Math.min(max, nextVal));
+          cell.dataset.val = nextVal;
+          valSpan.textContent = formatDisplay(nextVal);
+        });
+
+        const stopDrag = () => {
+          if (isDragging) {
+            isDragging = false;
+            cell.classList.remove('dragging');
+          }
+        };
+
+        cell.addEventListener('pointerup', stopDrag);
+        cell.addEventListener('pointercancel', stopDrag);
+
+        // Double-click to reset
+        cell.addEventListener('dblclick', () => {
+          cell.dataset.val = defaultVal;
+          valSpan.textContent = formatDisplay(defaultVal);
+        });
+      });
+    }
+
+    // 2. Track Color Swatches
+    document.querySelectorAll('.track-dot-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.track-dot-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.documentElement.style.setProperty('--accent-track', btn.dataset.color);
+      });
+    });
+
+    // 3. Theme Toggle
+    const themeBtn = document.getElementById('toggle-theme-btn');
+    themeBtn.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark');
+      themeBtn.textContent = isDark ? 'Theme: Dark Grid' : 'Theme: Minimal Light';
+    });
+
+    // 4. Empty vs Loaded State Toggle
+    let isLoaded = true;
+    const stateBtn = document.getElementById('toggle-state-btn');
+    stateBtn.addEventListener('click', () => {
+      isLoaded = !isLoaded;
+      stateBtn.textContent = isLoaded ? 'State: Loaded' : 'State: Empty';
+
+      document.querySelectorAll('[data-field="filename"]').forEach(el => {
+        el.textContent = isLoaded ? 'smith_bridge_rain_0412_take3.wav' : 'Empty';
+      });
+      document.querySelectorAll('[data-field="subtitle"]').forEach(el => {
+        el.textContent = isLoaded ? '· field_recording_h4n' : 'Drop a file, or pick a source';
+      });
+
+      document.querySelectorAll('#v1-timer, #v2-timer').forEach(el => {
+        el.textContent = isLoaded ? '01:24.3' : '00:00.0';
+      });
+      document.querySelectorAll('#v1-playlist, #v2-playlist, #v3-playlist').forEach(el => {
+        el.textContent = isLoaded ? '03/12' : '0/0';
+      });
+
+      const fill = document.getElementById('v1-progress-fill');
+      if (fill) fill.style.width = isLoaded ? '42%' : '0%';
+    });
+
+    // 5. Interactive Sample Progress Scrubbing
+    function initProgressScrubbing() {
+      const wrap = document.getElementById('v1-progress-wrap');
+      const fill = document.getElementById('v1-progress-fill');
+      const timer = document.getElementById('v1-timer');
+      if (!wrap || !fill || !timer) return;
+
+      let isScrubbing = false;
+      const totalDurationSec = 204.3; // e.g. 03:24.3 total length
+
+      function updateFromPointer(e) {
+        const rect = wrap.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        fill.style.width = (ratio * 100).toFixed(1) + '%';
+        const currentSec = ratio * totalDurationSec;
+        const mins = Math.floor(currentSec / 60);
+        const secs = (currentSec % 60).toFixed(1);
+        timer.textContent = `${String(mins).padStart(2, '0')}:${secs.padStart(4, '0')}`;
+      }
+
+      wrap.addEventListener('pointerdown', e => {
+        isScrubbing = true;
+        wrap.classList.add('scrubbing');
+        wrap.setPointerCapture(e.pointerId);
+        updateFromPointer(e);
+      });
+
+      wrap.addEventListener('pointermove', e => {
+        if (!isScrubbing) return;
+        updateFromPointer(e);
+      });
+
+      const stopScrub = () => {
+        if (isScrubbing) {
+          isScrubbing = false;
+          wrap.classList.remove('scrubbing');
+        }
+      };
+
+      wrap.addEventListener('pointerup', stopScrub);
+      wrap.addEventListener('pointercancel', stopScrub);
+    }
+
+    // 6. Interactive Transport Letter Toggles
+    document.querySelectorAll('.letter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+      });
+    });
+
+    // Initialize
+    initDraggableNumbers();
+    initProgressScrubbing();
+  </script>
+</body>
+</html>

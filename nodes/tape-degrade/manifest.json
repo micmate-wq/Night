@@ -1,0 +1,77 @@
+{
+  "id": "com.aether.node.tape-degrade",
+  "name": "Tape Degrade",
+  "version": "1.0.0",
+  "author": "Aether",
+  "description": "Warm tape degradation insert effect with wow/flutter wobble, saturation damage, tape hiss, heavy dynamic compression, and tape head wear.",
+  "category": "Tape / Insert",
+  "inputs": 1,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "wobble",
+      "name": "Wobble",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.35,
+      "step": 0.01,
+      "unit": "norm"
+    },
+    {
+      "id": "damage",
+      "name": "Damage",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.25,
+      "step": 0.01,
+      "unit": "norm"
+    },
+    {
+      "id": "noise",
+      "name": "Noise",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.15,
+      "step": 0.01,
+      "unit": "norm"
+    },
+    {
+      "id": "compression",
+      "name": "Compression",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.30,
+      "step": 0.01,
+      "unit": "norm"
+    },
+    {
+      "id": "wear",
+      "name": "Wear",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.30,
+      "step": 0.01,
+      "unit": "norm"
+    },
+    {
+      "id": "mix",
+      "name": "Mix",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 1.0,
+      "step": 0.01,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": "pulse_wave"
+}

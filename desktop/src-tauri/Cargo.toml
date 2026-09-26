@@ -1,6 +1,6 @@
 [package]
 name = "aether-desktop"
-version = "4.2.1"
+version = "5.1.1"
 description = "Aether Desktop — Standalone 4-Track Spatial Audio Studio & Motion Automation Workstation"
 authors = [""]
 edition = "2021"
