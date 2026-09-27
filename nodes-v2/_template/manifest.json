@@ -1,0 +1,55 @@
+{
+  "id": "com.aether.node.template",
+  "name": "Template Node",
+  "version": "1.0.0",
+  "author": "Aether",
+  "description": "Aether Node V2 Generic Starter Template. Minimal boilerplate for instruments and effects.",
+  "role": "instrument",
+  "timingTier": "phase-grid-aware",
+  "category": "Generator / Template",
+  "inputs": 0,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "gain",
+      "name": "Gain",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.75,
+      "unit": "norm"
+    },
+    {
+      "id": "frequency",
+      "name": "Pitch",
+      "type": "float",
+      "min": 110,
+      "max": 880,
+      "default": 220,
+      "unit": "hz"
+    },
+    {
+      "id": "decay",
+      "name": "Decay",
+      "type": "float",
+      "min": 0.05,
+      "max": 1.0,
+      "default": 0.25,
+      "unit": "sec"
+    },
+    {
+      "id": "subdivision",
+      "name": "Rate",
+      "type": "int",
+      "min": 1,
+      "max": 4,
+      "default": 2,
+      "unit": "step"
+    }
+  ],
+  "canvas_animation": "pulse"
+}

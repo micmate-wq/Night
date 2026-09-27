@@ -1,8 +1,8 @@
-# Aether Node Manifesto & Specification v0.1
+# Aether Node Manifesto & Specification v1.0
 
-**Status:** Draft / Active Contract  
+**Status:** Official Architectural Standard (Validated by Patient Zero: TickTok V2)  
 **Target Audience:** Aether Core Engineers & Coding Agents  
-**Scope:** Production-grade Aether Node Architecture (beginning with Patient Zero: TickTok)
+**Scope:** Production-grade Aether Node Architecture (Instruments, Generators, and Insert Effects)
 
 ---
 
@@ -10,55 +10,45 @@
 
 An Aether Node is a self-contained musical instrument, sound generator, or insert effect designed to live natively within Aether's 4-track spatial canvas.
 
-### 1.1 Node Identity Contract
-Every production node must expose a `manifest.json` providing:
-- **`id`**: Globally unique reverse-DNS identifier (e.g., `com.aether.node.tick-tok`).
+Every node is packaged as a portable bundle (directory or `.aethernode` zip archive) containing:
+- `manifest.json`: Metadata, parameter definitions, and capability declarations.
+- `dsp.js`: Web Audio DSP implementation with deterministic lifecycle and timing hooks.
+- `ui.html`: Tactile, sandboxed inspector UI communicating via standard postMessage events.
+
+### 1.1 Node Identity Contract (`manifest.json`)
+Every production node must expose a valid `manifest.json` providing:
+- **`id`**: Globally unique reverse-DNS identifier (e.g. `com.aether.node.tick-tok`, `com.aether.node.template`).
 - **`name`**: Clean, human-readable display name.
-- **`version`**: Semantic versioning (e.g., `2.0.0`).
+- **`version`**: Semantic versioning (e.g. `1.0.0` or `2.0.0`).
 - **`role`**: Explicit functional category:
   - `instrument` (generator: 0 audio inputs, 1 or 2 audio outputs).
   - `insert` (effect: 1 or 2 audio inputs, 1 or 2 audio outputs).
 - **`timingTier`**: Declared musical timing capability (see Section 3).
+- **`entry`**: Entry points object specifying `dsp` (`dsp.js`) and `ui` (`ui.html`).
 - **`parameters`**: Strongly typed parameter array with default values, numerical ranges, and units.
 
 ---
 
-## 2. Master Transport & Lifecycle Contract
+## 2. Host Boundary Contract
 
-Production nodes must strictly adhere to Aether's master transport state machine (`SpatialStudio`). A node must never independently assume authority over when audio is generated or played.
+Production V2 nodes must never receive direct or unrestricted access to the global `SpatialStudio` instance or host internals. Instead, the host passes a constrained host interface upon initialization:
 
-### 2.1 Lifecycle State Transitions
+```javascript
+nodeDSP.init(audioContext, host);
+```
 
-| Master State / Event | Node DSP Expected Behavior | Audio Output |
-| :--- | :--- | :--- |
-| **Instantiate / Init** | Create graph nodes, buffers, compile worklets. **Never start scheduling.** | **Complete silence** |
-| **Play (from 0.0s)** | Reset local phase counters. Align to Bar 0, Beat 0, Step 0. Begin audio event scheduling. | Active |
-| **Pause** | Cancel all queued lookahead timers (`clearTimeout` / stop scheduled events). Freeze musical phase. | Silent |
-| **Resume** | Re-anchor local clock to `snapshot.beatsElapsed` and `snapshot.beatPhase`. Continue seamlessly. | Active |
-| **Stop** | Halt timers immediately. Reset musical position to zero. Clear internal phase buffers. | **Complete silence** |
-| **Hot Insertion** | If `studio.isPlaying === true`, query `getClockSnapshot()`. Join the running timeline in-phase. | Active (synchronous) |
-| **Removal / Dispose** | Cancel all timers, disconnect all `AudioNode`s, terminate workers, clear references. | **Complete silence** |
+### 2.1 Minimal Host Interface
+The host object provides access to Aether's master musical transport without exposing application state:
 
-> **Critical Invariant:** Loading or instantiating a node while transport is stopped or paused must produce complete silence. Audio leakage on instantiation is a critical defect.
+```typescript
+interface AetherNodeHost {
+  getClockSnapshot: () => AetherClockSnapshot | null;
+}
+```
 
----
+### 2.2 Clock Snapshot Schema
+Tempo- and phase-aware nodes rely strictly upon the normalized snapshot returned by `host.getClockSnapshot()`:
 
-## 3. Musical Timing Tiers & Responsibilities
-
-Nodes vary widely in their relationship to time. Nodes are classified into one of four explicit timing tiers:
-
-1. **`not-tempo-aware`**: Pure effects, pass-through filters, utility gains, or static sound generators.
-2. **`ambient-generative`**: Evolving pads, probabilistic textures, stochastic grains (e.g., Bloom). They run continuously or respond to spatial gestures, but deliberately do **not** lock to a musical beat grid.
-3. **`tempo-aware`**: Delays, LFOs, and rhythmic modulators that adjust rate based on BPM, but do not require quantized downbeat alignment.
-4. **`phase-grid-aware`**: Drum machines, step sequencers, arpeggiators, and clocked groove engines (e.g., TickTok, F*EM). **Must maintain absolute phase coherence with Aether's master transport.**
-
----
-
-## 4. The Master Clock Contract for Phase-Grid Nodes
-
-Any node claiming tempo/beat synchronization must derive its musical timeline from Aether's master clock snapshot (`SpatialStudio.getClockSnapshot()`).
-
-### 4.1 Master Clock Snapshot Structure
 ```typescript
 interface AetherClockSnapshot {
   transportTime: number; // Current elapsed session playback time in seconds (>= 0)
@@ -73,61 +63,172 @@ interface AetherClockSnapshot {
 }
 ```
 
-### 4.2 Concept of Operation for Phase-Grid Nodes
-- **No Private Incrementing Beat Clocks:** Do not rely solely on an internal counter (`this.step++`) without reference to Aether's timebase. Musical position must always be derived or anchored against `beatsElapsed`.
-- **Hot-Insertion Phase Locking:** When a rhythm node is added while Aether is already playing:
-  $$\text{targetStep} = \lfloor \text{snapshot.beatsElapsed} \times 4 \rfloor \pmod{16}$$
-  The node starts on the next immediate 16th-note boundary relative to `audioCtx.currentTime`, synchronized to that calculated step.
-- **Web Audio Lookahead Scheduling:**
-  - Nodes must use a small lookahead window (e.g. ~25ms ticker scheduling ~100ms into the future).
-  - All Web Audio parameters and buffer trigger times must be timestamped against `audioCtx.currentTime`.
-  - `audioCtx.currentTime` handles hardware sample-accurate scheduling; the Aether Master Clock snapshot provides the musical coordinate space.
+### 2.3 Host Boundary & Standalone Fallback
+For production Aether Node V2 modules, the supported application boundary is the explicit host object supplied to:
+
+```javascript
+nodeDSP.init(audioContext, host);
+```
+
+with capabilities such as `host.getClockSnapshot()`. Production nodes must not reach into `window.studio` or otherwise discover `SpatialStudio` globally.
+
+A self-contained standalone/test fallback clock may exist inside template or test contexts if needed (e.g. synthesizing a local snapshot from `audioContext.currentTime` and internal `params.bpm`), but it must not depend on Aether application globals and must not be described as a production integration path:
+
+1. `this.host?.getClockSnapshot()` (the sole production host integration path)
+2. Standalone fallback (synthesized strictly from `audioContext.currentTime` and `params.bpm` for unit tests and offline harnesses)
 
 ---
 
-## 5. UI, State Persistence & Cleanup
+## 3. Musical Timing Capability Model
 
-### 5.1 Parameter & State Persistence
-- All musical parameters (knobs, sliders, toggles, pattern indices) must be readable and writable via deterministic key-value pairs (`setParameter(id, value)` / `getParameter(id)`).
-- Session hydration must cleanly restore all node parameters without triggering audio glitches or premature playback.
+Aether strictly rejects the "every node is a sequencer" anti-pattern. Timing awareness is an opt-in capability declared in `manifest.json`. Nodes are categorized into four distinct timing tiers:
 
-### 5.2 Resource Cleanup
-Every node must implement an explicit `dispose()` method:
-- Disconnect and destroy internal `AudioNode`s.
-- `clearTimeout` / `clearInterval` / `cancelAnimationFrame` on all active handlers.
-- Revoke any allocated ObjectURLs or temporary buffer caches.
-- Unregister custom message listeners.
+### Tier 1: `not-tempo-aware`
+- **Use Cases:** Static synthesizers, continuous drone generators, EQ/filters, waveshapers, reverbs, utility gains, manual touch instruments.
+- **Contract:** Zero transport timers or tickers. Audio flows in response to incoming audio (`insert`) or direct user parameters.
+- **Overhead:** 0% CPU overhead from musical clock synchronization.
 
-### 5.3 UI Standards
-- Must match Aether's tactile, minimal aesthetic (graphite accents, restrained typography, clear parameter readouts).
-- No leftover debug or prototype controls in production bundles.
-- Inspector panels and canvas rendering must be decoupled from the audio thread.
+### Tier 2: `ambient-generative`
+- **Use Cases:** Evolving atmospheric pads, stochastic granular textures, probabilistic soundscapes (e.g. Bloom).
+- **Contract:** Generative nodes start and stop with master transport (`start()` / `stop()`), but deliberately do **not** quantize to musical bars, beats, or steps. They produce unquantized continuous sound.
+
+### Tier 3: `tempo-aware`
+- **Use Cases:** BPM-synced delays, flangers, tremolos, clocked LFO modulators.
+- **Contract:** Modulate rate, filter periods, or delay buffers based on `snapshot.bpm` or musical subdivisions (e.g. 1/4 note, dotted 8th). Do **not** require strict phase alignment or downbeat locking.
+
+### Tier 4: `phase-grid-aware`
+- **Use Cases:** Drum machines, step sequencers, arpeggiators, rhythmic pattern generators (e.g. TickTok, F*EM).
+- **Contract:** Must derive musical coordinates and step boundaries directly from Aether's master clock snapshot. Must maintain absolute phase alignment with Aether's transport origin across starts, stops, pauses, resumes, and hot insertions.
+
+> **Guideline for Agents:** Default to `not-tempo-aware` unless the node specifically requires time-based modulation or sequencing. If only BPM is needed, choose `tempo-aware`. Choose `phase-grid-aware` only for sequencers and clocked rhythm generators.
 
 ---
 
-## 6. Patient Zero Notes: Legacy TickTok Reference Audit
+## 4. Master Transport & Lifecycle Contract
 
-The existing legacy `nodes/tick-tok` implementation was inspected as the empirical baseline for Patient Zero.
+Production nodes must strictly implement the standard Aether Node V2 lifecycle.
 
-### 6.1 Musical Assets & Algorithms to Preserve
-1. **Morphing Analog Kick Synthesis (`_kick`):**
-   - Clean pitch-swept sine oscillator ($f_0 \times 1.8 \to f_0 \times 0.52$) down to 36 Hz with punchy exponential amplitude curve.
-2. **Snappy Snare/Talk Burst (`_talkBurst`):**
-   - White/pink noise buffer routed through resonant dual bandpass ($400\text{--}2800\,\text{Hz}$) + highpass ($250\,\text{Hz}$) with adjustable decay.
-3. **High-Frequency Crisp Hat (`_hat`):**
-   - High-passed noise burst ($4200\text{--}9000\,\text{Hz}$) with microsecond envelope.
-4. **Algorithmic Rhythm Generation:**
-   - Morphing kick pattern blend (`_blendPattern`) across 5 rhythmic foundations (four-on-the-floor, double kick, drop/gap, cluster, clave).
-   - Dynamic snare accent climb (`_talkMask`).
-   - Turing-machine pseudo-shift register with probabilistic ghost-note injections (`_rollGhosts`).
+### 4.1 Lifecycle State Table
 
-### 6.2 Contract Violations in Legacy TickTok
-1. **Audio Leakage on Init:** `init()` directly called `this.start()`. If instantiated when transport was paused, it immediately began ticking in the background.
-2. **Independent Unsynchronized Clock:** Relied exclusively on private `this.step = 0`, `this.bar = 0`, and `this.nextStepTime = this.ctx.currentTime + 0.05`. It had zero awareness of Aether's master transport or musical position.
-3. **No Hot-Insertion Sync:** When added during master playback, it started at Step 0, drifting arbitrarily against any existing track rhythm.
-4. **Unanchored Resumes:** Pausing and resuming reset `this.nextStepTime` to `now + 0.05`, causing phase-offset drift across repeated pause/resume cycles.
-5. **No Parameter Serialization Hook:** Parameter state was kept in an ad-hoc dictionary without a unified serialization/restoration contract.
+| Host Event / Method | Node DSP Expected Behavior | Audio Output Contract |
+| :--- | :--- | :--- |
+| **`init(ctx, host)`** | Create Web Audio nodes, allocate buffers, compile worklets. **Never begin event scheduling.** | **Complete silence** |
+| **`start(snapshot)`** | Anchor musical step pointer to `snapshot.beatsElapsed` (or origin if 0.0s). Launch lookahead scheduler. | Active playback (in-phase) |
+| **`stop()`** | Cease musical scheduling, silence/stop node-owned active playback, cancel pending timers (`clearTimeout`). Do not treat the node's internal state as the authority on transport state or position. | **Complete silence** |
+| **Hot Insertion** | If transport is running, query `snapshot`. Align next event to the next immediate step boundary. | Active playback (instant phase lock) |
+| **Removal / Replacement** | Cancel all timers, disconnect all AudioNodes, dereference audio buffers. | **Complete silence** |
+| **`dispose()`** | Full resource cleanup. Unregister listeners, clear timeouts, disconnect graph. | Disposed / Silent |
 
-### 6.3 Patient Zero Implementation Strategy
-- **Rewrite:** The transport lifecycle, scheduling loop, and clock anchor logic will be rewritten from scratch to adhere to Manifesto v0.1.
-- **Port:** The core analog DSP synthesis routines (`_kick`, `_talkBurst`, `_hat`, `_blendPattern`, `_talkMask`, `_rollGhosts`) will be preserved verbatim into the new structure.
+### 4.2 Unified `stop()` Semantics
+In Node V2, `stop()` has simple, singular semantics:
+- **Cease musical scheduling:** The node halts its lookahead event loop immediately.
+- **Silence active playback:** All active voice triggers or sustained playback owned by the node are stopped/silenced.
+- **Cancel timers:** Clear any pending `setTimeout` or `requestAnimationFrame` handlers.
+- **No private transport state:** The node does not maintain distinct internal logic for Pause vs. Stop/Reset. Transport state, playback position, and rewinding to origin are the exclusive responsibility of Aether's master transport, which supplies the authoritative musical coordinates via `start(snapshot)`.
+
+### 4.3 Invariants Verified by Patient Zero
+1. **Silent Initialization:** `init()` must produce complete silence. Calling `init()` while transport is stopped or paused must never trigger audio clicks, bursts, or background sequencers. Audio leakage on init is a critical defect.
+2. **Deterministic Hot Insertion:** When a phase-aware node is inserted into an already playing session:
+   $$\text{targetStep} = \max\left(0, \lceil \text{snapshot.beatsElapsed} \times 4 - 10^{-6} \rceil\right)$$
+   The node immediately calculates the upcoming step and joins the running musical grid in-phase. It must never start at Step 0 of its own private timeline.
+3. **Zero Cumulative Resume Drift:** Repeated Pause and Resume cycles must exhibit zero cumulative phase divergence. The master clock's `beatsElapsed` is the single source of truth.
+
+---
+
+## 5. Scheduling Architecture & Principle of Separation
+
+Patient Zero demonstrated that robust Web Audio timing requires a strict separation of three distinct timing domains:
+
+```
+[Aether Master Clock Snapshot]  -->  Musical Coordinate Space (beats, bars, steps)
+           |
+           v
+[Web Audio audioCtx.currentTime] -->  Hardware Sample-Accurate Event Scheduling
+           ^
+           |
+[JavaScript Lookahead Timer]     -->  Scheduler Wakeup Trigger ONLY (e.g. ~25-50ms tick)
+```
+
+### 5.1 Three-Domain Principles
+1. **Musical Coordinate Space (Master Clock):**
+   - The master clock snapshot determines what musical step or beat corresponds to session playback time.
+   - Nodes must never maintain an unanchored private incrementing clock (`this.step++` running independently).
+2. **Audio Event Timestamps (`audioCtx.currentTime`):**
+   - All audio triggers, oscillator starts, and AudioParam ramps must be scheduled against `audioCtx.currentTime`.
+   - Mathematical anchor for step scheduling:
+     $$t_{\text{zeroCtx}} = \text{snapshot.audioCtxTime} - \text{snapshot.transportTime}$$
+     $$t_{\text{event}} = t_{\text{zeroCtx}} + (\text{stepIndex} \times \text{secondsPerStep})$$
+3. **Scheduler Wakeup (`_tick()` loop):**
+   - The JavaScript timer (`setTimeout` or `requestAnimationFrame`) is purely a wake-up mechanism to look ahead into the future (typically 100ms–150ms window).
+   - Jitter in the JS timer does not affect audio playback timing because events are queued ahead of time in the Web Audio hardware thread.
+   - **Drift Recovery:** If the JS thread is blocked or delayed, the scheduler clamps `nextStepIndex` to the live step:
+     $$\text{currentLiveStep} = \left\lfloor \frac{\text{nowCtx} - t_{\text{zeroCtx}}}{\text{secondsPerStep}} \right\rfloor$$
+     $$\text{nextStepIndex} = \max(\text{nextStepIndex}, \text{currentLiveStep})$$
+     This guarantees expired events in the past are dropped rather than bursting simultaneously.
+
+---
+
+## 6. Node-Local Swing & Groove Principle
+
+Patient Zero established the rule for rhythmic swing and micro-timing:
+
+- **Local Modification Only:** Node-local swing offsets individual audio events relative to Aether's straight master grid.
+- **Non-Accumulating Timing:** Swing must **never** modify, delay, or accumulate the underlying musical clock or transport position.
+- **Mathematical Form:**
+  $$\text{secondsPerStep} = \frac{15}{\text{BPM}} \quad (16\text{th-note subdivision})$$
+  $$\text{isOddSubdivision} = (\text{stepIndex} \pmod 2 === 1)$$
+  $$\text{swingOffset} = \text{isOddSubdivision} \times (\text{secondsPerStep} \times \text{grooveFactor})$$
+  $$t_{\text{event}} = \max(\text{nowCtx}, t_{\text{base}} + \text{swingOffset})$$
+- By anchoring $t_{\text{base}}$ to the absolute straight grid on every step, groove never causes tempo drift.
+
+---
+
+## 7. Parameters, State & UI Contract
+
+### 7.1 Parameter Access Contract
+- Every parameter declared in `manifest.json` must have a deterministic identifier.
+- Nodes must implement deterministic getters and setters:
+  - `setParameter(paramId: string, value: number): void`
+  - `getParameter(paramId: string): number`
+- **Silence During Edit:** Editing parameters while transport is paused or stopped must update internal state silently without triggering audio audition hits, unless an explicit audition button is triggered by the user.
+- **Session Serialization:** Parameters must be fully JSON-serializable to enable instant project save and restore without audio glitches.
+
+### 7.2 UI Communication Contract
+- The inspector UI (`ui.html`) runs inside an isolated iframe.
+- Parameter edits in UI dispatch postMessage events to the host:
+  ```javascript
+  window.parent.postMessage({
+    type: 'aether:param-change',
+    paramId: id,
+    value: numericValue
+  }, '*');
+  ```
+- Host updates to the UI arrive via incoming postMessage:
+  ```javascript
+  window.addEventListener('message', (event) => {
+    if (event.data?.type === 'aether:param-update') {
+      const { paramId, value } = event.data;
+      // Update UI control
+    }
+  });
+  ```
+- Visual transport feedback in the UI inspects `window.parent.studio.getClockSnapshot()` inside `requestAnimationFrame` loops, keeping UI rendering completely decoupled from DSP.
+
+---
+
+## 8. Resource Disposal Contract
+
+Every node DSP class must provide an explicit `dispose()` method:
+1. Call `this.stop()` to cancel all active timers (`clearTimeout(this.timerId)`).
+2. Disconnect and dereference `this.outputNode` and any internal `AudioNode`s.
+3. Dereference large audio buffers or cached data arrays (`this.noiseBuffer = null`).
+4. Terminate any internal Web Workers or AudioWorklet ports.
+5. Nullify references to `this.ctx` and `this.host`.
+
+---
+
+## 9. Verification & Reference Implementation (Patient Zero)
+
+The reference implementation validating this specification is **TickTok V2** (`nodes-v2/tick-tok/`):
+- **Automated Verification:** Verified by `tests/test-ticktok-v2.js` across 9 regression tests covering dual-node phase sync, hot insertion, pause/resume stability, and silent init.
+- **Manual Verification:** Listened and confirmed running live inside Aether 5.1.1 Codex-AGY desktop application with sample-accurate transient coherence.

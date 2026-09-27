@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Template Node (Node V2)</title>
+  <style>
+    :root {
+      --bg: var(--aether-bg, var(--bg-main, #0A0A0A));
+      --panel: var(--aether-panel, var(--bg-card, #141414));
+      --accent: var(--track-color, var(--aether-accent, #4ECDC4));
+      --text: var(--aether-text, var(--text-main, #FFFFFF));
+      --muted: var(--aether-text-muted, var(--text-muted, #888888));
+      --border: var(--aether-border, var(--border-light, #262626));
+      --font-h: var(--aether-font-heading, 'Space Grotesk', -apple-system, sans-serif);
+      --font-m: var(--aether-font-mono, 'JetBrains Mono', monospace);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-h);
+      font-size: 11px;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .title {
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    .badge {
+      font-family: var(--font-m);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+    /* Step indicator track (Optional: only needed if phase-grid-aware) */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(16, 1fr);
+      gap: 3px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dot {
+      height: 6px;
+      border-radius: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      transition: background 0.05s ease;
+    }
+    .dot.active {
+      background: var(--accent);
+      opacity: 0.5;
+    }
+    .dot.now {
+      background: var(--accent);
+      opacity: 1;
+      box-shadow: 0 0 6px var(--accent);
+    }
+    /* Parameter grid */
+    .grid {
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 14px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .val {
+      font-family: var(--font-m);
+      color: var(--text);
+    }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: #1E1E1E;
+      border: 1px solid var(--border);
+      outline: none;
+      border-radius: 2px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title" id="node-title">Template Node</div>
+    <div class="badge" id="clock-badge">STANDBY</div>
+  </header>
+
+  <!-- Optional 16-step visualizer (omit if not phase-grid-aware) -->
+  <div class="steps" id="steps-track"></div>
+
+  <!-- Parameter Controls -->
+  <div class="grid">
+    <label>
+      <div class="row"><span>Gain</span><span class="val" id="v-gain">0.75</span></div>
+      <input id="gain" type="range" min="0" max="1" step="0.01" value="0.75">
+    </label>
+    <label>
+      <div class="row"><span>Pitch (Hz)</span><span class="val" id="v-frequency">220</span></div>
+      <input id="frequency" type="range" min="110" max="880" step="5" value="220">
+    </label>
+    <label>
+      <div class="row"><span>Decay (s)</span><span class="val" id="v-decay">0.25</span></div>
+      <input id="decay" type="range" min="0.05" max="1" step="0.01" value="0.25">
+    </label>
+    <label>
+      <div class="row"><span>Rate (Steps)</span><span class="val" id="v-subdivision">2</span></div>
+      <input id="subdivision" type="range" min="1" max="4" step="1" value="2">
+    </label>
+  </div>
+
+  <script>
+    // Local parameter state matching manifest.json defaults
+    const state = {
+      gain: 0.75,
+      frequency: 220,
+      decay: 0.25,
+      subdivision: 2
+    };
+
+    const paramIds = Object.keys(state);
+    const clockBadge = document.getElementById('clock-badge');
+    const stepsTrack = document.getElementById('steps-track');
+
+    // Create 16-step dots
+    const dots = [];
+    for (let i = 0; i < 16; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot';
+      stepsTrack.appendChild(d);
+      dots.push(d);
+    }
+
+    function formatVal(id, val) {
+      if (id === 'subdivision') return Math.round(val).toString();
+      if (id === 'frequency') return Math.round(val).toString();
+      return Number(val).toFixed(2);
+    }
+
+    function updateStepMarkers() {
+      const sub = Math.max(1, Math.round(state.subdivision));
+      dots.forEach((d, i) => {
+        d.classList.toggle('active', i % sub === 0);
+      });
+    }
+
+    // Dispatch parameter change to Aether Host
+    function notifyHost(paramId, value) {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'aether:param-change',
+          paramId: paramId,
+          value: value
+        }, '*');
+      }
+    }
+
+    // Bind slider input listeners
+    paramIds.forEach(id => {
+      const input = document.getElementById(id);
+      const readout = document.getElementById('v-' + id);
+      if (!input || !readout) return;
+
+      input.addEventListener('input', () => {
+        const val = parseFloat(input.value);
+        state[id] = val;
+        readout.textContent = formatVal(id, val);
+        if (id === 'subdivision') updateStepMarkers();
+        notifyHost(id, val);
+      });
+    });
+
+    updateStepMarkers();
+
+    // Listen for incoming parameter updates from Host
+    window.addEventListener('message', (event) => {
+      if (!event.data || event.data.type !== 'aether:param-update') return;
+      const { paramId, value } = event.data;
+      if (state[paramId] === undefined) return;
+
+      state[paramId] = Number(value);
+      const input = document.getElementById(paramId);
+      const readout = document.getElementById('v-' + paramId);
+      if (input) input.value = value;
+      if (readout) readout.textContent = formatVal(paramId, Number(value));
+      if (paramId === 'subdivision') updateStepMarkers();
+    });
+
+    // Decoupled UI animation loop (reads master clock snapshot)
+    function animLoop() {
+      try {
+        const studio = window.parent && window.parent.studio;
+        const snap = (studio && typeof studio.getClockSnapshot === 'function')
+          ? studio.getClockSnapshot()
+          : null;
+
+        if (snap) {
+          clockBadge.textContent = `${Math.round(snap.bpm)} BPM • ${snap.state.toUpperCase()}`;
+          if (snap.state === 'playing' || snap.state === 'paused') {
+            const activeStep = snap.stepIndex;
+            dots.forEach((d, i) => d.classList.toggle('now', i === activeStep));
+          } else {
+            dots.forEach(d => d.classList.remove('now'));
+          }
+        } else {
+          clockBadge.textContent = 'STANDALONE';
+        }
+      } catch (_) {}
+
+      requestAnimationFrame(animLoop);
+    }
+    requestAnimationFrame(animLoop);
+  </script>
+</body>
+</html>
