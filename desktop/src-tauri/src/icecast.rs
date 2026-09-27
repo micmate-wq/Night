@@ -372,7 +372,7 @@ fn connect_source(creds: &Creds) -> Result<TcpStream, String> {
                 return Err("Icecast rejected source credentials".into());
             }
             if code == 409 {
-                return Err("Icecast mount /matt already has a source".into());
+                return Err("Selected Icecast mount already has a source".into());
             }
             let snippet = creds.redact(&head.lines().take(4).collect::<Vec<_>>().join(" | "));
             eprintln!("PUT returned {code} ({snippet}); falling back to SOURCE ICE/1.0");
@@ -401,7 +401,7 @@ fn connect_source(creds: &Creds) -> Result<TcpStream, String> {
         return Err("Icecast rejected source credentials".into());
     }
     if code == 409 {
-        return Err("Icecast mount /matt already has a source".into());
+        return Err("Selected Icecast mount already has a source".into());
     }
     let snippet = creds.redact(&head.lines().take(3).collect::<Vec<_>>().join(" | "));
     Err(format!("Icecast SOURCE failed ({code}): {snippet}"))
@@ -532,16 +532,45 @@ fn deinterleave(bytes: &[u8]) -> Result<(Vec<f32>, Vec<f32>), String> {
     Ok((left, right))
 }
 
+fn stream_mount(name: &str) -> Result<String, String> {
+    if name.is_empty() || name.len() > 32
+        || !name.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_' || b == b'-')
+        || !name.as_bytes()[0].is_ascii_alphanumeric()
+    {
+        return Err("Choose a username of 1–32 lowercase letters, numbers, hyphens or underscores, starting with a letter or number.".into());
+    }
+    Ok(format!("/{name}"))
+}
+
+#[cfg(test)]
+mod username_tests {
+    use super::stream_mount;
+    #[test]
+    fn accepts_names_and_rejects_paths_and_headers() {
+        assert_eq!(stream_mount("sound-room_2").unwrap(), "/sound-room_2");
+        for name in ["", "../matt", "a/b", "a\r\nHeader:x", "_name", "Name", "two words"] {
+            assert!(stream_mount(name).is_err());
+        }
+        assert!(stream_mount(&"a".repeat(33)).is_err());
+    }
+}
+
 #[tauri::command]
 pub fn icecast_connect(
     state: State<'_, IcecastState>,
     on_event: Channel<IcecastEvent>,
     sample_rate: u32,
+    username: Option<String>,
 ) -> Result<IcecastInfo, String> {
     if state.connected.load(Ordering::SeqCst) {
         return Err("Icecast outbound already connected".into());
     }
-    let creds = load_creds()?;
+    let mount = match username {
+        Some(name) => stream_mount(&name)?,
+        None => REQUIRED_MOUNT.to_string(),
+    };
+    let mut creds = load_creds()?;
+    creds.mount = mount.clone();
     let in_rate = if (8000..=192_000).contains(&sample_rate) {
         sample_rate
     } else {
@@ -551,16 +580,16 @@ pub fn icecast_connect(
     match probe_mount_live(&creds.host, creds.port, &creds.mount) {
         Ok(true) => {
             return Err(
-                "mount /matt is already live (HTTP 200 audio); not connecting a second source"
+                "Selected stream is already live (HTTP 200 audio); not connecting a second source"
                     .into(),
             );
         }
         Ok(false) => {}
-        Err(e) => return Err(format!("cannot probe Icecast /matt: {}", creds.redact(&e))),
+        Err(e) => return Err(format!("cannot probe selected Icecast stream: {}", creds.redact(&e))),
     }
     if let Ok(true) = status_json_has_mount(&creds.host, creds.port, &creds.mount) {
         return Err(
-            "mount /matt is already listed as a live source; not connecting a second source".into(),
+            "Selected stream is already listed as a live source; not connecting a second source".into(),
         );
     }
 
@@ -618,7 +647,7 @@ pub fn icecast_connect(
             Ok(IcecastInfo {
                 host: REQUIRED_HOST.to_string(),
                 port: REQUIRED_PORT,
-                mount: REQUIRED_MOUNT.to_string(),
+                mount,
                 connected: true,
             })
         }

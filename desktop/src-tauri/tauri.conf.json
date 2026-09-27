@@ -4,7 +4,7 @@
   "version": "5.1.1",
   "identifier": "com.aether.desktop.codexagy",
   "build": {
-    "beforeBuildCommand": "mkdir -p ../dist && cp ../index.html ../*.js ../*.svg ../dist/ 2>/dev/null || true",
+    "beforeBuildCommand": "mkdir -p dist/dsp-wasm && cp index.html *.js *.svg dist/ && cp -R dsp-wasm/pkg dist/dsp-wasm/",
     "frontendDist": "../dist",
     "devUrl": "http://localhost:3456/desktop/index.html",
     "beforeDevCommand": "python3 -m http.server 3456 -d /Users/matt/.gemini/antigravity/scratch/aether"
@@ -17,11 +17,18 @@
     "windows": [
       {
         "title": "Aether 5.1.1 Codex-AGY",
-        "width": 1280,
-        "height": 800,
-        "resizable": true,
+        "width": 1440,
+        "height": 900,
+        "resizable": false,
         "fullscreen": false,
-        "dragDropEnabled": false
+        "dragDropEnabled": false,
+        "maximized": false,
+        "maximizable": false,
+        "center": true,
+        "minWidth": 1440,
+        "maxWidth": 1440,
+        "minHeight": 900,
+        "maxHeight": 900
       }
     ]
   },

@@ -101,7 +101,7 @@ async fn save_project_dialog(content: String, default_name: Option<String>) -> R
 
     if let Some(handle) = file {
         let path = handle.path().to_path_buf();
-        std::fs::write(&path, content.as_bytes()).map_err(|e| e.to_string())?;
+        project_write::replace_project(&path, content.as_bytes()).map_err(|e| e.to_string())?;
         Ok(Some(path.to_string_lossy().to_string()))
     } else {
         Ok(None)
@@ -238,6 +238,19 @@ pub fn run() {
         ])
         .setup(|app| {
             if let Ok(menu) = tauri::menu::Menu::default(app.handle()) {
+                // The default macOS View menu contains a fullscreen action that
+                // would bypass the fixed-size instrument window.
+                #[cfg(target_os = "macos")]
+                for item in menu.items()? {
+                    if let tauri::menu::MenuItemKind::Submenu(submenu) = item {
+                        if submenu.text()? == "View" {
+                            menu.remove(&submenu)?;
+                        } else if submenu.text()? == "Window" {
+                            // Default order: Minimize, Zoom, separator, Close.
+                            submenu.remove_at(1)?;
+                        }
+                    }
+                }
                 let _ = app.set_menu(menu);
             }
             let webview = app.get_webview_window("main").expect("no main window");

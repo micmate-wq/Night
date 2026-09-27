@@ -8,7 +8,7 @@
   <meta name="description" content="Standalone 4-track 3D spatial audio player & live performance workstation with HRTF 3D spatial canvas, trackpad depth pinch, motion automation, Ableton-style bipolar EQ, live input, and master WAV recording.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <style>
 /* ==========================================================================
    AETHER DESIGN SYSTEM & THEMES
@@ -28,7 +28,7 @@
   --accent-soft: rgba(0, 0, 0, 0.08);
   --canvas-grid: rgba(0, 0, 0, 0.12);
   --canvas-axis: #242725;
-  
+
   --shadow-flat-sm: 0 2px 5px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-flat-md: 0 6px 16px -2px rgba(0, 0, 0, 0.16), 0 3px 6px -1px rgba(0, 0, 0, 0.10);
   --shadow-flat-elevated: 0 16px 36px -6px rgba(0, 0, 0, 0.22), 0 6px 14px -3px rgba(0, 0, 0, 0.12);
@@ -52,20 +52,20 @@
 }
 
 body.theme-dark {
-  --bg-main: #0A0A0A;
-  --bg-card: #141414;
-  --bg-canvas: #000000;
-  --border-accent: #555555;
-  --border-light: #333333;
-  --border-subtle: #222222;
-  --text-main: #FFFFFF;
-  --text-accent: #FFFFFF;
-  --text-muted: #888888;
-  --accent-primary: #FFFFFF;
-  --accent-hover: #EEEEEE;
+  --bg-main: #292b2d;
+  --bg-card: #333638;
+  --bg-canvas: #2e3032;
+  --border-accent: #777b7e;
+  --border-light: #505456;
+  --border-subtle: #414547;
+  --text-main: #e5e7e5;
+  --text-accent: #e5e7e5;
+  --text-muted: #adb2af;
+  --accent-primary: #e5e7e5;
+  --accent-hover: #f0f1ef;
   --accent-soft: rgba(255, 255, 255, 0.12);
   --canvas-grid: rgba(255, 255, 255, 0.15);
-  --canvas-axis: #FFFFFF;
+  --canvas-axis: #e5e7e5;
 
   --shadow-flat-sm: 0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-flat-md: 0 8px 20px rgba(0, 0, 0, 0.7), 0 3px 8px rgba(0, 0, 0, 0.5);
@@ -77,10 +77,10 @@ body.theme-dark {
   --track-3: #8B68B9; /* Slate Lavender */
   --track-4: #00D600; /* Signal Green */
 
-  --knob-bg: #1A1A1A;
-  --knob-track: #333333;
-  --knob-arc: #FFFFFF;
-  --knob-pointer: #FFFFFF;
+  --knob-bg: #3b3e40;
+  --knob-track: #505456;
+  --knob-arc: #e5e7e5;
+  --knob-pointer: #e5e7e5;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -405,6 +405,29 @@ body {
 }
 .btn-text:hover { color: var(--text-accent); }
 
+.btn-reset {
+  appearance: none;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  padding: 7px 12px;
+  font: 600 11px var(--font-heading);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: var(--shadow-flat-sm);
+  transition: color 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+.btn-reset:hover {
+  color: var(--text-main);
+  border-color: var(--border-accent);
+  background: var(--accent-soft);
+}
+.btn-reset:focus-visible {
+  outline: 2px solid var(--text-muted);
+  outline-offset: 2px;
+}
+
 .channels-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -541,13 +564,13 @@ body {
 
 .btn-node-inspect {
   background: transparent;
-  border: 1px solid var(--border-light);
-  color: var(--accent-cyan, #00d6d6);
+  border: 1px solid var(--border-accent, var(--border-light));
+  color: var(--text-main);
   font-family: var(--font-heading);
   font-size: 11px;
   font-weight: 700;
-  padding: 2px 5px;
-  border-radius: 2px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm, 2px);
   cursor: pointer;
   line-height: 1;
 }
@@ -558,13 +581,13 @@ body {
 /* Hero Timer Readout (Skinny Space Grotesk 300 matching controls) */
 .hero-timer-display {
   font-family: var(--font-heading);
-  font-size: 52px;
+  font-size: 48px;
   font-weight: 300;
   line-height: 1.0;
   letter-spacing: -0.03em;
   font-feature-settings: "tnum";
   color: var(--strip-color);
-  margin: 18px 0 16px;
+  margin: 10px 0 10px;
   cursor: pointer;
   display: block;
   text-align: center;
@@ -578,7 +601,7 @@ body {
 /* Sample Progress Bar Line */
 .sample-progress-wrap {
   width: 100%;
-  padding: 2px 0 12px;
+  padding: 2px 0 8px;
   cursor: ew-resize;
   position: relative;
 }
@@ -777,16 +800,16 @@ body {
 /* Grids: Top (3 Col: VOL, PAN, SPEED) & Bottom (4 Col: BASS, MID, TREBLE, GAIN) */
 .numbers-grid-top {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 6px;
+  margin-bottom: 8px;
   margin-top: 2px;
 }
 .numbers-grid-bottom {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  padding-top: 10px;
+  padding-top: 6px;
   border-top: 1px solid var(--border-subtle);
   margin-top: auto;
 }
@@ -817,8 +840,27 @@ body {
   transition: color 0.1s ease;
 }
 .num-control-cell.small .num-val {
-  font-size: 20px;
+  font-size: 16px;
 }
+
+/* Stable readout slots: digit count never sizes the neighbouring controls. */
+.numbers-grid-top .num-control-cell { min-width: 0; }
+.numbers-grid-top .num-value-row { width: 100%; height: 28px; display: block; }
+.numbers-grid-top .num-val {
+  display: block;
+  width: calc(100% - 10px);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  line-height: 28px;
+  white-space: nowrap;
+  text-align: right;
+}
+.numbers-grid-top [data-param="pan"] .num-val { width: 100%; }
+.numbers-grid-top [data-param="speed"] .num-val { font-size: 18px; }
+.numbers-grid-top .num-unit { position: absolute; right: 0; bottom: 3px; width: 9px; }
+.numbers-grid-top .num-drag-arrow { position: absolute; right: 0; top: 100%; margin: 0; }
 
 /* Altered state: black when altered, grey by default */
 .num-control-cell.is-altered .num-val,
@@ -870,6 +912,7 @@ body {
   letter-spacing: 1.2px;
   color: var(--text-muted);
   text-transform: uppercase;
+  margin-top: 3px;
 }
 
 /* ==========================================================================
@@ -957,6 +1000,361 @@ body {
   box-shadow: var(--shadow-inset-soft);
   transform: translateY(1px);
 }
+
+/* Node Inspector Sample Splash View */
+.node-inspector-sample-view {
+  padding: 20px 22px;
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+}
+
+.sample-splash-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.sample-splash-track-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  color: #000000;
+  box-shadow: var(--shadow-flat-sm);
+  flex-shrink: 0;
+}
+
+.sample-splash-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.sample-splash-title {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.sample-splash-status {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.sample-splash-automation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sample-splash-auto-label {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.sample-splash-automation .letter-btn {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border-accent);
+  background: var(--bg-main);
+  border-radius: 2px;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.sample-splash-automation .letter-btn:hover {
+  border-color: var(--text-main);
+}
+
+.sample-splash-automation .letter-btn.rec-btn circle {
+  fill: currentColor;
+}
+
+.sample-splash-automation .letter-btn.rec-btn.recording {
+  color: var(--strip-color, var(--accent-primary));
+  border-color: var(--strip-color, var(--accent-primary));
+  background: rgba(252, 64, 55, 0.10);
+}
+
+.sample-splash-automation .letter-btn.play-btn.active {
+  color: var(--strip-color, var(--accent-primary));
+  border-color: var(--strip-color, var(--accent-primary));
+  background: rgba(252, 64, 55, 0.10);
+}
+
+.sample-splash-automation .letter-btn.greyed-out {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.sample-splash-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.sample-splash-card {
+  background: var(--bg-main);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  box-shadow: var(--shadow-flat-sm);
+  cursor: ns-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  transition: border-color 0.12s ease, opacity 0.12s ease;
+}
+
+.sample-splash-card:hover:not(.is-automated) {
+  border-color: var(--text-main);
+}
+
+.sample-splash-card.dragging {
+  border-color: var(--text-main);
+  box-shadow: var(--shadow-flat-md);
+}
+
+.sample-splash-card.is-automated {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.sample-splash-card.is-automated .sample-splash-card-val,
+.sample-splash-card.is-automated .sample-splash-card-label {
+  color: var(--text-muted) !important;
+}
+
+.sample-splash-card.is-automated .sample-splash-meter-fill {
+  background: var(--text-muted) !important;
+}
+
+.sample-splash-card-label {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.sample-splash-card-val {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.1;
+  font-feature-settings: "tnum";
+  transition: color 0.12s ease;
+}
+
+.sample-splash-meter-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--border-subtle);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.sample-splash-meter-fill {
+  height: 100%;
+  background: var(--accent-primary);
+  border-radius: 2px;
+  transition: width 0.08s ease, margin-left 0.08s ease;
+}
+
+.sample-splash-eq-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 9px 11px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-flat-sm);
+}
+
+.sample-splash-eq-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+  cursor: ns-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  padding: 4px;
+  border-radius: 2px;
+  transition: background 0.12s ease;
+}
+
+.sample-splash-eq-cell:hover:not(.is-automated) {
+  background: var(--bg-card);
+}
+
+.sample-splash-eq-cell.dragging {
+  background: var(--bg-card);
+}
+
+.sample-splash-eq-cell.is-automated {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.sample-splash-eq-cell.is-automated .eq-tag,
+.sample-splash-eq-cell.is-automated .eq-num {
+  color: var(--text-muted) !important;
+}
+
+.splash-dial-svg {
+  width: 32px;
+  height: 32px;
+  display: block;
+  margin: 0 auto 3px;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.channel-dial-svg {
+  width: 52px;
+  height: 52px;
+  display: block;
+  margin: 0 auto 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.numbers-grid-bottom .num-control-cell {
+  align-items: center;
+  text-align: center;
+}
+
+.numbers-grid-bottom .num-value-row {
+  display: none;
+}
+
+.numbers-grid-bottom .num-underline {
+  margin-top: 4px;
+  margin-bottom: 2px;
+}
+
+.channel-dial-value-text {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  fill: var(--text-main);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+  letter-spacing: -0.3px;
+}
+
+.splash-dial-track,
+.channel-dial-track {
+  fill: none;
+  stroke: var(--border-accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.splash-dial-tick,
+.channel-dial-tick {
+  stroke: var(--border-accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.splash-dial-arc {
+  fill: none;
+  stroke: var(--accent-primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.channel-dial-arc {
+  fill: none;
+  stroke: var(--strip-color, var(--accent-primary));
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.splash-dial-needle,
+.channel-dial-needle {
+  stroke: rgba(255,255,255,0.9);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.splash-dial-center,
+.channel-dial-center {
+  display: none;
+}
+
+.sample-splash-eq-cell .eq-tag {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.sample-splash-eq-cell .eq-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.sample-splash-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-top: 6px;
+  border-top: 1px solid var(--border-light);
+}
+
+.sample-splash-hint {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
 .modal-title {
   font-family: var(--font-heading);
   font-size: 1.05rem;
@@ -1049,47 +1447,83 @@ body {
   .rotary-knob-container { width: 30px; height: 30px; }
   .strip-status-bar { flex-wrap: wrap; }
 }
-@media (max-width: 1100px) {
-  .app-header { display: flex; flex-wrap: wrap; }
-  .header-right { flex-wrap: wrap; }
-  .performance-stage { --canvas-width: min(calc(100vw - 32px), calc((100dvh - var(--workspace-top, 64px) - 16px) * 1.2)); height: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto; }
-  .spatial-workspace-section { grid-column: 1 / -1; grid-row: 1; width: var(--canvas-width); justify-self: center; }
-  #channel-0 { grid-column: 1; grid-row: 2; }
-  #channel-1 { grid-column: 1; grid-row: 3; }
-  #channel-2 { grid-column: 2; grid-row: 2; }
-  #channel-3 { grid-column: 2; grid-row: 3; }
-  .channel-strip { max-height: 360px; }
+/* A fixed desktop workspace: smaller windows crop, never rearrange. */
+html, body { overflow: clip; }
+body { padding: 8px; }
+.app-container { width: 1424px; max-width: none; margin: 0; gap: 8px; }
+.performance-stage { --canvas-width: 912px; --canvas-size: 760px; }
+.channel-strip {
+  padding: 10px 14px 12px;
+  overflow-y: hidden;
+  scrollbar-width: none;
 }
-@media (max-width: 600px) {
-  .workspace-toolbar { gap: 6px; }
-  .performance-stage { display: flex; flex-direction: column; align-items: center; }
-  .channel-strip { width: 100%; }
-  .spatial-workspace-section { flex: none; }
-  .app-header { padding: 8px; }
-}
+.channel-strip::-webkit-scrollbar { display: none; }
+.source-actions-bar { margin-bottom: 4px; }
+.source-actions-bar .source-item { padding: 5px 0; }
+.hero-timer-display { font-size: 44px; margin: 4px 0; }
+.sample-progress-wrap { padding-bottom: 5px; }
+.transport-bar-row { margin-bottom: 8px; padding-bottom: 5px; }
+.numbers-grid-top { margin-bottom: 4px; margin-top: 0; }
+.automation-row { margin-top: 2px; margin-bottom: 4px; }
+.app-footer { display: none; }
+
+/* Compact, consistent application controls. */
+.app-header { box-shadow: 0 2px 10px #0000000a; border: 1px solid var(--border-subtle); border-radius: 12px; }
+.app-header button { box-shadow: none; border: 1px solid transparent; border-radius: 7px; background: transparent; min-height: 30px; }
+.app-header button:hover { background: var(--accent-soft); }
+.app-header button:focus-visible, .source-item:focus-visible { outline: 2px solid var(--text-muted); outline-offset: 2px; }
+.app-header .icon-button { width: 34px; padding: 6px; display: inline-flex; align-items: center; justify-content: center; }
+#match-loudness.active { background: var(--accent-soft); }
+#match-loudness.listening { animation: match-pulse 1s ease-in-out infinite alternate; }
+@keyframes match-pulse { to { opacity: .4; } }
+.source-actions-bar { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 3px; }
+.source-actions-bar .source-item { appearance: none; display: flex; flex-direction: column; gap: 5px; justify-content: center; padding: 8px 0; min-width: 0; border: 0; border-radius: 7px; background: transparent; color: var(--text-muted); font: 500 9px var(--font-body); line-height: 1.2; }
+.source-actions-bar .source-item:hover, .source-actions-bar .source-item.active { color: var(--text-main); background: var(--accent-soft); }
+body.theme-dark .app-header, body.theme-dark .channel-strip, body.theme-dark .canvas-arena-container { box-shadow: 0 4px 18px #00000020; }
+.connection-dialog { margin: auto; width: min(420px, calc(100vw - 32px)); padding: 28px; color: var(--text-main); background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 18px; box-shadow: var(--shadow-flat-elevated); }
+.connection-dialog::backdrop { background: #11111170; backdrop-filter: blur(5px); }
+.connection-dialog h2 { font: 500 25px var(--font-heading); margin: 8px 0 12px; }
+.connection-dialog p { color: var(--text-muted); font-size: 13px; line-height: 1.6; margin-bottom: 18px; }
+.connection-dialog label { display: block; font-size: 12px; margin-bottom: 8px; }
+.connection-dialog input { width: 100%; padding: 12px; font: inherit; color: var(--text-main); background: var(--bg-main); border: 1px solid var(--border-light); border-radius: 8px; }
+.connection-dialog .setup-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.connection-dialog button { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border-light); background: var(--bg-main); color: var(--text-main); cursor: pointer; font: 500 12px var(--font-body); }
+.connection-dialog button[type=submit] { background: var(--text-main); color: var(--bg-main); }
+.connection-dialog .setup-step { font: 10px var(--font-mono); letter-spacing: .12em; color: var(--text-muted); }
   </style>
 </head>
 <body class="theme-minimal">
+  <dialog id="connection-setup" class="connection-dialog" aria-labelledby="connection-title">
+    <form id="connection-form">
+      <div class="setup-step">YOUR LIVE CONNECTION</div>
+      <h2 id="connection-title">Make a space for your sound.</h2>
+      <p>Choose a username, then connect to broadcast your master mix. Your username becomes your stream address.</p>
+      <label for="connection-name">1 · Choose your username</label>
+      <input id="connection-name" name="username" placeholder="your-name" pattern="[a-z0-9][a-z0-9_\-]{0,31}" maxlength="32" required autocomplete="nickname" spellcheck="false" aria-describedby="connection-status">
+      <p id="connection-status" role="status" style="margin-top:12px">2 · Connect when you’re ready to go live.</p>
+      <div class="setup-actions"><button type="button" id="connection-close">Close</button><button type="submit" id="connection-submit">Connect</button></div>
+    </form>
+  </dialog>
   <div id="aether-audio-host" aria-hidden="true"></div>
   <div class="app-container">
     <!-- APP HEADER & MASTER CONTROLS -->
     <header class="app-header">
       <div class="header-left">
         <div class="transport-brand">
-          <button id="master-play-btn" class="btn-transport" title="Play / Pause All (Space)">
+          <button id="master-play-btn" class="btn-transport" title="Play / Pause All (Space)" aria-label="Play or Pause">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </button>
-          <button id="master-stop-btn" class="btn-transport" title="Stop All & Rewind">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+          <button id="master-stop-btn" class="btn-transport" title="Stop (Return to Beginning)" aria-label="Stop">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="1.5"/></svg>
           </button>
           <button id="master-rec-btn" class="btn-rec-master" title="Record Master Live Output to WAV">
             <span id="rec-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
             <span id="rec-btn-text">REC</span>
           </button>
-          <button id="icecast-out-btn" class="btn-rec-master" title="Stream master mix to Icecast /matt">
+          <button id="icecast-out-btn" class="btn-rec-master" title="Set up your live connection">
             <span id="icecast-out-dot"></span>
             <span id="icecast-out-text">CONNECT</span>
-            <span id="icecast-out-mount">/matt</span>
+
           </button>
         </div>
         <div class="master-time-display" id="master-time">00:00.0</div>
@@ -1103,18 +1537,11 @@ body {
     </nav>
 
       <div class="header-right">
-        <button id="demo-btn" class="header-btn" title="Load 4 synthetic demo stems">
-          <span class="icon">∿</span> Demo
-        </button>
-        <button id="export-session-btn" class="header-btn" title="Save DAW Project to disk (Finder)">
-          <span>💾</span> Save
-        </button>
-        <button id="import-session-btn" class="header-btn" title="Open DAW Project from disk (Finder)">
-          <span>📂</span> Load
-        </button>
+        <button id="export-session-btn" class="header-btn icon-button" title="Save project" aria-label="Save project"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h12l4 4v14H3V3h2Z"/><path d="M7 3v6h10V3M7 21v-8h10v8"/></svg></button>
+        <button id="import-session-btn" class="header-btn icon-button" title="Open project" aria-label="Open project"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V4h7l2 3h9v13H3Z"/></svg></button>
         <input type="file" id="import-session-file" accept=".aether,.json,application/json" style="display:none;">
 
-        <button id="match-loudness" class="header-btn" title="Listen for 12 seconds and match average level. Click again to cancel; Option-click to reset.">Match loudness</button>
+        <button id="match-loudness" class="header-btn icon-button" title="Match loudness" aria-label="Match loudness"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5v14M12 5v14M19 5v14M2 9h6M9 15h6M16 10h6"/></svg></button>
         <div class="master-vol-control">
           <span>VOL</span>
           <input type="range" id="master-volume" min="0" max="1" step="0.01" value="0.8" class="header-slider">
@@ -1160,10 +1587,10 @@ body {
 
           <div class="source-actions-bar">
             <input type="file" id="t0-file" accept="audio/*,.aethernode,.zip" multiple class="file-input-hidden">
-            <button type="button" class="btn-node-inspect" id="t0-node-inspect" title="Open Node UI Inspector" style="display: none;">⚙ UI</button>
-            <span class="source-item active" onclick="document.getElementById('t0-file').click()"><svg class="source-arrow" viewBox="0 0 14 10" width="12" height="9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5h10M8 2l3 3-3 3"/></svg> Load</span>
-            <span class="source-item" id="t0-live-in">🎤 Live In</span>
-            <span class="source-item" id="t0-stream">📶 Stream</span>
+            <button type="button" class="btn-node-inspect source-item" id="t0-node-inspect" title="Open sound controls" aria-label="Open sound controls"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M8 9h8M8 15h8M10 7v4M14 13v4"/></svg><span>Controls</span></button>
+            <button type="button" class="source-item" onclick="document.getElementById('t0-file').click()" title="Load sounds"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V4h7l2 3h9v13H3Z"/></svg><span>Load</span></button>
+            <button type="button" class="source-item" id="t0-live-in" title="Choose live input"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M8 22h8"/></svg><span>Input</span></button>
+            <button type="button" class="source-item" id="t0-stream" title="Open audio stream"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M7 7a7 7 0 0 0 0 10M17 7a7 7 0 0 1 0 10M4 4a11 11 0 0 0 0 16M20 4a11 11 0 0 1 0 16"/></svg><span>Stream</span></button>
           </div>
 
           <div class="hero-timer-display" id="t0-timer" title="Track position (click to play/pause)">00:00.0</div>
@@ -1184,6 +1611,7 @@ body {
             </div>
 
             <div class="transport-letters">
+              <button type="button" class="letter-btn repeat-btn active" id="t0-repeat" title="Repeat sample or playlist: on" aria-label="Repeat sample or playlist" aria-pressed="true"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-3 3M14 5H5a3 3 0 0 0-3 3M5 14l-3-3 3-3M2 11h9a3 3 0 0 0 3-3"/></svg></button>
               <button type="button" class="letter-btn shuffle-btn" id="t0-shuf" title="Shuffle loaded selection"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5h3v3M13.5 2.5l-4 4M2.5 13.5l3-3M10.5 13.5h3v-3M13.5 13.5l-8-8M2.5 2.5l3 3"/></svg></button>
               <button type="button" class="letter-btn mute-btn" id="t0-mute" title="Mute track">M</button>
               <button type="button" class="letter-btn solo-btn" id="t0-solo" title="Solo track">S</button>
@@ -1209,9 +1637,9 @@ body {
               <span class="num-label">PAN</span>
             </div>
 
-            <div class="num-control-cell" id="t0-cell-speed" data-param="speed" data-val="1.00" data-default="1.00" data-min="0.05" data-max="3.00" data-unit="x" data-step="0.05">
+            <div class="num-control-cell" id="t0-cell-speed" data-param="speed" data-val="1.00" data-default="1.00" data-min="0.0001" data-max="2.00" data-unit="x" data-step="0.0001">
               <div class="num-value-row">
-                <span class="num-val" id="t0-speed-val">1.00</span><span class="num-unit">x</span>
+                <span class="num-val" id="t0-speed-val">1.0000</span><span class="num-unit">x</span>
                 <span class="num-drag-arrow">↕</span>
               </div>
               <div class="num-underline"></div>
@@ -1221,7 +1649,7 @@ body {
 
           <div class="automation-row">
             <div class="automation-preview-box" title="Motion automation flow">
-              <canvas class="automation-canvas" id="t0-auto-canvas" width="160" height="56"></canvas>
+              <canvas class="automation-canvas" id="t0-auto-canvas" width="160" height="44"></canvas>
             </div>
             <div class="automation-section">
               <div class="automation-buttons">
@@ -1234,6 +1662,13 @@ body {
 
           <div class="numbers-grid-bottom">
             <div class="num-control-cell small" id="t0-cell-bass" data-param="bass" data-val="0" data-default="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t0-dial-bass-track" d=""></path>
+                <path class="channel-dial-arc" id="t0-dial-bass-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t0-dial-bass-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t0-eq-low-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1242,6 +1677,13 @@ body {
             </div>
 
             <div class="num-control-cell small" id="t0-cell-mid" data-param="mid" data-val="0" data-default="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t0-dial-mid-track" d=""></path>
+                <path class="channel-dial-arc" id="t0-dial-mid-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t0-dial-mid-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t0-eq-mid-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1250,6 +1692,13 @@ body {
             </div>
 
             <div class="num-control-cell small" id="t0-cell-treble" data-param="treble" data-val="0" data-default="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t0-dial-treble-track" d=""></path>
+                <path class="channel-dial-arc" id="t0-dial-treble-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t0-dial-treble-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t0-eq-high-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1258,6 +1707,13 @@ body {
             </div>
 
             <div class="num-control-cell small" id="t0-cell-gain" data-param="gain" data-val="0" data-default="0" data-min="-24" data-max="6" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t0-dial-gain-track" d=""></path>
+                <path class="channel-dial-arc" id="t0-dial-gain-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t0-dial-gain-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t0-gain-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1280,10 +1736,10 @@ body {
 
           <div class="source-actions-bar">
             <input type="file" id="t1-file" accept="audio/*,.aethernode,.zip" multiple class="file-input-hidden">
-            <button type="button" class="btn-node-inspect" id="t1-node-inspect" title="Open Node UI Inspector" style="display: none;">⚙ UI</button>
-            <span class="source-item active" onclick="document.getElementById('t1-file').click()"><svg class="source-arrow" viewBox="0 0 14 10" width="12" height="9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5h10M8 2l3 3-3 3"/></svg> Load</span>
-            <span class="source-item" id="t1-live-in">🎤 Live In</span>
-            <span class="source-item" id="t1-stream">📶 Stream</span>
+            <button type="button" class="btn-node-inspect source-item" id="t1-node-inspect" title="Open sound controls" aria-label="Open sound controls"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M8 9h8M8 15h8M10 7v4M14 13v4"/></svg><span>Controls</span></button>
+            <button type="button" class="source-item" onclick="document.getElementById('t1-file').click()" title="Load sounds"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V4h7l2 3h9v13H3Z"/></svg><span>Load</span></button>
+            <button type="button" class="source-item" id="t1-live-in" title="Choose live input"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M8 22h8"/></svg><span>Input</span></button>
+            <button type="button" class="source-item" id="t1-stream" title="Open audio stream"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M7 7a7 7 0 0 0 0 10M17 7a7 7 0 0 1 0 10M4 4a11 11 0 0 0 0 16M20 4a11 11 0 0 1 0 16"/></svg><span>Stream</span></button>
           </div>
 
           <div class="hero-timer-display" id="t1-timer" title="Track position (click to play/pause)">00:00.0</div>
@@ -1304,6 +1760,7 @@ body {
             </div>
 
             <div class="transport-letters">
+              <button type="button" class="letter-btn repeat-btn active" id="t1-repeat" title="Repeat sample or playlist: on" aria-label="Repeat sample or playlist" aria-pressed="true"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-3 3M14 5H5a3 3 0 0 0-3 3M5 14l-3-3 3-3M2 11h9a3 3 0 0 0 3-3"/></svg></button>
               <button type="button" class="letter-btn shuffle-btn" id="t1-shuf" title="Shuffle loaded selection"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5h3v3M13.5 2.5l-4 4M2.5 13.5l3-3M10.5 13.5h3v-3M13.5 13.5l-8-8M2.5 2.5l3 3"/></svg></button>
               <button type="button" class="letter-btn mute-btn" id="t1-mute" title="Mute track">M</button>
               <button type="button" class="letter-btn solo-btn" id="t1-solo" title="Solo track">S</button>
@@ -1329,9 +1786,9 @@ body {
               <span class="num-label">PAN</span>
             </div>
 
-            <div class="num-control-cell" id="t1-cell-speed" data-param="speed" data-val="1.00" data-default="1.00" data-min="0.05" data-max="3.00" data-unit="x" data-step="0.05">
+            <div class="num-control-cell" id="t1-cell-speed" data-param="speed" data-val="1.00" data-default="1.00" data-min="0.0001" data-max="2.00" data-unit="x" data-step="0.0001">
               <div class="num-value-row">
-                <span class="num-val" id="t1-speed-val">1.00</span><span class="num-unit">x</span>
+                <span class="num-val" id="t1-speed-val">1.0000</span><span class="num-unit">x</span>
                 <span class="num-drag-arrow">↕</span>
               </div>
               <div class="num-underline"></div>
@@ -1341,7 +1798,7 @@ body {
 
           <div class="automation-row">
             <div class="automation-preview-box" title="Motion automation flow">
-              <canvas class="automation-canvas" id="t1-auto-canvas" width="160" height="56"></canvas>
+              <canvas class="automation-canvas" id="t1-auto-canvas" width="160" height="44"></canvas>
             </div>
             <div class="automation-section">
               <div class="automation-buttons">
@@ -1354,6 +1811,13 @@ body {
 
           <div class="numbers-grid-bottom">
             <div class="num-control-cell small" id="t1-cell-bass" data-param="bass" data-val="0" data-default="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t1-dial-bass-track" d=""></path>
+                <path class="channel-dial-arc" id="t1-dial-bass-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t1-dial-bass-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t1-eq-low-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1362,6 +1826,13 @@ body {
             </div>
 
             <div class="num-control-cell small" id="t1-cell-mid" data-param="mid" data-val="0" data-default="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t1-dial-mid-track" d=""></path>
+                <path class="channel-dial-arc" id="t1-dial-mid-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t1-dial-mid-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t1-eq-mid-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1370,6 +1841,13 @@ body {
             </div>
 
             <div class="num-control-cell small" id="t1-cell-treble" data-param="treble" data-val="0" data-default="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t1-dial-treble-track" d=""></path>
+                <path class="channel-dial-arc" id="t1-dial-treble-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t1-dial-treble-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t1-eq-high-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1378,6 +1856,13 @@ body {
             </div>
 
             <div class="num-control-cell small" id="t1-cell-gain" data-param="gain" data-val="0" data-default="0" data-min="-24" data-max="6" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t1-dial-gain-track" d=""></path>
+                <path class="channel-dial-arc" id="t1-dial-gain-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t1-dial-gain-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t1-gain-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1400,10 +1885,10 @@ body {
 
           <div class="source-actions-bar">
             <input type="file" id="t2-file" accept="audio/*,.aethernode,.zip" multiple class="file-input-hidden">
-            <button type="button" class="btn-node-inspect" id="t2-node-inspect" title="Open Node UI Inspector" style="display: none;">⚙ UI</button>
-            <span class="source-item active" onclick="document.getElementById('t2-file').click()"><svg class="source-arrow" viewBox="0 0 14 10" width="12" height="9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5h10M8 2l3 3-3 3"/></svg> Load</span>
-            <span class="source-item" id="t2-live-in">🎤 Live In</span>
-            <span class="source-item" id="t2-stream">📶 Stream</span>
+            <button type="button" class="btn-node-inspect source-item" id="t2-node-inspect" title="Open sound controls" aria-label="Open sound controls"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M8 9h8M8 15h8M10 7v4M14 13v4"/></svg><span>Controls</span></button>
+            <button type="button" class="source-item" onclick="document.getElementById('t2-file').click()" title="Load sounds"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V4h7l2 3h9v13H3Z"/></svg><span>Load</span></button>
+            <button type="button" class="source-item" id="t2-live-in" title="Choose live input"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M8 22h8"/></svg><span>Input</span></button>
+            <button type="button" class="source-item" id="t2-stream" title="Open audio stream"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M7 7a7 7 0 0 0 0 10M17 7a7 7 0 0 1 0 10M4 4a11 11 0 0 0 0 16M20 4a11 11 0 0 1 0 16"/></svg><span>Stream</span></button>
           </div>
 
           <div class="hero-timer-display" id="t2-timer" title="Track position (click to play/pause)">00:00.0</div>
@@ -1424,6 +1909,7 @@ body {
             </div>
 
             <div class="transport-letters">
+              <button type="button" class="letter-btn repeat-btn active" id="t2-repeat" title="Repeat sample or playlist: on" aria-label="Repeat sample or playlist" aria-pressed="true"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-3 3M14 5H5a3 3 0 0 0-3 3M5 14l-3-3 3-3M2 11h9a3 3 0 0 0 3-3"/></svg></button>
               <button type="button" class="letter-btn shuffle-btn" id="t2-shuf" title="Shuffle loaded selection"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5h3v3M13.5 2.5l-4 4M2.5 13.5l3-3M10.5 13.5h3v-3M13.5 13.5l-8-8M2.5 2.5l3 3"/></svg></button>
               <button type="button" class="letter-btn mute-btn" id="t2-mute" title="Mute track">M</button>
               <button type="button" class="letter-btn solo-btn" id="t2-solo" title="Solo track">S</button>
@@ -1449,9 +1935,9 @@ body {
               <span class="num-label">PAN</span>
             </div>
 
-            <div class="num-control-cell" id="t2-cell-speed" data-param="speed" data-val="1.00" data-default="1.00" data-min="0.05" data-max="3.00" data-unit="x" data-step="0.05">
+            <div class="num-control-cell" id="t2-cell-speed" data-param="speed" data-val="1.00" data-default="1.00" data-min="0.0001" data-max="2.00" data-unit="x" data-step="0.0001">
               <div class="num-value-row">
-                <span class="num-val" id="t2-speed-val">1.00</span><span class="num-unit">x</span>
+                <span class="num-val" id="t2-speed-val">1.0000</span><span class="num-unit">x</span>
                 <span class="num-drag-arrow">↕</span>
               </div>
               <div class="num-underline"></div>
@@ -1461,7 +1947,7 @@ body {
 
           <div class="automation-row">
             <div class="automation-preview-box" title="Motion automation flow">
-              <canvas class="automation-canvas" id="t2-auto-canvas" width="160" height="56"></canvas>
+              <canvas class="automation-canvas" id="t2-auto-canvas" width="160" height="44"></canvas>
             </div>
             <div class="automation-section">
               <div class="automation-buttons">
@@ -1474,6 +1960,13 @@ body {
 
           <div class="numbers-grid-bottom">
             <div class="num-control-cell small" id="t2-cell-bass" data-param="bass" data-val="0" data-default="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t2-dial-bass-track" d=""></path>
+                <path class="channel-dial-arc" id="t2-dial-bass-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t2-dial-bass-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t2-eq-low-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1482,6 +1975,13 @@ body {
             </div>
 
             <div class="num-control-cell small" id="t2-cell-mid" data-param="mid" data-val="0" data-default="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t2-dial-mid-track" d=""></path>
+                <path class="channel-dial-arc" id="t2-dial-mid-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t2-dial-mid-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t2-eq-mid-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1490,6 +1990,13 @@ body {
             </div>
 
             <div class="num-control-cell small" id="t2-cell-treble" data-param="treble" data-val="0" data-default="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t2-dial-treble-track" d=""></path>
+                <path class="channel-dial-arc" id="t2-dial-treble-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t2-dial-treble-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t2-eq-high-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1498,6 +2005,13 @@ body {
             </div>
 
             <div class="num-control-cell small" id="t2-cell-gain" data-param="gain" data-val="0" data-default="0" data-min="-24" data-max="6" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t2-dial-gain-track" d=""></path>
+                <path class="channel-dial-arc" id="t2-dial-gain-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t2-dial-gain-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t2-gain-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1520,10 +2034,10 @@ body {
 
           <div class="source-actions-bar">
             <input type="file" id="t3-file" accept="audio/*,.aethernode,.zip" multiple class="file-input-hidden">
-            <button type="button" class="btn-node-inspect" id="t3-node-inspect" title="Open Node UI Inspector" style="display: none;">⚙ UI</button>
-            <span class="source-item active" onclick="document.getElementById('t3-file').click()"><svg class="source-arrow" viewBox="0 0 14 10" width="12" height="9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5h10M8 2l3 3-3 3"/></svg> Load</span>
-            <span class="source-item" id="t3-live-in">🎤 Live In</span>
-            <span class="source-item" id="t3-stream">📶 Stream</span>
+            <button type="button" class="btn-node-inspect source-item" id="t3-node-inspect" title="Open sound controls" aria-label="Open sound controls"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M8 9h8M8 15h8M10 7v4M14 13v4"/></svg><span>Controls</span></button>
+            <button type="button" class="source-item" onclick="document.getElementById('t3-file').click()" title="Load sounds"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V4h7l2 3h9v13H3Z"/></svg><span>Load</span></button>
+            <button type="button" class="source-item" id="t3-live-in" title="Choose live input"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M8 22h8"/></svg><span>Input</span></button>
+            <button type="button" class="source-item" id="t3-stream" title="Open audio stream"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M7 7a7 7 0 0 0 0 10M17 7a7 7 0 0 1 0 10M4 4a11 11 0 0 0 0 16M20 4a11 11 0 0 1 0 16"/></svg><span>Stream</span></button>
           </div>
 
           <div class="hero-timer-display" id="t3-timer" title="Track position (click to play/pause)">00:00.0</div>
@@ -1544,6 +2058,7 @@ body {
             </div>
 
             <div class="transport-letters">
+              <button type="button" class="letter-btn repeat-btn active" id="t3-repeat" title="Repeat sample or playlist: on" aria-label="Repeat sample or playlist" aria-pressed="true"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-3 3M14 5H5a3 3 0 0 0-3 3M5 14l-3-3 3-3M2 11h9a3 3 0 0 0 3-3"/></svg></button>
               <button type="button" class="letter-btn shuffle-btn" id="t3-shuf" title="Shuffle loaded selection"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5h3v3M13.5 2.5l-4 4M2.5 13.5l3-3M10.5 13.5h3v-3M13.5 13.5l-8-8M2.5 2.5l3 3"/></svg></button>
               <button type="button" class="letter-btn mute-btn" id="t3-mute" title="Mute track">M</button>
               <button type="button" class="letter-btn solo-btn" id="t3-solo" title="Solo track">S</button>
@@ -1569,9 +2084,9 @@ body {
               <span class="num-label">PAN</span>
             </div>
 
-            <div class="num-control-cell" id="t3-cell-speed" data-param="speed" data-val="1.00" data-default="1.00" data-min="0.05" data-max="3.00" data-unit="x" data-step="0.05">
+            <div class="num-control-cell" id="t3-cell-speed" data-param="speed" data-val="1.00" data-default="1.00" data-min="0.0001" data-max="2.00" data-unit="x" data-step="0.0001">
               <div class="num-value-row">
-                <span class="num-val" id="t3-speed-val">1.00</span><span class="num-unit">x</span>
+                <span class="num-val" id="t3-speed-val">1.0000</span><span class="num-unit">x</span>
                 <span class="num-drag-arrow">↕</span>
               </div>
               <div class="num-underline"></div>
@@ -1581,7 +2096,7 @@ body {
 
           <div class="automation-row">
             <div class="automation-preview-box" title="Motion automation flow">
-              <canvas class="automation-canvas" id="t3-auto-canvas" width="160" height="56"></canvas>
+              <canvas class="automation-canvas" id="t3-auto-canvas" width="160" height="44"></canvas>
             </div>
             <div class="automation-section">
               <div class="automation-buttons">
@@ -1594,6 +2109,13 @@ body {
 
           <div class="numbers-grid-bottom">
             <div class="num-control-cell small" id="t3-cell-bass" data-param="bass" data-val="0" data-default="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t3-dial-bass-track" d=""></path>
+                <path class="channel-dial-arc" id="t3-dial-bass-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t3-dial-bass-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t3-eq-low-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1602,6 +2124,13 @@ body {
             </div>
 
             <div class="num-control-cell small" id="t3-cell-mid" data-param="mid" data-val="0" data-default="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t3-dial-mid-track" d=""></path>
+                <path class="channel-dial-arc" id="t3-dial-mid-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t3-dial-mid-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t3-eq-mid-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1610,6 +2139,13 @@ body {
             </div>
 
             <div class="num-control-cell small" id="t3-cell-treble" data-param="treble" data-val="0" data-default="0" data-min="-15" data-max="15" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t3-dial-treble-track" d=""></path>
+                <path class="channel-dial-arc" id="t3-dial-treble-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t3-dial-treble-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t3-eq-high-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1618,6 +2154,13 @@ body {
             </div>
 
             <div class="num-control-cell small" id="t3-cell-gain" data-param="gain" data-val="0" data-default="0" data-min="-24" data-max="6" data-unit="dB" data-step="1">
+              <svg class="channel-dial-svg" viewBox="0 0 36 36">
+                <path class="channel-dial-track" id="t3-dial-gain-track" d=""></path>
+                <path class="channel-dial-arc" id="t3-dial-gain-arc" d=""></path>
+                <line class="channel-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+                <line class="channel-dial-needle" id="t3-dial-gain-needle" x1="18" y1="15" x2="18" y2="8"></line>
+                <circle class="channel-dial-center" cx="18" cy="18" r="2"></circle>
+              </svg>
               <div class="num-value-row">
                 <span class="num-val" id="t3-gain-val">0</span><span class="num-unit">dB</span>
               </div>
@@ -1632,12 +2175,12 @@ body {
 
     </div>
     <div class="workspace-footer">
-      <button class="btn-text" id="reset-all-btn">Reset All Channels &amp; Paths</button>
+      <button type="button" class="btn-reset" id="reset-all-btn" title="Reset every channel and motion path">Reset All</button>
     </div>
 
     <!-- FOOTER -->
     <footer class="app-footer">
-      <p>AETHER v3.0 • Ableton-Style Bipolar EQ • Live Input (Mic/DAW) • Master WAV Recorder • Session Export • Web Audio 2D Spatial Engine</p>
+      <p>Aether 5.1.1 · Spatial audio instrument</p>
     </footer>
   </div>
 
@@ -1680,6 +2223,106 @@ body {
         <button class="node-inspector-close-btn" id="node-modal-close-btn">✕ Close</button>
       </div>
       <iframe id="node-inspector-frame" style="width: 100%; height: 340px; border: none; display: block; background: var(--bg-canvas);"></iframe>
+      <div id="node-inspector-sample-view" class="node-inspector-sample-view" style="display: none;">
+        <div class="sample-splash-header">
+          <div class="sample-splash-track-badge" id="sample-splash-badge">T1</div>
+          <div class="sample-splash-meta">
+            <div class="sample-splash-title" id="sample-splash-name">Track 1</div>
+            <div class="sample-splash-status" id="sample-splash-status">No sample loaded</div>
+          </div>
+          <div class="sample-splash-automation">
+            <span class="sample-splash-auto-label">MOTION</span>
+            <div class="automation-buttons">
+              <button type="button" class="letter-btn rec-btn" id="sample-splash-rec" title="Record motion automation"><svg viewBox="0 0 14 14" width="13" height="13"><circle cx="7" cy="7" r="6"/></svg></button>
+              <button type="button" class="letter-btn play-btn" id="sample-splash-play-motion" title="Play motion automation"><svg viewBox="0 0 10 12" width="11" height="13"><polygon points="1.5,1.5 8.5,6 1.5,10.5"/></svg></button>
+              <button type="button" class="letter-btn clear-btn" id="sample-splash-clear-motion" title="Clear motion automation">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sample-splash-grid">
+          <div class="sample-splash-card" id="sample-splash-card-vol" data-param="vol" data-min="0" data-max="100" data-step="1" title="Drag vertical to adjust Volume • Double-click to reset">
+            <span class="sample-splash-card-label">VOLUME</span>
+            <span class="sample-splash-card-val" id="sample-splash-vol">80%</span>
+            <div class="sample-splash-meter-bar">
+              <div class="sample-splash-meter-fill" id="sample-splash-vol-fill"></div>
+            </div>
+          </div>
+          <div class="sample-splash-card" id="sample-splash-card-pan" data-param="pan" data-min="-100" data-max="100" data-step="1" title="Drag vertical to adjust Panorama • Double-click to center">
+            <span class="sample-splash-card-label">PANORAMA</span>
+            <span class="sample-splash-card-val" id="sample-splash-pan">C</span>
+            <div class="sample-splash-meter-bar">
+              <div class="sample-splash-meter-fill" id="sample-splash-pan-fill"></div>
+            </div>
+          </div>
+          <div class="sample-splash-card" id="sample-splash-card-speed" data-param="speed" data-min="0.0001" data-max="2.00" data-step="0.0001" title="Drag vertical to adjust Playback Speed • Double-click to reset">
+            <span class="sample-splash-card-label">PLAYBACK SPEED</span>
+            <span class="sample-splash-card-val" id="sample-splash-speed">1.00x</span>
+            <div class="sample-splash-meter-bar">
+              <div class="sample-splash-meter-fill" id="sample-splash-speed-fill"></div>
+            </div>
+          </div>
+          <div class="sample-splash-card" id="sample-splash-card-depth" data-param="depth" data-min="0" data-max="50" data-step="0.5" title="Drag vertical to adjust 3D Depth (Z) • Double-click to reset">
+            <span class="sample-splash-card-label">3D DEPTH (Z)</span>
+            <span class="sample-splash-card-val" id="sample-splash-depth">0.0</span>
+            <div class="sample-splash-meter-bar">
+              <div class="sample-splash-meter-fill" id="sample-splash-depth-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sample-splash-eq-row">
+          <div class="sample-splash-eq-cell" id="sample-splash-cell-bass" data-param="bass" data-min="-15" data-max="15" data-step="1" title="Drag vertical to adjust Bass • Double-click to reset">
+            <svg class="splash-dial-svg" viewBox="0 0 36 36">
+              <path class="splash-dial-track" id="splash-dial-bass-track" d=""></path>
+              <path class="splash-dial-arc" id="splash-dial-bass-arc" d=""></path>
+              <line class="splash-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+              <line class="splash-dial-needle" id="splash-dial-bass-needle" x1="18" y1="18" x2="18" y2="7"></line>
+              <circle class="splash-dial-center" cx="18" cy="18" r="2"></circle>
+            </svg>
+            <span class="eq-tag">BASS</span>
+            <span class="eq-num" id="sample-splash-bass">0 dB</span>
+          </div>
+          <div class="sample-splash-eq-cell" id="sample-splash-cell-mid" data-param="mid" data-min="-15" data-max="15" data-step="1" title="Drag vertical to adjust Mid • Double-click to reset">
+            <svg class="splash-dial-svg" viewBox="0 0 36 36">
+              <path class="splash-dial-track" id="splash-dial-mid-track" d=""></path>
+              <path class="splash-dial-arc" id="splash-dial-mid-arc" d=""></path>
+              <line class="splash-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+              <line class="splash-dial-needle" id="splash-dial-mid-needle" x1="18" y1="18" x2="18" y2="7"></line>
+              <circle class="splash-dial-center" cx="18" cy="18" r="2"></circle>
+            </svg>
+            <span class="eq-tag">MID</span>
+            <span class="eq-num" id="sample-splash-mid">0 dB</span>
+          </div>
+          <div class="sample-splash-eq-cell" id="sample-splash-cell-treble" data-param="treble" data-min="-15" data-max="15" data-step="1" title="Drag vertical to adjust Treble • Double-click to reset">
+            <svg class="splash-dial-svg" viewBox="0 0 36 36">
+              <path class="splash-dial-track" id="splash-dial-treble-track" d=""></path>
+              <path class="splash-dial-arc" id="splash-dial-treble-arc" d=""></path>
+              <line class="splash-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+              <line class="splash-dial-needle" id="splash-dial-treble-needle" x1="18" y1="18" x2="18" y2="7"></line>
+              <circle class="splash-dial-center" cx="18" cy="18" r="2"></circle>
+            </svg>
+            <span class="eq-tag">TREBLE</span>
+            <span class="eq-num" id="sample-splash-treble">0 dB</span>
+          </div>
+          <div class="sample-splash-eq-cell" id="sample-splash-cell-gain" data-param="gain" data-min="-24" data-max="6" data-step="1" title="Drag vertical to adjust Gain • Double-click to reset">
+            <svg class="splash-dial-svg" viewBox="0 0 36 36">
+              <path class="splash-dial-track" id="splash-dial-gain-track" d=""></path>
+              <path class="splash-dial-arc" id="splash-dial-gain-arc" d=""></path>
+              <line class="splash-dial-tick" x1="18" y1="3" x2="18" y2="6"></line>
+              <line class="splash-dial-needle" id="splash-dial-gain-needle" x1="18" y1="18" x2="18" y2="7"></line>
+              <circle class="splash-dial-center" cx="18" cy="18" r="2"></circle>
+            </svg>
+            <span class="eq-tag">GAIN</span>
+            <span class="eq-num" id="sample-splash-gain">0 dB</span>
+          </div>
+        </div>
+
+        <div class="sample-splash-footer">
+          <span id="sample-splash-transport-info">00:00.0 • Stopped</span>
+          <span class="sample-splash-hint">Spatial Audio Graph Live • Bipolar EQ</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1887,6 +2530,7 @@ class AudioTrack {
     this.playlist = [];
     this.playlistIndex = 0;
     this.isShuffle = false;
+    this.isRepeat = true;
 
     // Live Input (Mic / Instrument)
     this.isLiveIn = false;
@@ -1965,6 +2609,57 @@ class AudioTrack {
     this.initDOM();
   }
 
+  get eqLow() { return this.eqValues?.low || 0; }
+  get eqMid() { return this.eqValues?.mid || 0; }
+  get eqHigh() { return this.eqValues?.high || 0; }
+  get gainDb() { return this.stripGainDb || 0; }
+
+  updateDial(prefix, val, min, max) {
+    const trackBg = document.getElementById(`${prefix}-track`);
+    const arc = document.getElementById(`${prefix}-arc`);
+    const needle = document.getElementById(`${prefix}-needle`);
+    if (trackBg && !trackBg._inited) {
+      trackBg._inited = true;
+      trackBg.setAttribute('d', SpatialStudio.describeDialArc(18, 18, 13, -135, 135));
+    }
+    if (arc && needle) {
+      const norm = (val - min) / (max - min);
+      const zeroAngle = -135 + ((0 - min) / (max - min)) * 270;
+      const currentAngle = -135 + (norm * 270);
+      if (Math.abs(val) < 0.2) {
+        arc.setAttribute('d', '');
+      } else if (val > 0) {
+        arc.setAttribute('d', SpatialStudio.describeDialArc(18, 18, 13, zeroAngle, currentAngle));
+      } else {
+        arc.setAttribute('d', SpatialStudio.describeDialArc(18, 18, 13, currentAngle, zeroAngle));
+      }
+      needle.setAttribute('transform', `rotate(${currentAngle} 18 18)`);
+    }
+    // Update embedded value text
+    if (trackBg) {
+      const svg = trackBg.closest('svg');
+      if (svg) {
+        let txt = svg.querySelector('.channel-dial-value-text');
+        if (!txt) {
+          txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          txt.setAttribute('class', 'channel-dial-value-text');
+          txt.setAttribute('x', '18');
+          txt.setAttribute('y', '24');
+          svg.appendChild(txt);
+        }
+        const display = Math.round(val);
+        txt.textContent = (display > 0 ? '+' : '') + display;
+      }
+    }
+  }
+
+  updateAllStripDials() {
+    this.updateDial(`t${this.index}-dial-bass`, this.eqValues.low, -15, 15);
+    this.updateDial(`t${this.index}-dial-mid`, this.eqValues.mid, -15, 15);
+    this.updateDial(`t${this.index}-dial-treble`, this.eqValues.high, -15, 15);
+    this.updateDial(`t${this.index}-dial-gain`, this.stripGainDb, -24, 6);
+  }
+
   initDOM() {
     const i = this.index;
     this.nameEl = document.getElementById(`t${i}-name`);
@@ -1975,9 +2670,7 @@ class AudioTrack {
     this.nodeInspectBtn = document.getElementById(`t${i}-node-inspect`);
     if (this.nodeInspectBtn) {
       this.nodeInspectBtn.addEventListener('click', () => {
-        if (this.isCustomNode && this.customNodeBundle) {
-          this.studio.openNodeInspector(this);
-        }
+        this.studio.openNodeInspector(this);
       });
     }
 
@@ -2044,6 +2737,8 @@ class AudioTrack {
     if (this.prevBtn) this.prevBtn.addEventListener('click', () => this.prevInPlaylist());
     if (this.nextBtn) this.nextBtn.addEventListener('click', () => this.nextInPlaylist());
     if (this.shufBtn) this.shufBtn.addEventListener('click', () => this.toggleShuffle());
+    this.repeatBtn = document.getElementById(`t${i}-repeat`);
+    this.repeatBtn.addEventListener('click', () => this.toggleRepeat());
 
     this.recBtn.addEventListener('click', () => this.toggleRecordMotion());
     this.playMotionBtn.addEventListener('click', () => this.togglePlayMotion());
@@ -2068,6 +2763,7 @@ class AudioTrack {
     // Apply default initial volume/pan labels immediately
     this.updateAudioParamsFromPosition();
     this.setMotionSpeed(this.motionSpeed);
+    this.updateAllStripDials();
   }
 
   sliderPosToSpeed(pos) {
@@ -2089,7 +2785,7 @@ class AudioTrack {
       this.speedSlider.value = this.speedToSliderPos(speed);
     }
     if (this.speedValEl) {
-      this.speedValEl.textContent = speed.toFixed(2);
+      this.speedValEl.textContent = speed.toFixed(4);
     }
     if (this.speedCell) {
       this.speedCell.dataset.val = speed;
@@ -2111,7 +2807,7 @@ class AudioTrack {
       if (param === 'pan') {
         valSpan.textContent = clamped === 0 ? 'C' : (clamped < 0 ? `L${Math.abs(clamped)}` : `R${clamped}`);
       } else if (param === 'speed') {
-        valSpan.textContent = clamped.toFixed(2);
+        valSpan.textContent = clamped.toFixed(4);
       } else if (['bass', 'mid', 'treble', 'gain'].includes(param)) {
         valSpan.textContent = clamped > 0 ? `+${clamped}` : `${clamped}`;
       } else {
@@ -2164,7 +2860,7 @@ class AudioTrack {
           if (v === 0) return 'C';
           return v < 0 ? `L${Math.abs(v)}` : `R${v}`;
         }
-        if (param === 'speed') return v.toFixed(2);
+        if (param === 'speed') return v.toFixed(4);
         if (['bass', 'mid', 'treble', 'gain'].includes(param)) {
           return v > 0 ? `+${v}` : `${v}`;
         }
@@ -2224,16 +2920,32 @@ class AudioTrack {
       cell.addEventListener('pointermove', e => {
         if (!isDragging) return;
         const deltaY = startY - e.clientY;
-        const sensitivity = (max - min) / 120;
-        let nextVal = startVal + deltaY * sensitivity;
 
-        if (step >= 1) {
-          nextVal = Math.round(nextVal / step) * step;
+        let nextVal;
+        if (param === 'speed') {
+          // Log-space drag: each pixel moves by a fixed ratio
+          // 120px covers ~4 decades (0.0001 to 2.0)
+          const logMin = Math.log(0.0001);
+          const logMax = Math.log(2.0);
+          const logStart = Math.log(Math.max(0.0001, startVal));
+          const logSensitivity = (logMax - logMin) / 120;
+          const logNext = Math.max(logMin, Math.min(logMax, logStart + deltaY * logSensitivity));
+          nextVal = Math.exp(logNext);
+          // Round to 4 sig figs
+          const mag = Math.pow(10, Math.floor(Math.log10(nextVal)) - 3);
+          nextVal = Math.round(nextVal / mag) * mag;
+          nextVal = Math.max(0.0001, Math.min(2.0, nextVal));
         } else {
-          nextVal = Math.round(nextVal * 20) / 20;
+          const sensitivity = (max - min) / 120;
+          nextVal = startVal + deltaY * sensitivity;
+          if (step >= 1) {
+            nextVal = Math.round(nextVal / step) * step;
+          } else {
+            nextVal = Math.round(nextVal * 20) / 20;
+          }
+          nextVal = Math.max(min, Math.min(max, nextVal));
         }
 
-        nextVal = Math.max(min, Math.min(max, nextVal));
         cell.dataset.val = nextVal;
         if (valSpan) valSpan.textContent = formatDisplay(nextVal);
         updateAlteredState(nextVal);
@@ -2331,6 +3043,8 @@ class AudioTrack {
         cur = (this.studio.audioCtx.currentTime - this.startTime) % this.duration;
         if (cur < 0) cur = 0;
       }
+    } else if (this.studio && this.studio.transportPosition > 0 && dur > 0) {
+      cur = this.studio.transportPosition % dur;
     }
     const pct = dur > 0 ? Math.min(100, Math.max(0, (cur / dur) * 100)) : 0;
     if (this.progressFillEl) {
@@ -2397,7 +3111,7 @@ class AudioTrack {
 
     // Dedicated Track Stereo Pan Node (equal-power dry stereo panning)
     this.stereoPanNode = audioCtx.createStereoPanner();
-    
+
     // Direct Pan Gain to mute the native dry path when spatialization is active
     this.directPanGain = audioCtx.createGain();
     this.directPanGain.gain.value = 1.0;
@@ -2509,6 +3223,7 @@ class AudioTrack {
         this.bassCell.dataset.val = gainDb;
         this.bassCell.classList.toggle('is-altered', Math.abs(gainDb) > 0.001);
       }
+      this.updateDial(`t${this.index}-dial-bass`, gainDb, -15, 15);
     } else if (band === 'mid') {
       if (this.eqMidNode && this.studio.audioCtx) this.eqMidNode.gain.setTargetAtTime(gainDb, this.studio.audioCtx.currentTime, 0.01);
       if (this.eqMidVal) this.eqMidVal.textContent = txt;
@@ -2516,6 +3231,7 @@ class AudioTrack {
         this.midCell.dataset.val = gainDb;
         this.midCell.classList.toggle('is-altered', Math.abs(gainDb) > 0.001);
       }
+      this.updateDial(`t${this.index}-dial-mid`, gainDb, -15, 15);
     } else if (band === 'high') {
       if (this.eqHighNode && this.studio.audioCtx) this.eqHighNode.gain.setTargetAtTime(gainDb, this.studio.audioCtx.currentTime, 0.01);
       if (this.eqHighVal) this.eqHighVal.textContent = txt;
@@ -2523,6 +3239,10 @@ class AudioTrack {
         this.trebleCell.dataset.val = gainDb;
         this.trebleCell.classList.toggle('is-altered', Math.abs(gainDb) > 0.001);
       }
+      this.updateDial(`t${this.index}-dial-treble`, gainDb, -15, 15);
+    }
+    if (this.studio && this.studio.activeInspectorTrack === this) {
+      this.studio.updateSampleInspector();
     }
   }
 
@@ -2534,7 +3254,11 @@ class AudioTrack {
       this.gainCell.dataset.val = this.stripGainDb;
       this.gainCell.classList.toggle('is-altered', Math.abs(this.stripGainDb) > 0.001);
     }
+    this.updateDial(`t${this.index}-dial-gain`, this.stripGainDb, -24, 6);
     this.updateAudioParamsFromPosition();
+    if (this.studio && this.studio.activeInspectorTrack === this) {
+      this.studio.updateSampleInspector();
+    }
   }
 
   cleanupCustomNode() {
@@ -2547,7 +3271,6 @@ class AudioTrack {
     this.customNodeBundle = null;
     this.customNodeZipBase64 = null;
     this.isCustomNode = false;
-    if (this.nodeInspectBtn) this.nodeInspectBtn.style.display = 'none';
 
     // If stream or live-in is active, reconnect directly to EQ chain
     if (this.isStream) {
@@ -3338,8 +4061,26 @@ class AudioTrack {
     this.updatePlaylistUI();
   }
 
+  toggleRepeat() {
+    this.isRepeat = !this.isRepeat;
+    const loop = this.isRepeat && this.playlist.length <= 1;
+    if (this.bufferSource) this.bufferSource.loop = loop;
+    if (this.htmlAudio) this.htmlAudio.loop = loop;
+    this.updatePlaylistUI();
+  }
+
+  onSampleEnded() {
+    if (!this.isPlaying) return;
+    if (this.playlist.length > 1) this.nextInPlaylist(true);
+    else this.stop();
+  }
+
   nextInPlaylist(isAuto = false) {
     if (this.playlist.length === 0) return;
+    if (isAuto && !this.isRepeat && this.playlistIndex >= this.playlist.length - 1) {
+      this.stop();
+      return;
+    }
     if (this.playlist.length <= 1 && !isAuto) return;
 
     if (this.isShuffle && !isAuto) {
@@ -3363,6 +4104,11 @@ class AudioTrack {
   }
 
   updatePlaylistUI() {
+    if (this.repeatBtn) {
+      this.repeatBtn.classList.toggle('active', this.isRepeat);
+      this.repeatBtn.setAttribute('aria-pressed', String(this.isRepeat));
+      this.repeatBtn.title = `Repeat sample or playlist: ${this.isRepeat ? 'on' : 'off'}`;
+    }
     if (this.countEl) {
       this.countEl.textContent = this.playlist.length > 0 ? `${this.playlistIndex + 1}/${this.playlist.length}` : '0/0';
     }
@@ -3650,7 +4396,7 @@ class AudioTrack {
           }
           URL.revokeObjectURL(blobUrl);
           if (revision !== this._sourceRevision) return;
-          
+
           const workletNode = new AudioWorkletNode(ctx, processorName, {
             numberOfInputs: 1,
             numberOfOutputs: 1,
@@ -3662,7 +4408,7 @@ class AudioTrack {
           const gainNode = ctx.createGain();
           gainNode.gain.setValueAtTime(1.0, ctx.currentTime);
           workletNode.connect(gainNode);
-          
+
           const defaultParams = {};
           if (bundle.manifest && Array.isArray(bundle.manifest.parameters)) {
             bundle.manifest.parameters.forEach(p => { defaultParams[p.id] = p.default; });
@@ -3782,7 +4528,7 @@ class AudioTrack {
       this.duration = keepTape ? (keepTape.duration || 10) : Infinity;
       this.customNodeBundle = bundle;
       this.statusEl.textContent = '⚡ Aether Node Active';
-      if (this.nodeInspectBtn) this.nodeInspectBtn.style.display = 'inline-block';
+      if (this.nodeInspectBtn) this.nodeInspectBtn.style.removeProperty('display');
 
       // Open interactive UI view if triggered by user action
       if (autoOpenInspector) {
@@ -3798,7 +4544,13 @@ class AudioTrack {
         }
         if (keepStream) this._resumeStreamElement();
       } else if (this.studio.isPlaying) {
-        this.play();
+        const nowTime = this.studio.getCurrentPlaybackTime ? this.studio.getCurrentPlaybackTime() : 0;
+        this.play(nowTime);
+      } else {
+        this.isPlaying = false;
+        if (typeof this.customNodeDSP?.stop === 'function') {
+          this.customNodeDSP.stop();
+        }
       }
       if (autoOpenInspector) {
         this.studio.showToast(`✨ Loaded node: ${bundle.manifest.name}`, 'success');
@@ -3862,7 +4614,7 @@ class AudioTrack {
     }
   }
 
-  _armInsertDry(buffer) {
+  _armInsertDry(buffer, offset = 0) {
     this._stopInsertDry();
     const ctx = this.studio.audioCtx;
     if (!ctx || !buffer || !this.eqLowNode) return;
@@ -3870,12 +4622,15 @@ class AudioTrack {
     const mix = (this.customNodeDSP && this.customNodeDSP.params && this.customNodeDSP.params.mix != null)
       ? this.customNodeDSP.params.mix : 0.62;
     this._insertDryGain.gain.setValueAtTime(this._mixDryWet(mix).dry, ctx.currentTime);
+    this._insertDryGain.connect(this.eqLowNode);
+    if (!this.studio.isPlaying) return;
     const src = ctx.createBufferSource();
     src.buffer = buffer;
     src.loop = true;
     src.connect(this._insertDryGain);
-    this._insertDryGain.connect(this.eqLowNode);
-    try { src.start(0); } catch (e) {}
+    const dur = buffer.duration || this.duration || 0;
+    const startOffset = (dur > 0 && Number.isFinite(dur)) ? (offset % dur) : 0;
+    try { src.start(0, startOffset); } catch (e) {}
     this._insertDrySource = src;
   }
 
@@ -3898,10 +4653,12 @@ class AudioTrack {
           if (this._nodeTapeStarted) this._stopNodeTape();
           if (!this._nodeTapeSource) this._armNodeTape(this.audioBuffer);
           if (this._nodeTapeSource && !this._nodeTapeStarted) {
-            try { this._nodeTapeSource.start(0); this._nodeTapeStarted = true; } catch(e) {}
+            const dur = (this.audioBuffer && this.audioBuffer.duration) || this.duration || 0;
+            const offset = (dur > 0 && Number.isFinite(dur)) ? (startTimeOffset % dur) : 0;
+            try { this._nodeTapeSource.start(0, offset); this._nodeTapeStarted = true; } catch(e) {}
           }
         }
-        this._armInsertDry(this.audioBuffer);
+        this._armInsertDry(this.audioBuffer, startTimeOffset);
       }
       if (this.isStream) {
         this._resumeIcecastPcm();
@@ -3927,9 +4684,9 @@ class AudioTrack {
     if (this.useMediaElement && this.htmlAudio) {
       const offset = startTimeOffset % (this.duration || 1);
       this.htmlAudio.currentTime = offset;
-      this.htmlAudio.loop = (this.playlist.length <= 1);
+      this.htmlAudio.loop = this.isRepeat && this.playlist.length <= 1;
       this.htmlAudio.onended = () => {
-        if (this.isPlaying && this.playlist.length > 1) this.nextInPlaylist(true);
+        this.onSampleEnded();
       };
       this.htmlAudio.play().catch(e => console.error('HTML audio play error:', e));
       this.isPlaying = true;
@@ -3940,11 +4697,11 @@ class AudioTrack {
     if (this.audioBuffer) {
       this.bufferSource = ctx.createBufferSource();
       this.bufferSource.buffer = this.audioBuffer;
-      this.bufferSource.loop = (this.playlist.length <= 1);
+      this.bufferSource.loop = this.isRepeat && this.playlist.length <= 1;
       this.bufferSource.connect(this.eqLowNode);
 
       this.bufferSource.onended = () => {
-        if (this.isPlaying && this.playlist.length > 1) this.nextInPlaylist(true);
+        this.onSampleEnded();
       };
 
       const offset = startTimeOffset % this.duration;
@@ -3982,6 +4739,11 @@ class AudioTrack {
 
   stop() {
     this.stopNodeOnly();
+    if (this.htmlAudio) {
+      try { this.htmlAudio.currentTime = 0; } catch (e) {}
+    }
+    this.startTime = 0;
+    this.updatePlaybackDisplay();
   }
 
   setPosition(x, y, z = undefined) {
@@ -4104,7 +4866,7 @@ class AudioTrack {
       const pY = this.spatializerNode.parameters.get('y');
       const pZ = this.spatializerNode.parameters.get('z');
       const pInt = this.spatializerNode.parameters.get('intensity');
-      
+
       if (pX) pX.setTargetAtTime(this.x, now, posTimeConst);
       if (pY) pY.setTargetAtTime(this.y, now, posTimeConst);
       if (pZ) pZ.setTargetAtTime(this.z, now, posTimeConst);
@@ -4208,6 +4970,9 @@ class AudioTrack {
       this.playMotionBtn.classList.remove('active');
       this.motionPath.push({ t: 0, x: this.x, y: this.y, z: this.z });
     }
+    if (this.studio && this.studio.activeInspectorTrack === this) {
+      this.studio.updateSampleInspector(this);
+    }
   }
 
   togglePlayMotion() {
@@ -4217,6 +4982,9 @@ class AudioTrack {
     this.recBtn.classList.toggle('greyed-out', this.isPlayingMotion);
     if (this.isPlayingMotion) {
       this.lastMotionFrameTime = performance.now();
+    }
+    if (this.studio && this.studio.activeInspectorTrack === this) {
+      this.studio.updateSampleInspector(this);
     }
   }
 
@@ -4229,6 +4997,9 @@ class AudioTrack {
     this.playMotionBtn.classList.remove('active');
     this.motionAccumulatedTime = 0;
     this.lastMotionFrameTime = 0;
+    if (this.studio && this.studio.activeInspectorTrack === this) {
+      this.studio.updateSampleInspector(this);
+    }
   }
 
   updateMotionPlayback() {
@@ -4430,6 +5201,8 @@ class SpatialStudio {
     this.masterGain = null;
     this.masterLimiter = null;
     this.isPlaying = false;
+    this.transportPosition = 0;
+    this.transportStartTime = 0;
     this.activeDragNodeIndex = -1;
 
     // Master Recording State
@@ -4450,7 +5223,7 @@ class SpatialStudio {
     this.isDark = (localStorage.getItem('aether_theme') || localStorage.getItem('tetrasphere_theme')) === 'dark';
 
     const trackColors = ['#FC4037', '#FFEA00', '#8B68B9', '#00D600'];
-    const trackNames = ['Bass Stem', 'Rhythm Beat', 'Synth Pad', 'Melody Lead'];
+    const trackNames = ['Track 1', 'Track 2', 'Track 3', 'Track 4'];
     this.tracks = trackColors.map((color, idx) => new AudioTrack(idx, trackNames[idx], color, this));
     this.tracks.forEach(t => t.updateAudioParamsFromPosition());
 
@@ -4505,7 +5278,6 @@ class SpatialStudio {
     this.masterVolumeSlider = document.getElementById('master-volume');
     this.masterVolVal = document.getElementById('master-vol-val');
     this.masterTimeEl = document.getElementById('master-time');
-    this.demoBtn = document.getElementById('demo-btn');
     this.resetAllBtn = document.getElementById('reset-all-btn');
 
     this.themeToggleBtn = document.getElementById('theme-toggle-btn');
@@ -4528,13 +5300,16 @@ class SpatialStudio {
 
     // Transport Handlers
     this.masterPlayBtn.addEventListener('click', () => this.toggleMasterPlay());
-    this.masterStopBtn.addEventListener('click', () => this.stopMaster());
+    if (this.masterStopBtn) {
+      this.masterStopBtn.addEventListener('click', () => this.stopMaster());
+    }
     this.masterRecBtn.addEventListener('click', () => this.toggleMasterRecording());
     this.icecastOutBtn = document.getElementById('icecast-out-btn');
     this.icecastOutText = document.getElementById('icecast-out-text');
     this.icecastOutDot = document.getElementById('icecast-out-dot');
     if (this.icecastOutBtn) {
-      this.icecastOutBtn.addEventListener('click', () => this.toggleIcecastOutbound());
+      this.icecastOutBtn.addEventListener('click', () => this.openConnectionSetup());
+      this.initConnectionSetup();
     }
 
     // Volume Slider
@@ -4569,7 +5344,6 @@ class SpatialStudio {
     });
 
     // Demo & Reset
-    this.demoBtn.addEventListener('click', () => this.loadDemoStems());
     this.resetAllBtn.addEventListener('click', () => this.resetAll());
 
     // Modal Events
@@ -4616,11 +5390,21 @@ class SpatialStudio {
     this.nodeModalCloseBtn = document.getElementById('node-modal-close-btn');
     if (this.nodeModalCloseBtn && this.nodeInspectorModal) {
       this.nodeModalCloseBtn.addEventListener('click', () => {
+        this.activeInspectorTrack = null;
         this.nodeInspectorModal.classList.remove('active');
+        const frame = document.getElementById('node-inspector-frame');
+        if (frame) frame.srcdoc = '';
+        const sampleView = document.getElementById('node-inspector-sample-view');
+        if (sampleView) sampleView.style.display = 'none';
       });
       this.nodeInspectorModal.addEventListener('click', (e) => {
         if (e.target === this.nodeInspectorModal) {
+          this.activeInspectorTrack = null;
           this.nodeInspectorModal.classList.remove('active');
+          const frame = document.getElementById('node-inspector-frame');
+          if (frame) frame.srcdoc = '';
+          const sampleView = document.getElementById('node-inspector-sample-view');
+          if (sampleView) sampleView.style.display = 'none';
         }
       });
     }
@@ -4738,7 +5522,8 @@ class SpatialStudio {
       }
       if (e.code === 'Space' || e.key === ' ') {
         const tag = (e.target && e.target.tagName) || '';
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target?.isContentEditable) return;
+        if (e.target?.closest('dialog[open]')) return;
+        if (tag === 'BUTTON' || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target?.isContentEditable) return;
         e.preventDefault();
         e.stopPropagation();
         if (document.activeElement && typeof document.activeElement.blur === 'function') {
@@ -4751,7 +5536,8 @@ class SpatialStudio {
     window.addEventListener('keyup', (e) => {
       if (e.code === 'Space' || e.key === ' ') {
         const tag = (e.target && e.target.tagName) || '';
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target?.isContentEditable) return;
+        if (e.target?.closest('dialog[open]')) return;
+        if (tag === 'BUTTON' || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target?.isContentEditable) return;
         e.preventDefault();
         e.stopPropagation();
       }
@@ -4894,12 +5680,15 @@ class SpatialStudio {
         if(typeof p.cancelAndHoldAtTime === 'function') p.cancelAndHoldAtTime(now);
         else { p.cancelScheduledValues(now); p.setValueAtTime(current,now); }
         // Exponential gain interpolation gives a steady change in dB.
-        p.exponentialRampToValueAtTime(target,now+10);
+        p.exponentialRampToValueAtTime(target,now+5);
         this._loudnessRampParam=p;
         this._loudnessRampTarget=target;
       }
     }
-    this.matchButton.textContent = this.loudnessDb ? `Matched ${this.loudnessDb>0?'+':''}${this.loudnessDb.toFixed(1)} dB` : 'Match loudness';
+    this.matchButton.classList.remove('listening');
+    this.matchButton.classList.toggle('active', !!this.loudnessDb);
+    this.matchButton.title = this.loudnessDb ? `Matched ${this.loudnessDb>0?'+':''}${this.loudnessDb.toFixed(1)} dB · Option-click to reset` : 'Match loudness · Listen for 12 seconds, then ease to the matched level over 5 seconds';
+    this.matchButton.setAttribute('aria-label', this.matchButton.title);
   }
 
   cancelLoudnessMatch() {
@@ -4940,13 +5729,15 @@ class SpatialStudio {
       const power=sum/(samples.length*2);
       if(power>1e-6) powers.push(power);
       const elapsed=ctx.currentTime-started;
-      this.matchButton.textContent=`Listening ${Math.max(0,Math.ceil(12-elapsed))}s · Cancel`;
+      this.matchButton.classList.add('listening');
+      this.matchButton.title=`Listening ${Math.max(0,Math.ceil(12-elapsed))}s · Click to cancel`;
+      this.matchButton.setAttribute('aria-label', this.matchButton.title);
       if(elapsed<12) return;
       this.cancelLoudnessMatch();
       const db=AetherLoudness.measure(powers);
       if(db===null) { this.showToast('Too little audible material to match. Try a fuller passage.', 'info'); return; }
       this.setLoudnessDb(db);
-      this.showToast('Loudness measured. Fading to the matched level over 10 seconds; Option-click Match to reset.', 'success');
+      this.showToast('Loudness measured. Fading to the matched level over 5 seconds; Option-click Match to reset.', 'success');
     },40);
   }
 
@@ -5420,13 +6211,45 @@ class SpatialStudio {
     }
   }
 
-  // --- ICECAST OUTBOUND (/matt) ---
+  initConnectionSetup() {
+    const dialog = document.getElementById('connection-setup');
+    const name = document.getElementById('connection-name');
+    try { name.value = localStorage.getItem('aether-stream-name') || ''; } catch (_) {}
+    document.getElementById('connection-close').onclick = () => dialog.close();
+    dialog.addEventListener('click', e => { if(e.target === dialog) { const r=dialog.getBoundingClientRect(); if(e.clientX<r.left || e.clientX>r.right || e.clientY<r.top || e.clientY>r.bottom) dialog.close(); } });
+    document.getElementById('connection-form').onsubmit = async e => {
+      e.preventDefault();
+      if(this._icecastLive) { await this.disconnectIcecastOutbound(); return; }
+      if(!name.reportValidity()) return;
+      this.streamUsername = name.value;
+      try { localStorage.setItem('aether-stream-name', name.value); } catch (_) {}
+      if(!window.__TAURI__) {
+        document.getElementById('connection-status').textContent = 'Username saved. Open Aether Desktop to connect; broadcasting is unavailable in this browser preview.';
+        return;
+      }
+      await this.connectIcecastOutbound();
+    };
+  }
+
+  openConnectionSetup() {
+    const dialog = document.getElementById('connection-setup');
+    if(!this._icecastLive && !this._icecastConnecting) document.getElementById('connection-status').textContent = window.__TAURI__ ? '2 · Connect when you’re ready. Uses your configured server and credentials.' : '2 · Connect in Aether Desktop. You can save your username here in the preview.';
+    dialog.showModal();
+  }
+
+  // --- ICECAST OUTBOUND ---
   _setIcecastUi(state, label) {
     if (this.icecastOutDot) {
       this.icecastOutDot.classList.remove('live', 'connecting', 'err');
       if (state) this.icecastOutDot.classList.add(state);
     }
-    if (this.icecastOutText && label) this.icecastOutText.textContent = label;
+    if (this.icecastOutText) this.icecastOutText.textContent = state === 'live' ? 'LIVE' : state === 'connecting' ? 'CONNECTING' : 'CONNECT';
+    const submit = document.getElementById('connection-submit');
+    const name = document.getElementById('connection-name');
+    submit.disabled = state === 'connecting';
+    submit.textContent = state === 'live' ? 'Disconnect' : state === 'connecting' ? 'Connecting…' : 'Connect';
+    name.disabled = state === 'live' || state === 'connecting';
+    document.getElementById('connection-status').textContent = state === 'live' ? `Live at /${this.streamUsername}. Your master mix is broadcasting.` : state === 'connecting' ? 'Connecting to your stream…' : state === 'err' ? 'Could not connect. Check your desktop server setup and try again.' : '2 · Connect when you’re ready to go live.';
     if (this.icecastOutBtn) {
       this.icecastOutBtn.classList.toggle('recording', state === 'live');
     }
@@ -5453,6 +6276,7 @@ class SpatialStudio {
       this._stopIcecastTap();
       this._setIcecastUi('err', 'CONNECT');
       const message = (msg.data && msg.data.message) || 'Icecast error';
+      document.getElementById('connection-status').textContent = message;
       console.warn('Icecast outbound:', message);
       if (this.showToast) this.showToast(message, 'error');
     }
@@ -5535,32 +6359,36 @@ class SpatialStudio {
     }
   }
 
-  async toggleIcecastOutbound() {
-    if (this._icecastConnecting) return;
-    if (this._icecastLive) {
-      await this.disconnectIcecastOutbound();
-      return;
-    }
-    await this.connectIcecastOutbound();
-  }
-
   async connectIcecastOutbound() {
-    await this.ensureAudioRunning();
-    await this._initIcecastCapture();
+    if (this._icecastConnecting || this._icecastLive) return;
     if (!window.__TAURI__) {
       this._setIcecastUi('err', 'CONNECT');
       if (this.showToast) this.showToast('Icecast outbound needs the Aether Desktop app.', 'error');
       return;
     }
     this._icecastConnecting = true;
+    const attempt = this._icecastAttempt = (this._icecastAttempt || 0) + 1;
+    let ended = false;
     this._setIcecastUi('connecting', 'CONNECTING');
-    const onEvent = createTauriChannel((msg) => this._onIcecastEvent(msg));
-    const sampleRate = (this.audioCtx && this.audioCtx.sampleRate) || 44100;
     try {
+      await this.ensureAudioRunning();
+      await this._initIcecastCapture();
+      if (!this._icecastCaptureReady) throw new Error('Audio capture could not start. Please try again.');
+      // Release any ended outbound worker before starting a new source.
+      await invokeTauri('icecast_disconnect');
+      const onEvent = createTauriChannel((msg) => {
+        if (attempt !== this._icecastAttempt) return;
+        const event = msg?.event || msg;
+        if (event === 'error' || event === 'disconnected') ended = true;
+        this._onIcecastEvent(msg);
+      });
+      const sampleRate = this.audioCtx.sampleRate;
       await invokeTauri('icecast_connect', {
         onEvent,
-        sampleRate
+        sampleRate,
+        username: this.streamUsername
       });
+      if (ended || attempt !== this._icecastAttempt) return;
       this._icecastLive = true;
       this._icecastConnecting = false;
       this._setIcecastUi('live', 'DISCONNECT');
@@ -5571,12 +6399,14 @@ class SpatialStudio {
       this._stopIcecastTap();
       this._setIcecastUi('err', 'CONNECT');
       const message = (err && err.message) ? err.message : String(err || 'connect failed');
+      document.getElementById('connection-status').textContent = message;
       console.warn('Icecast connect failed:', message);
       if (this.showToast) this.showToast(message, 'error');
     }
   }
 
   async disconnectIcecastOutbound() {
+    this._icecastAttempt = (this._icecastAttempt || 0) + 1;
     this._stopIcecastTap();
     this._icecastLive = false;
     this._icecastConnecting = false;
@@ -5756,6 +6586,7 @@ class SpatialStudio {
         playlist,
         playlistIndex: t.playlistIndex || 0,
         isShuffle: !!t.isShuffle,
+        isRepeat: t.isRepeat !== false,
         isCustomNode: !!t.isCustomNode,
         customNodeBundle: t.customNodeBundle || null,
         customNodeParams: (t.customNodeDSP && t.customNodeDSP.params) ? { ...t.customNodeDSP.params } : null,
@@ -5776,7 +6607,7 @@ class SpatialStudio {
     }
 
     if (this.tracks.some((t, i) => t._sourceRevision !== snapshots[i]._sourceRevision ||
-        t.playlistIndex !== snapshots[i].playlistIndex || t.isShuffle !== snapshots[i].isShuffle ||
+        t.playlistIndex !== snapshots[i].playlistIndex || t.isShuffle !== snapshots[i].isShuffle || t.isRepeat !== snapshots[i].isRepeat ||
         t.playlist.length !== snapshots[i].playlist.length || t.playlist.some((f, n) => f !== snapshots[i].playlist[n]))) {
       throw new Error('A source changed during saving. Please save again.');
     }
@@ -6048,6 +6879,7 @@ class SpatialStudio {
         t.playlist = [];
         t.playlistIndex = 0;
         t.isShuffle = false;
+        t.isRepeat = saved.isRepeat !== false;
         t.duration = 0;
         t.isLoaded = false;
         t.useMediaElement = false;
@@ -6178,8 +7010,10 @@ class SpatialStudio {
   playMaster() {
     this.isPlaying = true;
     this.masterPlayBtn.classList.add('playing');
-    this.masterPlayBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+    this.masterPlayBtn.title = 'Pause All (Space)';
+    this.masterPlayBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
 
+    this.transportStartTime = this.audioCtx ? this.audioCtx.currentTime : 0;
     const nowTime = this.getCurrentPlaybackTime();
     this.tracks.forEach(t => {
       if (t.isLiveIn) {
@@ -6194,28 +7028,48 @@ class SpatialStudio {
 
   pauseMaster() {
     this.cancelLoudnessMatch();
-    this.isPlaying = false;
+    if (this.isPlaying) {
+      const pausedTime = this.getCurrentPlaybackTime();
+      this.isPlaying = false;
+      this.transportPosition = pausedTime;
+      const t = pausedTime;
+      const secs = (t % 60).toFixed(1).padStart(4, '0');
+      const mins = Math.floor(t / 60).toString().padStart(2, '0');
+      this.masterTimeEl.textContent = `${mins}:${secs}`;
+    } else {
+      this.isPlaying = false;
+    }
     this.masterPlayBtn.classList.remove('playing');
-    this.masterPlayBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+    this.masterPlayBtn.title = 'Play / Resume All (Space)';
+    this.masterPlayBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
 
     this.tracks.forEach(t => {
       if (!t.isLiveIn) {
         t.stopNodeOnly();
+        t.updatePlaybackDisplay();
       }
     });
   }
 
   stopMaster() {
     this.pauseMaster();
+    this.transportPosition = 0;
+    this.transportStartTime = 0;
     this.tracks.forEach(t => {
       if (!t.isLiveIn) t.stop();
     });
     this.masterTimeEl.textContent = '00:00.0';
+    if (this.masterPlayBtn) {
+      this.masterPlayBtn.title = 'Play All (Space)';
+    }
     if (this.isRecordingMaster) this.stopMasterRecording();
   }
 
   getCurrentPlaybackTime() {
-    return this.audioCtx ? this.audioCtx.currentTime : 0;
+    if (!this.isPlaying || !this.audioCtx) {
+      return this.transportPosition || 0;
+    }
+    return (this.transportPosition || 0) + Math.max(0, this.audioCtx.currentTime - this.transportStartTime);
   }
 
   getClockBpm() {
@@ -6286,7 +7140,7 @@ class SpatialStudio {
     if (t.isLiveIn) mode = 'LIVE';
     else if (t.isStream) mode = 'STRM';
     else if (t.audioBuffer) {
-      const looping = !!(t.bufferSource && t.bufferSource.loop) || (t.playlist && t.playlist.length <= 1);
+      const looping = t.isRepeat && t.playlist.length <= 1;
       mode = looping ? 'LOOP' : 'SMPL';
     } else if (t.isCustomNode) mode = 'PAD';
 
@@ -6550,21 +7404,332 @@ class SpatialStudio {
     this.startRenderLoop();
   }
 
+  initSampleInspectorEvents() {
+    const view = document.getElementById('node-inspector-sample-view');
+    if (!view || view._eventsInitialized) return;
+    view._eventsInitialized = true;
+
+    const splashRec = document.getElementById('sample-splash-rec');
+    const splashPlay = document.getElementById('sample-splash-play-motion');
+    const splashClear = document.getElementById('sample-splash-clear-motion');
+
+    if (splashRec) {
+      splashRec.addEventListener('click', () => {
+        const track = this.activeInspectorTrack;
+        if (!track) return;
+        track.toggleRecordMotion();
+        this.updateSampleInspector(track);
+      });
+    }
+
+    if (splashPlay) {
+      splashPlay.addEventListener('click', () => {
+        const track = this.activeInspectorTrack;
+        if (!track) return;
+        track.togglePlayMotion();
+        this.updateSampleInspector(track);
+      });
+    }
+
+    if (splashClear) {
+      splashClear.addEventListener('click', () => {
+        const track = this.activeInspectorTrack;
+        if (!track) return;
+        track.clearMotion();
+        this.updateSampleInspector(track);
+      });
+    }
+
+    const interactiveEls = view.querySelectorAll('.sample-splash-card, .sample-splash-eq-cell');
+    interactiveEls.forEach(el => {
+      let isDragging = false;
+      let startY = 0;
+      let startVal = 0;
+
+      el.addEventListener('pointerdown', (e) => {
+        const track = this.activeInspectorTrack;
+        if (!track) return;
+        const param = el.dataset.param;
+        if (!param) return;
+
+        // Double-click to reset parameter to default
+        if (e.detail === 2) {
+          if (track.isPlayingMotion && (param === 'pan' || param === 'vol' || param === 'depth')) return;
+          if (param === 'pan') {
+            track.setPosition(0.5, track.y, track.z);
+          } else if (param === 'vol') {
+            track.setPosition(track.x, 0.8, track.z);
+          } else if (param === 'speed') {
+            track.setMotionSpeed(1.0, false);
+          } else if (param === 'depth') {
+            track.setPosition(track.x, track.y, 0.0);
+          } else if (param === 'bass') {
+            track.updateEQ('low', 0);
+          } else if (param === 'mid') {
+            track.updateEQ('mid', 0);
+          } else if (param === 'treble') {
+            track.updateEQ('high', 0);
+          } else if (param === 'gain') {
+            track.updateStripGain(0);
+          }
+          this.updateSampleInspector(track);
+          return;
+        }
+
+        // If automated on 2D canvas, lock out manual drag edits
+        if (track.isPlayingMotion && (param === 'pan' || param === 'vol' || param === 'depth')) {
+          return;
+        }
+
+        isDragging = true;
+        startY = e.clientY;
+        el.setPointerCapture(e.pointerId);
+        el.classList.add('dragging');
+
+        if (param === 'vol') startVal = track.y * 100;
+        else if (param === 'pan') startVal = (track.x - 0.5) * 200;
+        else if (param === 'speed') startVal = track.speed || 1.0;
+        else if (param === 'depth') startVal = track.z || 0.0;
+        else if (param === 'bass') startVal = track.eqLow || 0;
+        else if (param === 'mid') startVal = track.eqMid || 0;
+        else if (param === 'treble') startVal = track.eqHigh || 0;
+        else if (param === 'gain') startVal = track.gainDb || 0;
+
+        e.preventDefault();
+      });
+
+      el.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const track = this.activeInspectorTrack;
+        if (!track) return;
+        const param = el.dataset.param;
+        const min = parseFloat(el.dataset.min);
+        const max = parseFloat(el.dataset.max);
+        const step = parseFloat(el.dataset.step) || 1;
+
+        const deltaY = startY - e.clientY; // upward drag increases
+        const sensitivity = (param === 'speed' || param === 'depth') ? 0.015 : 0.5;
+        let newVal = startVal + deltaY * sensitivity;
+        newVal = Math.round(newVal / step) * step;
+        newVal = Math.max(min, Math.min(max, newVal));
+
+        if (param === 'vol') {
+          track.setPosition(track.x, newVal / 100, track.z);
+        } else if (param === 'pan') {
+          track.setPosition(Math.max(0.02, Math.min(0.98, 0.5 + (newVal / 200))), track.y, track.z);
+        } else if (param === 'speed') {
+          track.setMotionSpeed(newVal, false);
+        } else if (param === 'depth') {
+          track.setPosition(track.x, track.y, newVal);
+        } else if (param === 'bass') {
+          track.updateEQ('low', newVal);
+        } else if (param === 'mid') {
+          track.updateEQ('mid', newVal);
+        } else if (param === 'treble') {
+          track.updateEQ('high', newVal);
+        } else if (param === 'gain') {
+          track.updateStripGain(newVal);
+        }
+
+        this.updateSampleInspector(track);
+      });
+
+      const finishDrag = (e) => {
+        if (isDragging) {
+          isDragging = false;
+          el.classList.remove('dragging');
+          try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+        }
+      };
+
+      el.addEventListener('pointerup', finishDrag);
+      el.addEventListener('pointercancel', finishDrag);
+    });
+  }
+
+  updateSampleInspector(track) {
+    if (!track) return;
+    const badge = document.getElementById('sample-splash-badge');
+    const name = document.getElementById('sample-splash-name');
+    const status = document.getElementById('sample-splash-status');
+    const sourceType = document.getElementById('sample-splash-source-type');
+    const panVal = document.getElementById('sample-splash-pan');
+    const panFill = document.getElementById('sample-splash-pan-fill');
+    const volVal = document.getElementById('sample-splash-vol');
+    const volFill = document.getElementById('sample-splash-vol-fill');
+    const speedVal = document.getElementById('sample-splash-speed');
+    const speedFill = document.getElementById('sample-splash-speed-fill');
+    const depthVal = document.getElementById('sample-splash-depth');
+    const depthFill = document.getElementById('sample-splash-depth-fill');
+    const bassVal = document.getElementById('sample-splash-bass');
+    const midVal = document.getElementById('sample-splash-mid');
+    const trebleVal = document.getElementById('sample-splash-treble');
+    const gainVal = document.getElementById('sample-splash-gain');
+    const transportInfo = document.getElementById('sample-splash-transport-info');
+
+    const panCard = document.getElementById('sample-splash-card-pan');
+    const volCard = document.getElementById('sample-splash-card-vol');
+    const depthCard = document.getElementById('sample-splash-card-depth');
+
+    const isAutomated = !!track.isPlayingMotion;
+    if (panCard) panCard.classList.toggle('is-automated', isAutomated);
+    if (volCard) volCard.classList.toggle('is-automated', isAutomated);
+    if (depthCard) depthCard.classList.toggle('is-automated', isAutomated);
+
+    const trackColor = track.color || `var(--track-${track.index + 1})`;
+    const sampleView = document.getElementById('node-inspector-sample-view');
+    if (sampleView) {
+      sampleView.style.setProperty('--strip-color', trackColor);
+    }
+
+    const splashRec = document.getElementById('sample-splash-rec');
+    const splashPlay = document.getElementById('sample-splash-play-motion');
+    if (splashRec) {
+      splashRec.classList.toggle('recording', !!track.isRecordingMotion);
+      splashRec.classList.toggle('greyed-out', !!track.isPlayingMotion);
+    }
+    if (splashPlay) {
+      splashPlay.classList.toggle('active', !!track.isPlayingMotion);
+    }
+
+    if (badge) {
+      badge.textContent = `T${track.index + 1}`;
+      badge.style.background = trackColor;
+      badge.style.color = (track.index === 1 || track.index === 3) ? '#000000' : '#FFFFFF';
+    }
+
+    if (name) name.textContent = track.sampleName || track.name || `Track ${track.index + 1}`;
+    if (status) {
+      if (track.isCustomNode) status.textContent = 'Custom Aether DSP Node Active';
+      else if (track.isLiveIn) status.textContent = 'Live Audio Input (Mic/DAW)';
+      else if (track.isStream) status.textContent = 'Live Audio Stream Ingest';
+      else if (track.isLoaded) status.textContent = track.statusEl?.textContent || `${track.duration?.toFixed(1) || 0}s Loaded`;
+      else status.textContent = 'Empty track • No file loaded';
+    }
+
+    if (sourceType) {
+      sourceType.textContent = track.isLiveIn ? 'LIVE INPUT' :
+        track.isStream ? 'STREAM INGEST' :
+        track.isCustomNode ? 'AETHER NODE' :
+        (track.isLoaded ? 'AUDIO SAMPLE' : 'EMPTY TRACK');
+    }
+
+    // Panorama
+    const panPct = Math.round((track.x - 0.5) * 200);
+    const panStr = panPct === 0 ? 'C' : (panPct < 0 ? `L ${Math.abs(panPct)}%` : `R ${panPct}%`);
+    if (panVal) panVal.textContent = isAutomated ? `${panStr} [AUTO]` : panStr;
+    if (panFill) {
+      const pct = Math.max(0, Math.min(100, track.x * 100));
+      panFill.style.width = '8px';
+      panFill.style.marginLeft = `calc(${pct}% - 4px)`;
+      panFill.style.background = isAutomated ? 'var(--text-muted)' : trackColor;
+    }
+
+    // Volume
+    const volPct = Math.round(track.y * 100);
+    if (volVal) volVal.textContent = isAutomated ? `${volPct}% [AUTO]` : `${volPct}%`;
+    if (volFill) {
+      volFill.style.marginLeft = '0';
+      volFill.style.width = `${Math.max(0, Math.min(100, volPct))}%`;
+      volFill.style.background = isAutomated ? 'var(--text-muted)' : trackColor;
+    }
+
+    // Speed
+    const spd = typeof track.speed === 'number' ? track.speed : 1.0;
+    if (speedVal) speedVal.textContent = `${spd.toFixed(2)}x`;
+    if (speedFill) {
+      speedFill.style.marginLeft = '0';
+      const spdPct = Math.max(0, Math.min(100, (spd / 2.0) * 100));
+      speedFill.style.width = `${spdPct}%`;
+      speedFill.style.background = trackColor;
+    }
+
+    // Depth Z
+    const z = typeof track.z === 'number' ? track.z : 0.0;
+    if (depthVal) depthVal.textContent = isAutomated ? `${z.toFixed(2)} [AUTO]` : z.toFixed(2);
+    if (depthFill) {
+      depthFill.style.marginLeft = '0';
+      depthFill.style.width = `${Math.max(0, Math.min(100, (z / 50) * 100))}%`;
+      depthFill.style.background = isAutomated ? 'var(--text-muted)' : trackColor;
+    }
+
+    // EQ & Gain
+    if (bassVal) bassVal.textContent = `${track.eqLow || 0} dB`;
+    if (midVal) midVal.textContent = `${track.eqMid || 0} dB`;
+    if (trebleVal) trebleVal.textContent = `${track.eqHigh || 0} dB`;
+    if (gainVal) gainVal.textContent = `${track.gainDb || 0} dB`;
+
+    const updateDial = (idPrefix, val, min, max) => {
+      const trackBg = document.getElementById(`${idPrefix}-track`);
+      const arc = document.getElementById(`${idPrefix}-arc`);
+      const needle = document.getElementById(`${idPrefix}-needle`);
+      if (trackBg && !trackBg._inited) {
+        trackBg._inited = true;
+        trackBg.setAttribute('d', this._describeDialArc(18, 18, 13, -135, 135));
+      }
+      if (arc && needle) {
+        const norm = (val - min) / (max - min);
+        const zeroAngle = -135 + ((0 - min) / (max - min)) * 270;
+        const currentAngle = -135 + (norm * 270);
+        if (Math.abs(val) < 0.2) {
+          arc.setAttribute('d', '');
+        } else if (val > 0) {
+          arc.setAttribute('d', this._describeDialArc(18, 18, 13, zeroAngle, currentAngle));
+        } else {
+          arc.setAttribute('d', this._describeDialArc(18, 18, 13, currentAngle, zeroAngle));
+        }
+        arc.style.stroke = trackColor;
+        needle.setAttribute('transform', `rotate(${currentAngle} 18 18)`);
+      }
+    };
+
+    updateDial('splash-dial-bass', track.eqLow || 0, -15, 15);
+    updateDial('splash-dial-mid', track.eqMid || 0, -15, 15);
+    updateDial('splash-dial-treble', track.eqHigh || 0, -15, 15);
+    updateDial('splash-dial-gain', track.gainDb || 0, -24, 6);
+
+    // Transport info
+    if (transportInfo) {
+      const timeStr = track.timerEl?.textContent || '00:00.0';
+      const playState = track.isPlaying ? '▶ Playing' : '⏸ Paused';
+      const motionState = track.isRecordingMotion ? ' • [REC MOTION]' : track.isPlayingMotion ? ' • [AUTOMATED]' : '';
+      transportInfo.textContent = `${timeStr} • ${playState}${motionState}`;
+    }
+  }
+
+  static describeDialArc(x, y, radius, startAngle, endAngle) {
+    if (Math.abs(endAngle - startAngle) < 0.2) return "";
+    const polar = (deg) => {
+      const rad = (deg - 90) * Math.PI / 180.0;
+      return { x: x + radius * Math.cos(rad), y: y + radius * Math.sin(rad) };
+    };
+    const start = polar(endAngle);
+    const end = polar(startAngle);
+    const largeArc = Math.abs(endAngle - startAngle) <= 180 ? "0" : "1";
+    return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 0 ${end.x} ${end.y}`;
+  }
+
+  _describeDialArc(x, y, radius, startAngle, endAngle) {
+    return SpatialStudio.describeDialArc(x, y, radius, startAngle, endAngle);
+  }
+
   openNodeInspector(track) {
     if (!track) return;
     this.activeInspectorTrack = track;
     const modal = document.getElementById('node-inspector-modal');
     const title = document.getElementById('node-modal-title');
     const frame = document.getElementById('node-inspector-frame');
-    if (modal && frame && title) {
+    const sampleView = document.getElementById('node-inspector-sample-view');
+    if (modal && title) {
       title.textContent = `T${track.index + 1}: ${track.customNodeBundle?.manifest?.name || track.sampleName || track.name || 'Track settings'}`;
-      frame.onload = null;
-      frame.srcdoc = '';
-      frame.style.display = track.customNodeBundle?.ui_html ? 'block' : 'none';
-      if (track.customNodeBundle?.ui_html) {
+      if (track.customNodeBundle?.ui_html && frame) {
+        if (sampleView) sampleView.style.display = 'none';
+        frame.style.display = 'block';
+        frame.onload = null;
+        frame.srcdoc = '';
         let uiHtml = track.customNodeBundle.ui_html;
         const isDark = document.body.classList.contains('theme-dark');
-        
+
         try {
           // Extract and sync all native Aether root CSS variables, fonts, and theme rules
           let rootStyles = '';
@@ -6582,7 +7747,7 @@ class SpatialStudio {
               .filter(r => r.selectorText === ':root' || r.selectorText === 'body.theme-dark')
               .map(r => r.cssText).join('\n');
           }
-            
+
           const fontLinks = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">`;
           const styleTag = `${fontLinks}\n<style id="aether-theme-sync">\n${rootStyles}\n:root { --track-color: var(--track-${track.index + 1}, var(--track-1)); }\n</style>`;
           if (uiHtml.includes('</head>')) {
@@ -6596,7 +7761,7 @@ class SpatialStudio {
         } catch (e) {
           console.warn('Failed to inject theme variables into Node UI', e);
         }
-        
+
         frame.srcdoc = uiHtml;
         frame.onload = () => {
           if (track.customNodeDSP && track.customNodeDSP.params) {
@@ -6611,6 +7776,16 @@ class SpatialStudio {
             });
           }
         };
+      } else {
+        if (frame) {
+          frame.style.display = 'none';
+          frame.srcdoc = '';
+        }
+        if (sampleView) {
+          sampleView.style.display = 'flex';
+          this.initSampleInspectorEvents();
+          this.updateSampleInspector(track);
+        }
       }
       modal.classList.add('active');
     }
@@ -6637,6 +7812,10 @@ class SpatialStudio {
         t.updateMotionPlayback();
         t.updatePlaybackDisplay();
       });
+
+      if (this.activeInspectorTrack && this.nodeInspectorModal?.classList.contains('active') && !this.activeInspectorTrack.customNodeBundle?.ui_html) {
+        this.updateSampleInspector(this.activeInspectorTrack);
+      }
 
       const hasActiveMotion = this.tracks.some(t => t.isPlayingMotion || t.isRecordingMotion);
       const hasActiveAudio = this.isPlaying || this.tracks.some(t => t.isPlaying || (t.isLiveIn && t.isPlaying));
@@ -6680,7 +7859,7 @@ class SpatialStudio {
     this.ctx.restore();
 
     if (this.isPlaying && this.audioCtx) {
-      const t = this.audioCtx.currentTime;
+      const t = this.getCurrentPlaybackTime();
       const secs = (t % 60).toFixed(1).padStart(4, '0');
       const mins = Math.floor(t / 60).toString().padStart(2, '0');
       this.masterTimeEl.textContent = `${mins}:${secs}`;
@@ -6765,6 +7944,18 @@ class SpatialStudio {
       // Outer Progress Ring
       const progress = t.getProgress();
       const ringRadius = nodeRadius + 6;
+
+      // Soft puck shadow beneath the complete node assembly.
+      this.ctx.save();
+      this.ctx.shadowColor = this.isDark ? 'rgba(0, 0, 0, 0.72)' : 'rgba(24, 28, 26, 0.34)';
+      this.ctx.shadowBlur = (this.activeDragNodeIndex === i || t.isRecordingMotion) ? 22 : 15;
+      this.ctx.shadowOffsetX = 0;
+      this.ctx.shadowOffsetY = (this.activeDragNodeIndex === i || t.isRecordingMotion) ? 8 : 5;
+      this.ctx.beginPath();
+      this.ctx.arc(pxX, pxY, ringRadius + 1, 0, 2 * Math.PI);
+      this.ctx.fillStyle = this.isDark ? '#2e3032' : '#fafaf8';
+      this.ctx.fill();
+      this.ctx.restore();
 
       this.ctx.beginPath();
       this.ctx.arc(pxX, pxY, ringRadius, 0, 2 * Math.PI);
@@ -7033,14 +8224,14 @@ class SpatialStudio {
       } else if (animType === 'interference_wave' && (t.isLoaded || t.isCustomNode)) {
         const nowMs = performance.now();
         const baseRadius = ringRadius;
-        
+
         // Render 5 intersecting harmonic nodal rings reflecting 5-bowl interference
         for (let j = 0; j < 5; j++) {
           const angleOffset = (j / 5) * Math.PI * 2 + (nowMs * 0.0008);
           const orbitDist = 6 + Math.sin(nowMs * 0.003 + j * 1.25) * 3;
           const cx = pxX + Math.cos(angleOffset) * orbitDist;
           const cy = pxY + Math.sin(angleOffset) * orbitDist;
-          
+
           const expansion = (Math.sin(nowMs * 0.004 + j * 1.6) + 1.0) * 0.5;
           const currentRadius = baseRadius + 4 + (expansion * 12);
           const alpha = 0.2 + (0.35 * Math.sin(nowMs * 0.005 + j * 1.4));
@@ -7296,7 +8487,7 @@ class SpatialStudio {
           const glintDist = ringRadius + 3 + (Math.sin(nowMs * 0.005 + j * 2.1) + 1.0) * (4 + shimmer * 6);
           const sx = pxX + Math.cos(glintAngle) * glintDist;
           const sy = pxY + Math.sin(glintAngle) * glintDist;
-          
+
           const glintPhase = Math.sin(nowMs * 0.008 + j * 1.9);
           const glintAlpha = Math.max(0, (glintPhase + 0.3) * (0.5 + shimmer * 0.5));
           const glintSize = 1.0 + Math.max(0, glintPhase) * (2.2 + density * 1.5);
@@ -7332,7 +8523,7 @@ class SpatialStudio {
         const dsp = t.customNodeDSP;
         const smear = Number(dsp?.params?.smear_length) || 0.6;
         const wet = Number(dsp?.params?.dry_wet) || 0.5;
-        
+
         // Multi-layered blurred chromatic gradient halo reacting to amplitude/progress
         const numHalos = 5;
         for (let j = 0; j < numHalos; j++) {
