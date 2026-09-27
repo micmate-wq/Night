@@ -157,6 +157,9 @@ fn resolve_candidate_path(path: &str) -> std::path::PathBuf {
     }
     let filename = p.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| path.to_string());
     let candidates = [
+        format!("nodes-v2/{}", filename),
+        format!("../nodes-v2/{}", filename),
+        format!("../../nodes-v2/{}", filename),
         format!("nodes/{}", filename),
         format!("../nodes/{}", filename),
         format!("../../nodes/{}", filename),

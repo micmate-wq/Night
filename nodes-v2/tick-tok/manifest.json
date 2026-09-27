@@ -1,0 +1,82 @@
+{
+  "id": "com.aether.node.tick-tok",
+  "name": "Tick Tok",
+  "version": "2.0.0",
+  "author": "Aether",
+  "description": "Patient Zero Node V2: Master transport phase-grid synchronized analog rhythm generator.",
+  "role": "instrument",
+  "timingTier": "phase-grid-aware",
+  "category": "Rhythm / Generator",
+  "inputs": 0,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "bpm",
+      "name": "BPM",
+      "type": "float",
+      "min": 60,
+      "max": 180,
+      "default": 120,
+      "unit": "bpm"
+    },
+    {
+      "id": "pattern",
+      "name": "Pattern",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.22,
+      "unit": "norm"
+    },
+    {
+      "id": "talk",
+      "name": "Talk",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.62,
+      "unit": "norm"
+    },
+    {
+      "id": "decay",
+      "name": "Decay",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.38,
+      "unit": "norm"
+    },
+    {
+      "id": "density",
+      "name": "Density",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.5,
+      "unit": "norm"
+    },
+    {
+      "id": "lock",
+      "name": "Lock",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.7,
+      "unit": "norm"
+    },
+    {
+      "id": "color",
+      "name": "Color",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.4,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": "pulse"
+}

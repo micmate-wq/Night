@@ -4478,7 +4478,12 @@ class AudioTrack {
           const DSPClass = fn(window, {}, {}) || window.CustomNodeDSP || window[className];
           if (DSPClass) {
             this.customNodeDSP = new DSPClass();
-            this.customNodeDSP.init(ctx);
+            const clockHost = {
+              getClockSnapshot: () => (this.studio && typeof this.studio.getClockSnapshot === 'function')
+                ? this.studio.getClockSnapshot()
+                : null
+            };
+            this.customNodeDSP.init(ctx, clockHost);
             this.customNodeDSP.connect(this.eqLowNode);
             const dsp = this.customNodeDSP;
             if (dsp && typeof dsp.setParameter === 'function') {
@@ -4642,7 +4647,10 @@ class AudioTrack {
 
     if (this.isCustomNode && this.customNodeDSP) {
       if (typeof this.customNodeDSP.start === 'function') {
-        this.customNodeDSP.start();
+        const snapshot = (this.studio && typeof this.studio.getClockSnapshot === 'function')
+          ? this.studio.getClockSnapshot()
+          : null;
+        this.customNodeDSP.start(snapshot);
       }
       if (this.audioBuffer && this.customNodeDSP) {
         if (typeof this.customNodeDSP.injectAudioBuffer === 'function') {
@@ -5201,8 +5209,10 @@ class SpatialStudio {
     this.masterGain = null;
     this.masterLimiter = null;
     this.isPlaying = false;
+    this._isPaused = false;
     this.transportPosition = 0;
     this.transportStartTime = 0;
+    this.masterBpm = 120;
     this.activeDragNodeIndex = -1;
 
     // Master Recording State
@@ -7009,6 +7019,7 @@ class SpatialStudio {
 
   playMaster() {
     this.isPlaying = true;
+    this._isPaused = false;
     this.masterPlayBtn.classList.add('playing');
     this.masterPlayBtn.title = 'Pause All (Space)';
     this.masterPlayBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
@@ -7031,6 +7042,7 @@ class SpatialStudio {
     if (this.isPlaying) {
       const pausedTime = this.getCurrentPlaybackTime();
       this.isPlaying = false;
+      this._isPaused = true;
       this.transportPosition = pausedTime;
       const t = pausedTime;
       const secs = (t % 60).toFixed(1).padStart(4, '0');
@@ -7038,6 +7050,7 @@ class SpatialStudio {
       this.masterTimeEl.textContent = `${mins}:${secs}`;
     } else {
       this.isPlaying = false;
+      this._isPaused = false;
     }
     this.masterPlayBtn.classList.remove('playing');
     this.masterPlayBtn.title = 'Play / Resume All (Space)';
@@ -7055,6 +7068,7 @@ class SpatialStudio {
     this.pauseMaster();
     this.transportPosition = 0;
     this.transportStartTime = 0;
+    this._isPaused = false;
     this.tracks.forEach(t => {
       if (!t.isLiveIn) t.stop();
     });
@@ -7070,6 +7084,36 @@ class SpatialStudio {
       return this.transportPosition || 0;
     }
     return (this.transportPosition || 0) + Math.max(0, this.audioCtx.currentTime - this.transportStartTime);
+  }
+
+  getClockSnapshot() {
+    const transportTime = Math.max(0, this.getCurrentPlaybackTime());
+    const audioCtxTime = this.audioCtx ? this.audioCtx.currentTime : 0;
+    const bpm = (typeof this.masterBpm === 'number' && this.masterBpm > 0)
+      ? this.masterBpm
+      : (this.getClockBpm() || 120);
+    const state = this.isPlaying ? 'playing' : (this._isPaused || this.transportPosition > 0 ? 'paused' : 'stopped');
+    const beatsPerBar = 4;
+    const stepsPerBeat = 4;
+    const beatsElapsed = transportTime * (bpm / 60);
+    const beatPhase = beatsElapsed >= 0 ? (beatsElapsed % 1) : 0;
+    const totalBeats = Math.floor(beatsElapsed + 1e-9);
+    const barIndex = Math.floor((beatsElapsed + 1e-9) / beatsPerBar);
+    const beatIndex = ((totalBeats % beatsPerBar) + beatsPerBar) % beatsPerBar;
+    const totalSteps = Math.floor((beatsElapsed * stepsPerBeat) + 1e-9);
+    const stepIndex = ((totalSteps % (beatsPerBar * stepsPerBeat)) + (beatsPerBar * stepsPerBeat)) % (beatsPerBar * stepsPerBeat);
+
+    return {
+      transportTime,
+      audioCtxTime,
+      bpm,
+      state,
+      beatsElapsed,
+      barIndex,
+      beatIndex,
+      stepIndex,
+      beatPhase
+    };
   }
 
   getClockBpm() {
