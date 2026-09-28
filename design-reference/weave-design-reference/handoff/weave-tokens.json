@@ -1,0 +1,502 @@
+{
+ "meta": {
+  "name": "Aether Weave tokens",
+  "version": "0.1",
+  "source": "mockups e-toggle.html / shared/app.css / shared/app.js (2026-09-28)",
+  "status_legend": {
+   "observed": "read from mockup source/render",
+   "estimated": "approximated",
+   "suggested": "not in mockup, proposed"
+  }
+ },
+ "font": {
+  "family-sans": {
+   "value": "'Inter Tight', system-ui, sans-serif",
+   "status": "observed",
+   "note": "bundled TTF in mockup (shared/it.ttf); SIL OFL 1.1"
+  },
+  "family-mono": {
+   "value": "'Geist Mono', ui-monospace, monospace",
+   "status": "observed",
+   "note": "bundled TTF in mockup (shared/gm.ttf); SIL OFL 1.1"
+  }
+ },
+ "weight": {
+  "medium": {
+   "value": 500,
+   "status": "observed"
+  },
+  "bold": {
+   "value": 700,
+   "status": "observed"
+  },
+  "extrabold": {
+   "value": 800,
+   "status": "observed"
+  },
+  "black": {
+   "value": 900,
+   "status": "observed"
+  }
+ },
+ "size": {
+  "label": {
+   "value": "10px",
+   "status": "observed",
+   "note": "uppercase, .14em tracking"
+  },
+  "micro": {
+   "value": "9px",
+   "status": "observed",
+   "note": "node-lane labels, slider ticks, fade-bar row labels"
+  },
+  "button": {
+   "value": "11px",
+   "status": "observed"
+  },
+  "mono-sm": {
+   "value": "11px",
+   "status": "observed"
+  },
+  "loom-name": {
+   "value": "12.5px",
+   "status": "observed"
+  },
+  "loom-name-compact": {
+   "value": "11px",
+   "status": "observed"
+  },
+  "loom-number-min": {
+   "value": "14px",
+   "status": "observed"
+  },
+  "loom-number-max": {
+   "value": "46px",
+   "status": "observed"
+  },
+  "toggle": {
+   "value": "19px",
+   "status": "observed"
+  },
+  "setlist-row": {
+   "value": "26px",
+   "status": "observed"
+  },
+  "setlist-row-compact": {
+   "value": "17px",
+   "status": "observed"
+  },
+  "setlist-now-name": {
+   "value": "54px",
+   "status": "observed"
+  },
+  "setlist-now-name-compact": {
+   "value": "42px",
+   "status": "observed"
+  },
+  "setlist-countdown": {
+   "value": "60px",
+   "status": "observed"
+  },
+  "setlist-countdown-compact": {
+   "value": "48px",
+   "status": "observed"
+  },
+  "tx-title": {
+   "value": "30px",
+   "status": "observed"
+  },
+  "tx-title-play": {
+   "value": "40px",
+   "status": "observed"
+  },
+  "tx-length-number": {
+   "value": "40px",
+   "status": "observed"
+  },
+  "tx-starts-in": {
+   "value": "22px",
+   "status": "observed"
+  },
+  "play-bars-to-go": {
+   "value": "76px",
+   "status": "observed"
+  },
+  "play-bars-caption": {
+   "value": "22px",
+   "status": "observed"
+  },
+  "go-button": {
+   "value": "30px",
+   "status": "observed"
+  },
+  "panel-title": {
+   "value": "22px",
+   "status": "observed"
+  }
+ },
+ "tracking": {
+  "label": {
+   "value": ".14em",
+   "status": "observed"
+  },
+  "heavy-tight": {
+   "value": "-.045em",
+   "status": "observed"
+  },
+  "number": {
+   "value": "-.06em",
+   "status": "observed"
+  },
+  "huge": {
+   "value": "-.065em",
+   "status": "observed"
+  },
+  "mono-huge": {
+   "value": "-.07em",
+   "status": "observed"
+  },
+  "toggle": {
+   "value": "-.03em",
+   "status": "observed"
+  },
+  "button-seg": {
+   "value": ".1em",
+   "status": "observed"
+  }
+ },
+ "color": {
+  "text-primary": {
+   "value": "#141414",
+   "status": "observed",
+   "note": "#141414 'ink': text primary; also strong borders/rules, solid buttons, playhead"
+  },
+  "surface": {
+   "value": "#ffffff",
+   "status": "observed",
+   "note": "gutter panels, set-list sheet"
+  },
+  "surface-raised": {
+   "value": "#f7f7f5",
+   "status": "observed",
+   "note": "top bar, channel strip"
+  },
+  "surface-canvas": {
+   "value": "#fbfbfa",
+   "status": "observed",
+   "note": "centre canvas, morph map"
+  },
+  "app-bg": {
+   "value": "#ececea",
+   "status": "observed"
+  },
+  "gutter-play-bg": {
+   "value": "#e4e4e0",
+   "status": "observed",
+   "note": "Weave gutter behind the set-list sheet in PLAY"
+  },
+  "tint": {
+   "value": "#f3f3f0",
+   "status": "observed",
+   "note": "transition overlap zone, pressed curve button"
+  },
+  "border-subtle": {
+   "value": "#dcdcd8",
+   "status": "observed"
+  },
+  "tick-empty": {
+   "value": "#d0d0cc",
+   "status": "observed",
+   "note": "empty colour tick outline"
+  },
+  "progress-track": {
+   "value": "#e2e2de",
+   "status": "observed"
+  },
+  "text-muted": {
+   "value": "#8a8a86",
+   "status": "observed"
+  },
+  "node-t1": {
+   "value": "#f2463a",
+   "status": "observed",
+   "note": "red"
+  },
+  "node-t2": {
+   "value": "#f7dc38",
+   "status": "observed",
+   "note": "yellow"
+  },
+  "node-t3": {
+   "value": "#8f63c8",
+   "status": "observed",
+   "note": "purple"
+  },
+  "node-t4": {
+   "value": "#56c83a",
+   "status": "observed",
+   "note": "green"
+  },
+  "node-t2-text": {
+   "value": "#b59a00",
+   "status": "observed",
+   "note": "T2 label on white (legibility); strip mock used #c9ad00 — see spec"
+  },
+  "playing": {
+   "value": "#f6d24a",
+   "status": "observed",
+   "note": "Aether sticky yellow: playing band, playing number badge text"
+  },
+  "tape": {
+   "value": "#efe3a6",
+   "status": "observed",
+   "note": "at opacity .9"
+  }
+ },
+ "opacity": {
+  "past": {
+   "value": 0.45,
+   "status": "observed"
+  },
+  "beat-future": {
+   "value": 0.15,
+   "status": "observed"
+  },
+  "tape": {
+   "value": 0.9,
+   "status": "observed"
+  },
+  "disabled": {
+   "value": 0.3,
+   "status": "observed",
+   "note": "length slider in JUMP"
+  },
+  "loom-bars-count": {
+   "value": 0.7,
+   "status": "observed"
+  }
+ },
+ "space": {
+  "1": {
+   "value": "3px",
+   "status": "observed"
+  },
+  "2": {
+   "value": "6px",
+   "status": "observed"
+  },
+  "3": {
+   "value": "8px",
+   "status": "observed"
+  },
+  "4": {
+   "value": "12px",
+   "status": "observed"
+  },
+  "5": {
+   "value": "14px",
+   "status": "observed"
+  },
+  "6": {
+   "value": "16px",
+   "status": "observed"
+  },
+  "7": {
+   "value": "18px",
+   "status": "observed"
+  },
+  "8": {
+   "value": "22px",
+   "status": "observed"
+  },
+  "note": {
+   "value": "scale derived from recurring mockup values",
+   "status": "estimated"
+  }
+ },
+ "radius": {
+  "sm": {
+   "value": "6px",
+   "status": "observed",
+   "note": "segmented switch, curve buttons, key cap, morph map"
+  },
+  "toggle": {
+   "value": "7px",
+   "status": "observed"
+  },
+  "md": {
+   "value": "8px",
+   "status": "observed",
+   "note": "GO NOW / HOLD"
+  },
+  "lg": {
+   "value": "10px",
+   "status": "observed",
+   "note": "panels, strip"
+  },
+  "pill": {
+   "value": "999px",
+   "status": "observed"
+  }
+ },
+ "border": {
+  "hair": {
+   "value": "1px",
+   "status": "observed",
+   "note": "panel outlines (subtle)"
+  },
+  "base": {
+   "value": "1.5px",
+   "status": "observed",
+   "note": "rules, rows, buttons, seg"
+  },
+  "toggle": {
+   "value": "2px",
+   "status": "observed"
+  },
+  "go": {
+   "value": "2.5px",
+   "status": "observed"
+  },
+  "keycap-bottom": {
+   "value": "4px",
+   "status": "observed"
+  },
+  "loom-bar": {
+   "value": "7px",
+   "status": "observed",
+   "note": "4px when crowded"
+  },
+  "playhead": {
+   "value": "2px",
+   "status": "observed"
+  }
+ },
+ "shadow": {
+  "sheet": {
+   "value": "3px 5px 10px rgba(20,20,20,.10)",
+   "status": "observed",
+   "note": "soft offset, down-right; set-list sheet only"
+  },
+  "none-elsewhere": {
+   "value": "none",
+   "status": "observed"
+  }
+ },
+ "layout": {
+  "gutter-width": {
+   "value": "300px",
+   "status": "observed"
+  },
+  "gutter-inset": {
+   "value": "12px",
+   "status": "observed"
+  },
+  "panel-top": {
+   "value": "66px",
+   "status": "observed",
+   "note": "below 46px top bar at 10px"
+  },
+  "canvas-inset-x": {
+   "value": "324px",
+   "status": "observed"
+  },
+  "toggle-height": {
+   "value": "40px",
+   "status": "observed"
+  },
+  "loom-top": {
+   "value": "70px",
+   "status": "observed"
+  },
+  "loom-footer": {
+   "value": "46px",
+   "status": "observed"
+  },
+  "loom-px-per-bar-max": {
+   "value": "5px",
+   "status": "observed"
+  },
+  "loom-lanes-x": {
+   "value": "172,202,232,262px",
+   "status": "observed"
+  },
+  "loom-thread-max": {
+   "value": "24px",
+   "status": "observed"
+  },
+  "loom-thread-min": {
+   "value": "3px",
+   "status": "observed"
+  },
+  "loom-label-width": {
+   "value": "136px",
+   "status": "observed"
+  },
+  "loom-selected-block": {
+   "value": "150px",
+   "status": "observed"
+  },
+  "fadebars-width": {
+   "value": "236px",
+   "status": "observed"
+  },
+  "fadebars-row": {
+   "value": "30px",
+   "status": "observed"
+  },
+  "fadebars-max-thickness": {
+   "value": "22px",
+   "status": "observed"
+  },
+  "morph-map": {
+   "value": "112px",
+   "status": "observed"
+  },
+  "sheet-rotate": {
+   "value": "-0.8deg",
+   "status": "observed"
+  }
+ },
+ "motion": {
+  "mode-switch-duration": {
+   "value": "460ms",
+   "status": "observed"
+  },
+  "mode-switch-easing": {
+   "value": "easeInOutQuad (2t² / 1-2(1-t)²)",
+   "status": "observed",
+   "note": "≈ cubic-bezier(.45,0,.55,1)"
+  },
+  "marquee-duration": {
+   "value": "max(6s, chars × 0.45s) per loop",
+   "status": "observed"
+  },
+  "marquee-now-name": {
+   "value": "7s",
+   "status": "observed"
+  },
+  "countdown-format": {
+   "value": "mm:ss.t",
+   "status": "observed"
+  },
+  "countdown-refresh": {
+   "value": "every frame (shows tenths)",
+   "status": "observed"
+  },
+  "tx-preview-playhead": {
+   "value": "4s loop, linear",
+   "status": "observed"
+  },
+  "reduced-motion": {
+   "value": "mode switch instant (0ms)",
+   "status": "observed",
+   "note": "marquee/playhead under reduced motion: suggested stop/static"
+  },
+  "mode-switch-easing-css": {
+   "value": "cubic-bezier(.45,0,.55,1)",
+   "status": "estimated",
+   "note": "CSS approximation of the observed easeInOutQuad"
+  }
+ }
+}
