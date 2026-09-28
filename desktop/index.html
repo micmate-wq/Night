@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="weave.css">
   <style>
 /* ==========================================================================
    AETHER DESIGN SYSTEM & THEMES
@@ -1555,21 +1556,31 @@ body.theme-dark .app-header, body.theme-dark .channel-strip, body.theme-dark .ca
     </header>
 
     <div class="performance-stage">
-    <!-- 2D SPATIAL CANVAS WORKSPACE -->
-    <section class="spatial-workspace-section">
-      <div class="canvas-arena-container" id="arena-container">
-        <div class="axis-label axis-top">+100% VOLUME</div>
-        <div class="axis-label axis-bottom">0% VOLUME</div>
-        <div class="axis-label axis-left">100% LEFT</div>
-        <div class="axis-label axis-right">100% RIGHT</div>
-        <div class="grid-crosshair horizontal"></div>
-        <div class="grid-crosshair vertical"></div>
-        <canvas id="spatial-canvas"></canvas>
-        <div class="arena-drop-hint" id="arena-drop-hint">
-          <div class="hint-box">Drop Audio File(s) to Assign Track</div>
+      <!-- WEAVE LEFT GUTTER (LOOM / SET LIST) -->
+      <aside class="weave-gutter weave-gutter-left" id="weave-gutter">
+        <div class="weave-panel" id="weave"></div>
+      </aside>
+
+      <!-- 2D SPATIAL CANVAS WORKSPACE -->
+      <section class="spatial-workspace-section">
+        <div class="canvas-arena-container" id="arena-container">
+          <div class="axis-label axis-top">+100% VOLUME</div>
+          <div class="axis-label axis-bottom">0% VOLUME</div>
+          <div class="axis-label axis-left">100% LEFT</div>
+          <div class="axis-label axis-right">100% RIGHT</div>
+          <div class="grid-crosshair horizontal"></div>
+          <div class="grid-crosshair vertical"></div>
+          <canvas id="spatial-canvas"></canvas>
+          <div class="arena-drop-hint" id="arena-drop-hint">
+            <div class="hint-box">Drop Audio File(s) to Assign Track</div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <!-- WEAVE RIGHT GUTTER (TRANSITION INSPECTOR) -->
+      <aside class="weave-gutter weave-gutter-right" id="trans-gutter">
+        <div class="weave-tx-panel" id="trans"></div>
+      </aside>
 
     <!-- 4-CHANNEL MIXER RACK -->
     <section class="mixer-section">
@@ -1721,6 +1732,7 @@ body.theme-dark .app-header, body.theme-dark .channel-strip, body.theme-dark .ca
               <span class="num-label">GAIN</span>
             </div>
           </div>
+          <div class="channel-strip-weave-note"><span class="csw-label">WEAVE CONTINUES UNDER</span><span class="csw-range">01–03</span></div>
         </div>
 
         <!-- Track 2 -->
@@ -1870,6 +1882,7 @@ body.theme-dark .app-header, body.theme-dark .channel-strip, body.theme-dark .ca
               <span class="num-label">GAIN</span>
             </div>
           </div>
+          <div class="channel-strip-weave-note"><span class="csw-label">WEAVE CONTINUES UNDER</span><span class="csw-range">04–07</span></div>
         </div>
 
         <!-- Track 3 -->
@@ -2019,6 +2032,7 @@ body.theme-dark .app-header, body.theme-dark .channel-strip, body.theme-dark .ca
               <span class="num-label">GAIN</span>
             </div>
           </div>
+          <div class="channel-strip-weave-note"><span class="csw-label">WEAVE CONTINUES UNDER</span><span class="csw-range">TRANSITION</span></div>
         </div>
 
         <!-- Track 4 -->
@@ -2168,6 +2182,7 @@ body.theme-dark .app-header, body.theme-dark .channel-strip, body.theme-dark .ca
               <span class="num-label">GAIN</span>
             </div>
           </div>
+          <div class="channel-strip-weave-note"><span class="csw-label">WEAVE CONTINUES UNDER</span><span class="csw-range">CONTROLS</span></div>
         </div>
 
       </div>
@@ -8717,5 +8732,6 @@ document.addEventListener('DOMContentLoaded', () => {
   window.studio = new SpatialStudio();
 });
   </script>
+  <script src="weave.js"></script>
 </body>
 </html>
