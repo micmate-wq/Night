@@ -2521,6 +2521,7 @@ class BipolarRotaryKnob {
  * Audio Track Model
  */
 const AETHERNODE_STANDARD_GAIN = 0.8;
+const SPATIAL_NODE_CANVAS_SCALE = 1.38; // 1.2 baseline * 1.15 (+15% visual scale)
 
 class AudioTrack {
   constructor(index, name, color, studio) {
@@ -4793,7 +4794,7 @@ class AudioTrack {
           || (this.customNodeBundle.manifest.art && this.customNodeBundle.manifest.art.settings && this.customNodeBundle.manifest.art.settings.family === 'sticky'));
       if (face) base = Math.max(base, 46);
     } catch (e) {}
-    return Math.max(base - (this.z * 0.32), 10) * 1.2;
+    return Math.max(base - (this.z * 0.32), 10) * SPATIAL_NODE_CANVAS_SCALE;
   }
 
   updateChannelControlsDisplay(panVal, isCentered) {
@@ -7318,7 +7319,7 @@ class SpatialStudio {
       const nodeRadius = t.getVisualRadius();
       const gearX = nodePxX + nodeRadius * 0.72;
       const gearY = nodePxY - nodeRadius * 0.72;
-      if (Math.hypot(gearX - pxX, gearY - pxY) <= 14 * 1.2) {
+      if (Math.hypot(gearX - pxX, gearY - pxY) <= 14 * SPATIAL_NODE_CANVAS_SCALE) {
         return i;
       }
     }
@@ -7964,7 +7965,7 @@ class SpatialStudio {
     this.tracks.forEach((t, i) => {
       const pxX = t.x * w;
       const pxY = (1.0 - t.y) * h;
-      const nodeRadius = t.getVisualRadius() / 1.2;
+      const nodeRadius = t.getVisualRadius() / SPATIAL_NODE_CANVAS_SCALE;
 
       // Projection lines to axes
       this.ctx.strokeStyle = this.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
@@ -7986,7 +7987,7 @@ class SpatialStudio {
       // Enlarge all node artwork together around its unchanged canvas position.
       this.ctx.save();
       this.ctx.translate(pxX, pxY);
-      this.ctx.scale(1.2, 1.2);
+      this.ctx.scale(SPATIAL_NODE_CANVAS_SCALE, SPATIAL_NODE_CANVAS_SCALE);
       this.ctx.translate(-pxX, -pxY);
 
       // Visual 3D Depth Rings (when Z > 0)
