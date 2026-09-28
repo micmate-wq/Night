@@ -1403,22 +1403,10 @@ body {
 
 /* Square performance workspace; channel panels retain their existing controls. */
 .app-container { max-width: none; gap: 12px; }
-.app-header { display: grid; grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr); }
+.app-header { display: grid; grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr); align-items: center; }
 .header-right { justify-self: end; }
 .workspace-toolbar { display: flex; align-items: center; justify-content: center; gap: 10px; }
-.channel-panel-toggle { display: flex; align-items: center; justify-content: center; flex: none; width: 30px; height: 30px; padding: 0; border: 1px solid var(--border-accent); border-radius: 4px; background: var(--bg-main); box-shadow: 0 2px 7px rgba(0, 0, 0, 0.14), 0 1px 3px rgba(0, 0, 0, 0.08); cursor: pointer; transition: all 0.15s ease; }
-.channel-panel-toggle:hover { background: var(--accent-soft); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18), 0 1px 4px rgba(0, 0, 0, 0.10); }
-.channel-panel-toggle:active { box-shadow: var(--shadow-inset-soft); transform: translateY(1px); }
-.channel-panel-icon { width: 26px; height: 26px; overflow: visible; pointer-events: none; }
-.channel-panel-orb { fill: transparent; stroke: var(--panel-color); stroke-width: 2; transition: fill 0.15s ease; }
-.channel-panel-toggle:hover .channel-panel-orb, .channel-panel-toggle[aria-expanded="true"] .channel-panel-orb { fill: var(--panel-color); }
-.channel-panel-ring { fill: none; stroke: #bcbcbc; stroke-width: 2.5; }
-.channel-panel-ring, .channel-panel-cog { opacity: 0; transition: opacity 0.15s ease; }
-.channel-panel-toggle[aria-expanded="true"] .channel-panel-ring, .channel-panel-toggle[aria-expanded="true"] .channel-panel-cog { opacity: 1; }
-.channel-panel-cog circle { fill: var(--bg-main); stroke: var(--panel-color); stroke-width: 1; }
-.channel-panel-cog path { fill: var(--panel-color); }
-.channel-panel-toggle:focus-visible, .panel-close:focus-visible { outline: 2px solid var(--text-main); outline-offset: 3px; }
-.performance-stage { --canvas-width: min(calc(100vw - 400px), calc((100dvh - var(--workspace-top, 64px) - 16px) * 1.2)); --canvas-size: calc(var(--canvas-width) / 1.2); display: grid; grid-template-columns: minmax(0, 1fr) var(--canvas-width) minmax(0, 1fr); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 12px; height: var(--canvas-size); }
+.performance-stage { --stage-gutter-gap: 12px; --canvas-width: min(calc(100vw - 400px), calc((100dvh - var(--workspace-top, 64px) - 16px) * 1.2)); --canvas-size: calc(var(--canvas-width) / 1.2); display: grid; grid-template-columns: var(--weave-gutter-width, 300px) var(--canvas-width) var(--weave-gutter-width, 300px); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: var(--stage-gutter-gap); height: var(--canvas-size); }
 .spatial-workspace-section { grid-column: 2; grid-row: 1 / 3; padding: 0; border: 0; border-radius: 10px; box-shadow: none; min-width: 0; }
 .canvas-arena-container { height: auto; aspect-ratio: 1.2; flex: 1; border: none; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04); }
 .canvas-arena-container { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%278%27%20height%3D%278%27%3E%3Cpath%20d%3D%27M1%204h6m-3-3v6%27%20stroke%3D%27%23242725%27%20stroke-opacity%3D%270.10%27%20stroke-width%3D%270.5%27%2F%3E%3C%2Fsvg%3E"); background-size: 8px 8px; }
@@ -1449,10 +1437,22 @@ body {
   .strip-status-bar { flex-wrap: wrap; }
 }
 /* A fixed desktop workspace: smaller windows crop, never rearrange. */
-html, body { overflow: clip; }
-body { padding: 8px; }
-.app-container { width: 1424px; max-width: none; margin: 0; gap: 8px; }
-.performance-stage { --canvas-width: 912px; --canvas-size: 760px; }
+html, body { overflow: hidden; height: 100%; }
+body { padding: 4px 6px 6px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; box-sizing: border-box; }
+.app-container { width: 1424px; max-width: none; margin: 0 auto; gap: 8px; }
+.performance-stage {
+  --canvas-width: 800px;
+  --canvas-size: calc(var(--canvas-width) / 1.2);
+  height: calc(var(--canvas-size) + 38px);
+}
+.spatial-workspace-section {
+  display: flex;
+  flex-direction: column;
+}
+.canvas-arena-container {
+  height: 100%;
+  aspect-ratio: unset;
+}
 .channel-strip {
   padding: 10px 14px 12px;
   overflow-y: hidden;
@@ -1468,12 +1468,406 @@ body { padding: 8px; }
 .automation-row { margin-top: 2px; margin-bottom: 4px; }
 .app-footer { display: none; }
 
-/* Compact, consistent application controls. */
-.app-header { box-shadow: 0 2px 10px #0000000a; border: 1px solid var(--border-subtle); border-radius: 12px; }
-.app-header button { box-shadow: none; border: 1px solid transparent; border-radius: 7px; background: transparent; min-height: 30px; }
-.app-header button:hover { background: var(--accent-soft); }
-.app-header button:focus-visible, .source-item:focus-visible { outline: 2px solid var(--text-muted); outline-offset: 2px; }
-.app-header .icon-button { width: 34px; padding: 6px; display: inline-flex; align-items: center; justify-content: center; }
+/* ==========================================================================
+   GROK INK SPECIFICATION: TOP HEADER REFINEMENT
+   ========================================================================== */
+.app-header {
+  --ink: #141414;
+  --soft: #c8c8c4;
+  --rest: #5c5c58;
+  --muted: #a8a8a2;
+  --rec: #f2463a;
+  --live: #56c83a;
+  --idle-dot: #9a9a94;
+
+  height: 58px;
+  min-height: 58px;
+  max-height: 58px;
+  padding: 0 16px;
+  background: #eeefeb;
+  color: var(--rest);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+body.theme-dark .app-header {
+  background: #202224;
+  border-color: #383a3c;
+  --soft: #444648;
+  --rest: #949692;
+  --muted: #747672;
+  --ink: #ffffff;
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.transport-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Master Play Button: Strongest header state */
+.app-header #master-play-btn {
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: #ffffff;
+  border: 1.5px solid var(--soft);
+  border-bottom: 3px solid var(--soft);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: none;
+  transition: transform 0.06s ease, background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.app-header #master-play-btn:hover {
+  background: #ffffff;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.app-header #master-play-btn:active {
+  transform: translateY(1.5px);
+  border-bottom-width: 2px;
+  background: #f0f0ec;
+}
+
+.app-header #master-play-btn.playing {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #ffffff;
+}
+
+/* Master Stop Button */
+.app-header #master-stop-btn {
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-bottom: 3px solid transparent;
+  color: var(--rest);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: none;
+  transition: transform 0.06s ease, background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.app-header #master-stop-btn:hover {
+  background: #ffffff;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.app-header #master-stop-btn:active {
+  transform: translateY(1.5px);
+  border-bottom-width: 2px;
+  background: #f0f0ec;
+}
+
+/* Text Capsules: REC & CONNECT */
+.app-header .btn-rec-master {
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 9px;
+  border: 1.5px solid transparent;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--rest);
+  font-family: var(--weave-font-sans, 'Inter Tight', sans-serif);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  box-shadow: none;
+  transition: transform 0.06s ease, background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.app-header .btn-rec-master:hover {
+  background: #ffffff;
+  border-color: var(--ink);
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.app-header .btn-rec-master:active {
+  transform: translateY(1.5px);
+  border-bottom-width: 2px;
+  background: #f0f0ec;
+}
+
+/* REC dot & active recording state */
+#rec-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--idle-dot);
+  flex: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.app-header #master-rec-btn.recording {
+  background: #ffffff;
+  border-color: var(--ink);
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.app-header #master-rec-btn.recording #rec-dot {
+  background: var(--rec);
+  transform: scale(1.2);
+  animation: pulse-rec-dot 1.2s infinite alternate;
+}
+
+@keyframes pulse-rec-dot {
+  0% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* CONNECT dot & active live state (indicator kept small) */
+#icecast-out-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--idle-dot);
+  flex: none;
+  transition: background 0.15s ease, width 0.15s ease, height 0.15s ease;
+}
+
+#icecast-out-dot.live {
+  background: var(--live);
+  width: 6px;
+  height: 6px;
+}
+
+#icecast-out-dot.connecting {
+  background: #f1c40f;
+}
+
+#icecast-out-dot.err {
+  background: var(--rec);
+}
+
+.app-header:has(#icecast-out-dot.live) #icecast-out-btn {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+/* Clock: Master Time Display */
+.app-header .master-time-display {
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 9px;
+  border: 1.5px solid var(--muted);
+  background: #ffffff;
+  color: var(--rest);
+  font-family: var(--weave-font-mono, 'Geist Mono', monospace);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  box-shadow: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.app-header:has(#master-play-btn.playing) .master-time-display {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+/* Centre Track Keys: Tactile footprint (GrokBot A · Ink) */
+.workspace-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.track-key-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+}
+
+.channel-panel-toggle {
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  padding: 0;
+  border-radius: 9px;
+  background: #ffffff;
+  border: 1.5px solid var(--soft);
+  border-bottom: 3px solid var(--soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none;
+  transition: transform 0.06s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+.track-key-pip {
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid var(--panel-color);
+  background: transparent;
+  flex: none;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+/* Hover A · Ink RECOMMENDED & Focus */
+.track-key-item:hover .channel-panel-toggle,
+.channel-panel-toggle:hover,
+.channel-panel-toggle:focus-visible {
+  border: 2.5px solid var(--ink);
+  border-bottom: 4px solid var(--ink);
+  background: #ffffff;
+}
+
+.track-key-item:hover .track-key-pip,
+.channel-panel-toggle:hover .track-key-pip,
+.channel-panel-toggle:focus-visible .track-key-pip {
+  background: var(--panel-color);
+  border-color: var(--panel-color);
+}
+
+/* Tactile press reaction when clicked */
+.channel-panel-toggle:active,
+.track-key-item:active .channel-panel-toggle {
+  transform: translateY(1.5px);
+  border-bottom-width: 2.5px;
+  background: #f0f0ec;
+}
+
+/* ENGAGED · strip open (matches hover without solid black fill) */
+.app-header .channel-panel-toggle[aria-expanded="true"],
+.app-header .channel-panel-toggle.inspector-open {
+  background: #ffffff !important;
+  border: 2.5px solid var(--ink) !important;
+  border-bottom: 4px solid var(--ink) !important;
+}
+
+.app-header .channel-panel-toggle[aria-expanded="true"] .track-key-pip,
+.app-header .channel-panel-toggle.inspector-open .track-key-pip {
+  background: var(--panel-color) !important;
+  border-color: var(--panel-color) !important;
+}
+
+/* Icon Buttons: Save, Open, Mixer/Match, Theme */
+.app-header .header-btn.icon-button,
+.app-header .theme-toggle-btn {
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  color: var(--rest);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.app-header .header-btn.icon-button:hover,
+.app-header .theme-toggle-btn:hover {
+  background: #e4e4e0;
+  color: var(--ink);
+}
+
+.app-header .header-btn.icon-button svg {
+  stroke: currentColor;
+}
+
+/* Volume Control */
+.app-header .master-vol-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--weave-font-sans, 'Inter Tight', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rest);
+  letter-spacing: 0.04em;
+}
+
+.app-header .header-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 64px;
+  height: 4px;
+  background: var(--muted);
+  outline: none;
+  border-radius: 2px;
+}
+
+.app-header .header-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.1s ease;
+}
+
+.app-header .header-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.app-header #master-vol-val {
+  font-family: var(--weave-font-mono, 'Geist Mono', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink);
+  min-width: 32px;
+}
+
+/* Keyboard Focus Rings (no layout shifting) */
+.app-header button:focus-visible,
+.app-header input:focus-visible {
+  outline: 2px solid var(--ink) !important;
+  outline-offset: 2px !important;
+}
 #match-loudness.active { background: var(--accent-soft); }
 #match-loudness.listening { animation: match-pulse 1s ease-in-out infinite alternate; }
 @keyframes match-pulse { to { opacity: .4; } }
@@ -1512,13 +1906,13 @@ body.theme-dark .app-header, body.theme-dark .channel-strip, body.theme-dark .ca
       <div class="header-left">
         <div class="transport-brand">
           <button id="master-play-btn" class="btn-transport" title="Play / Pause All (Space)" aria-label="Play or Pause">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </button>
           <button id="master-stop-btn" class="btn-transport" title="Stop (Return to Beginning)" aria-label="Stop">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="1.5"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="1.5"/></svg>
           </button>
           <button id="master-rec-btn" class="btn-rec-master" title="Record Master Live Output to WAV">
-            <span id="rec-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
+            <span id="rec-dot"></span>
             <span id="rec-btn-text">REC</span>
           </button>
           <button id="icecast-out-btn" class="btn-rec-master" title="Set up your live connection">
@@ -1531,10 +1925,18 @@ body.theme-dark .app-header, body.theme-dark .channel-strip, body.theme-dark .ca
       </div>
 
     <nav class="workspace-toolbar" aria-label="Channel panels">
-      <button type="button" class="channel-panel-toggle" data-panel-track="0" aria-controls="channel-0" aria-expanded="false" aria-label="Channel 1 controls" title="Channel 1 controls" style="--panel-color:var(--track-1)"><svg class="channel-panel-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="channel-panel-ring" cx="15" cy="17" r="12"/><circle class="channel-panel-orb" cx="15" cy="17" r="9"/><g class="channel-panel-cog"><circle cx="24" cy="7" r="6"/><path transform="translate(20 3) scale(.3333)" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.08-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1c-.52-.4-1.07-.73-1.68-.98L14.5 2.42A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42L9.13 5.07c-.61.25-1.17.59-1.68.98l-2.49-1a.49.49 0 0 0-.61.22l-2 3.46a.49.49 0 0 0 .12.64l2.11 1.65a7.3 7.3 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.12.22.38.31.61.22l2.49-1c.52.4 1.07.73 1.68.98l.38 2.65c.04.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.68-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.1-1.65ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></g></svg></button>
-      <button type="button" class="channel-panel-toggle" data-panel-track="1" aria-controls="channel-1" aria-expanded="false" aria-label="Channel 2 controls" title="Channel 2 controls" style="--panel-color:var(--track-2)"><svg class="channel-panel-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="channel-panel-ring" cx="15" cy="17" r="12"/><circle class="channel-panel-orb" cx="15" cy="17" r="9"/><g class="channel-panel-cog"><circle cx="24" cy="7" r="6"/><path transform="translate(20 3) scale(.3333)" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.08-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1c-.52-.4-1.07-.73-1.68-.98L14.5 2.42A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42L9.13 5.07c-.61.25-1.17.59-1.68.98l-2.49-1a.49.49 0 0 0-.61.22l-2 3.46a.49.49 0 0 0 .12.64l2.11 1.65a7.3 7.3 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.12.22.38.31.61.22l2.49-1c.52.4 1.07.73 1.68.98l.38 2.65c.04.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.68-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.1-1.65ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></g></svg></button>
-      <button type="button" class="channel-panel-toggle" data-panel-track="2" aria-controls="channel-2" aria-expanded="false" aria-label="Channel 3 controls" title="Channel 3 controls" style="--panel-color:var(--track-3)"><svg class="channel-panel-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="channel-panel-ring" cx="15" cy="17" r="12"/><circle class="channel-panel-orb" cx="15" cy="17" r="9"/><g class="channel-panel-cog"><circle cx="24" cy="7" r="6"/><path transform="translate(20 3) scale(.3333)" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.08-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1c-.52-.4-1.07-.73-1.68-.98L14.5 2.42A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42L9.13 5.07c-.61.25-1.17.59-1.68.98l-2.49-1a.49.49 0 0 0-.61.22l-2 3.46a.49.49 0 0 0 .12.64l2.11 1.65a7.3 7.3 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.12.22.38.31.61.22l2.49-1c.52.4 1.07.73 1.68.98l.38 2.65c.04.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.68-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.1-1.65ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></g></svg></button>
-      <button type="button" class="channel-panel-toggle" data-panel-track="3" aria-controls="channel-3" aria-expanded="false" aria-label="Channel 4 controls" title="Channel 4 controls" style="--panel-color:var(--track-4)"><svg class="channel-panel-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="channel-panel-ring" cx="15" cy="17" r="12"/><circle class="channel-panel-orb" cx="15" cy="17" r="9"/><g class="channel-panel-cog"><circle cx="24" cy="7" r="6"/><path transform="translate(20 3) scale(.3333)" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.08-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1c-.52-.4-1.07-.73-1.68-.98L14.5 2.42A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42L9.13 5.07c-.61.25-1.17.59-1.68.98l-2.49-1a.49.49 0 0 0-.61.22l-2 3.46a.49.49 0 0 0 .12.64l2.11 1.65a7.3 7.3 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.12.22.38.31.61.22l2.49-1c.52.4 1.07.73 1.68.98l.38 2.65c.04.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.68-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.1-1.65ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></g></svg></button>
+      <div class="track-key-item" style="--panel-color:var(--track-1)">
+        <button type="button" class="channel-panel-toggle" data-panel-track="0" aria-controls="channel-0" aria-expanded="false" aria-label="Channel 1 controls" title="Channel 1 controls"><span class="track-key-pip"></span></button>
+      </div>
+      <div class="track-key-item" style="--panel-color:var(--track-2)">
+        <button type="button" class="channel-panel-toggle" data-panel-track="1" aria-controls="channel-1" aria-expanded="false" aria-label="Channel 2 controls" title="Channel 2 controls"><span class="track-key-pip"></span></button>
+      </div>
+      <div class="track-key-item" style="--panel-color:var(--track-3)">
+        <button type="button" class="channel-panel-toggle" data-panel-track="2" aria-controls="channel-2" aria-expanded="false" aria-label="Channel 3 controls" title="Channel 3 controls"><span class="track-key-pip"></span></button>
+      </div>
+      <div class="track-key-item" style="--panel-color:var(--track-4)">
+        <button type="button" class="channel-panel-toggle" data-panel-track="3" aria-controls="channel-3" aria-expanded="false" aria-label="Channel 4 controls" title="Channel 4 controls"><span class="track-key-pip"></span></button>
+      </div>
     </nav>
 
       <div class="header-right">
@@ -2188,9 +2590,6 @@ body.theme-dark .app-header, body.theme-dark .channel-strip, body.theme-dark .ca
       </div>
     </section>
 
-    </div>
-    <div class="workspace-footer">
-      <button type="button" class="btn-reset" id="reset-all-btn" title="Reset every channel and motion path">Reset All</button>
     </div>
 
     <!-- FOOTER -->
@@ -5277,6 +5676,11 @@ class SpatialStudio {
     };
     buttons.forEach((button, index) => {
       button.addEventListener('click', () => setOpen(index, button.getAttribute('aria-expanded') !== 'true'));
+      const item = button.closest('.track-key-item');
+      if (item) {
+        const label = item.querySelector('.track-key-label');
+        if (label) label.addEventListener('click', () => button.click());
+      }
       const panel = document.getElementById(`channel-${index}`);
       panel.querySelector('[data-close-track]').addEventListener('click', () => setOpen(index, false, true));
       panel.addEventListener('keydown', event => {
@@ -5370,7 +5774,9 @@ class SpatialStudio {
     });
 
     // Demo & Reset
-    this.resetAllBtn.addEventListener('click', () => this.resetAll());
+    if (this.resetAllBtn) {
+      this.resetAllBtn.addEventListener('click', () => this.resetAll());
+    }
 
     // Modal Events
     this.modalCancelBtn.addEventListener('click', () => this.hideLiveInModal());
@@ -5418,6 +5824,7 @@ class SpatialStudio {
       this.nodeModalCloseBtn.addEventListener('click', () => {
         this.activeInspectorTrack = null;
         this.nodeInspectorModal.classList.remove('active');
+        document.querySelectorAll('.channel-panel-toggle').forEach(b => b.classList.remove('inspector-open'));
         const frame = document.getElementById('node-inspector-frame');
         if (frame) frame.srcdoc = '';
         const sampleView = document.getElementById('node-inspector-sample-view');
@@ -5427,6 +5834,7 @@ class SpatialStudio {
         if (e.target === this.nodeInspectorModal) {
           this.activeInspectorTrack = null;
           this.nodeInspectorModal.classList.remove('active');
+          document.querySelectorAll('.channel-panel-toggle').forEach(b => b.classList.remove('inspector-open'));
           const frame = document.getElementById('node-inspector-frame');
           if (frame) frame.srcdoc = '';
           const sampleView = document.getElementById('node-inspector-sample-view');
@@ -7776,6 +8184,9 @@ class SpatialStudio {
   openNodeInspector(track) {
     if (!track) return;
     this.activeInspectorTrack = track;
+    document.querySelectorAll('.channel-panel-toggle').forEach((b, i) => {
+      b.classList.toggle('inspector-open', i === track.index);
+    });
     const modal = document.getElementById('node-inspector-modal');
     const title = document.getElementById('node-modal-title');
     const frame = document.getElementById('node-inspector-frame');
@@ -8731,6 +9142,27 @@ class SpatialStudio {
 // Instantiate on DOM load
 document.addEventListener('DOMContentLoaded', () => {
   window.studio = new SpatialStudio();
+
+  function updateAppScale() {
+    const baseW = 1424;
+    const baseH = 770.67;
+    const padX = 12; // 6px left + 6px right
+    const padY = 10; // 4px top + 6px bottom
+    const availW = window.innerWidth - padX;
+    const availH = window.innerHeight - padY;
+    const scale = Math.max(0.4, Math.min(availW / baseW, availH / baseH));
+    const app = document.querySelector('.app-container');
+    if (app) {
+      app.style.zoom = scale;
+    }
+    if (window.studio && window.studio.resizeCanvas) {
+      window.studio.resizeCanvas();
+      window.studio.drawArena();
+    }
+  }
+
+  window.addEventListener('resize', updateAppScale);
+  updateAppScale();
 });
   </script>
   <script src="weave.js"></script>
