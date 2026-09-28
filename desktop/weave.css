@@ -222,6 +222,11 @@
   transform: translateX(calc(var(--p, 0) * 100%));
   transition: transform var(--weave-switch-duration) cubic-bezier(0.45, 0, 0.55, 1);
 }
+.weave-toggle .wt-key-wrap {
+  position: relative;
+  width: 44px;
+  display: flex;
+}
 .weave-toggle .wt-key {
   display: flex;
   flex-direction: column;
@@ -232,18 +237,71 @@
   border-bottom-width: 4px;
   border-radius: var(--weave-radius-sm);
   background: #ffffff;
+  color: var(--weave-ink);
   font-family: var(--weave-font-mono);
   font-size: 10px;
   font-weight: 700;
   line-height: 1.1;
   cursor: pointer;
   user-select: none;
+  padding: 0;
+  outline: none;
+  box-sizing: border-box;
+  transition: transform 0.08s ease, border-bottom-width 0.08s ease, background-color 0.12s ease;
+}
+.weave-toggle .wt-key:hover {
+  background: #fbfbf9;
+}
+.weave-toggle .wt-key:active {
+  transform: translateY(1.5px);
+  border-bottom-width: 2.5px;
+  background: #f0f0ec;
+}
+.weave-toggle .wt-key .wt-key-plus {
+  font-family: var(--weave-font-sans);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
 }
 .weave-toggle .wt-key small {
   font-family: var(--weave-font-sans);
   font-size: 7.5px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.10em;
+  font-weight: 800;
+  text-transform: uppercase;
   color: var(--weave-text-muted);
+  line-height: 1;
+}
+
+/* Delete target indicator in upper right header area */
+.weave-del-target {
+  position: absolute;
+  inset: 0;
+  border: var(--weave-border-base) solid var(--weave-ink);
+  border-bottom-width: 4px;
+  border-radius: var(--weave-radius-sm);
+  background: #FC4037;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+  transition: opacity 0.14s ease, transform 0.14s cubic-bezier(0.18, 0.9, 0.32, 1);
+  z-index: 2;
+  box-sizing: border-box;
+}
+.weave-del-target .wdt-x {
+  font-family: var(--weave-font-sans);
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
+.weave-del-target.active {
+  opacity: 1;
+  transform: scale(1);
+  box-shadow: 0 2px 8px rgba(252, 64, 55, 0.35);
 }
 
 /* Layer crossfade orchestration */
@@ -296,19 +354,177 @@
   pointer-events: none;
   z-index: 3;
 }
-.weave-loom-footer {
+.weave-loom-viewport {
   position: absolute;
   left: 0;
   right: 0;
+  top: 72px;
   bottom: 0;
-  height: 46px;
-  border-top: var(--weave-border-base) solid var(--weave-ink);
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.weave-loom-viewport::-webkit-scrollbar {
+  display: none;
+}
+.weave-loom-scroll-nav {
+  position: absolute;
+  right: 6px;
+  top: 78px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 8;
+}
+.weave-loom-scroll-btn {
+  pointer-events: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: 1.5px solid var(--weave-ink);
+  background: #ffffff;
+  color: var(--weave-ink);
+  font-size: 8px;
+  line-height: 1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  background: #ffffff;
-  z-index: 4;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  transition: transform 0.08s ease, background-color 0.12s ease;
+  user-select: none;
+  padding: 0;
+}
+.weave-loom-scroll-btn:hover {
+  background: var(--weave-ink);
+  color: #ffffff;
+}
+.weave-loom-scroll-btn:active {
+  transform: scale(0.92);
+}
+
+/* Loom Swipe Row Container & Action Reveal */
+.weave-loom-row-wrap {
+  position: absolute;
+  left: 0;
+  width: 300px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.weave-loom-row-under {
+  position: absolute;
+  inset: 0;
+  background: var(--weave-surface);
+  display: flex;
+  align-items: center;
+  padding-left: 14px;
+  box-sizing: border-box;
+  user-select: none;
+  pointer-events: none;
+}
+.weave-loom-under-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.35;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.weave-loom-under-content.delete-msg {
+  display: none;
+}
+.wluc-tag {
+  font-family: var(--weave-font-sans);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--weave-border-subtle);
+  color: var(--weave-ink);
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+.wluc-tag.delete {
+  background: #FC4037;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(252, 64, 55, 0.35);
+}
+.wluc-hint {
+  font-family: var(--weave-font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--weave-text-muted);
+  letter-spacing: 0.05em;
+}
+.weave-loom-row-wrap.state-tweak .weave-loom-under-content.adjust-msg {
+  opacity: 1;
+  transform: scale(1.04);
+}
+.weave-loom-row-wrap.state-tweak .wluc-tag {
+  background: var(--weave-ink);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+.weave-loom-row-wrap.state-delete .weave-loom-under-content.adjust-msg {
+  display: none;
+}
+.weave-loom-row-wrap.state-delete .weave-loom-under-content.delete-msg {
+  display: flex;
+  opacity: 1;
+  transform: scale(1.04);
+}
+
+/* Foreground Scene Card that moves */
+.weave-loom-row-card {
+  position: absolute;
+  inset: 0;
+  user-select: none;
+  touch-action: pan-y;
+  cursor: grab;
+  will-change: transform;
+}
+.weave-loom-row-card:active {
+  cursor: grabbing;
+}
+.weave-loom-row-card.is-editing {
+  box-shadow: inset 3.5px 0 0 var(--weave-ink);
+}
+.weave-btn-done {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto !important;
+  font-family: var(--weave-font-sans);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--weave-ink);
+  color: #ffffff;
+  border: 1px solid var(--weave-ink);
+  cursor: pointer;
+  line-height: 1;
+  transition: transform 0.08s ease, background-color 0.12s ease;
+  user-select: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  margin-left: 4px;
+}
+.weave-btn-done:hover {
+  background: #333333;
+  transform: scale(1.05);
+}
+.weave-btn-done:active {
+  transform: scale(0.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weave-loom-row-card {
+    transition: none !important;
+  }
+  .weave-del-target {
+    transition: none !important;
+  }
 }
 
 /* PLAY VIEW: Set List Sheet */

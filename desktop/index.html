@@ -7798,9 +7798,13 @@ class SpatialStudio {
           track.toggleRecordMotion();
         }
       }
+      const wasDragging = isDragging;
       isDragging = false;
       this.activeDragNodeIndex = -1;
       this.canvas.style.cursor = 'crosshair';
+      if (wasDragging && window.weaveEngine && typeof window.weaveEngine.onNodeDragEnd === 'function') {
+        window.weaveEngine.onNodeDragEnd();
+      }
     });
 
     // Trackpad gesture (Two-Finger Drag / Pinch) to manipulate Z-Axis only within a node's circle
@@ -7851,8 +7855,12 @@ class SpatialStudio {
         const track = this.tracks[this.activeDragNodeIndex];
         if (track.isRecordingMotion) track.toggleRecordMotion();
       }
+      const wasDragging = isDragging;
       isDragging = false;
       this.activeDragNodeIndex = -1;
+      if (wasDragging && window.weaveEngine && typeof window.weaveEngine.onNodeDragEnd === 'function') {
+        window.weaveEngine.onNodeDragEnd();
+      }
     };
     window.addEventListener('touchend', finishTouchMotion);
     window.addEventListener('touchcancel', finishTouchMotion);

@@ -84,6 +84,8 @@
 
       this.playingIndex = 2; // Default starting on scene 03 (Afterglow)
       this.selectedIndex = 2;
+      this.editingIndex = null;
+      this._nextSceneUid = INITIAL_SCENES.length;
 
       // Single/shared transition properties
       this.transitionLengthBars = 8;
@@ -95,6 +97,7 @@
       this.isHolding = false;
       this.currentBarInScene = 0; // Float: e.g. 9.2 bars into scene
       this.totalBarsInProject = this.calcTotalBars();
+      this.loomScrollTop = 0;
 
       this.weaveEl = null;
       this.transEl = null;
@@ -158,8 +161,149 @@
 
     selectScene(idx) {
       this.selectedIndex = Math.max(0, Math.min(this.scenes.length - 1, idx));
+      const scene = this.scenes[this.selectedIndex];
+
+      // Recall spatial state if this scene contains a captured real snapshot
+      if (scene && scene.spatialState && window.studio && Array.isArray(window.studio.tracks)) {
+        const keys = ['T1', 'T2', 'T3', 'T4'];
+        keys.forEach((key, i) => {
+          const track = window.studio.tracks[i];
+          const nodeState = scene.spatialState[key];
+          if (track && nodeState) {
+            track.setPosition(nodeState.x, nodeState.y, nodeState.z !== undefined ? nodeState.z : 0);
+          }
+        });
+        if (typeof window.studio.drawArena === 'function') {
+          window.studio.drawArena();
+        }
+      }
+
       this.renderWeaveLeft();
       this.renderTransitionRight();
+
+      // Keep selected scene within Loom viewport
+      if (this.loomGeo && this.loomGeo.bands) {
+        const targetBand = this.loomGeo.bands[this.selectedIndex];
+        const vp = this.weaveEl ? this.weaveEl.querySelector('#weave-loom-viewport') : null;
+        if (vp && targetBand) {
+          if (targetBand.y < vp.scrollTop) {
+            vp.scrollTo({ top: targetBand.y, behavior: 'smooth' });
+          } else if (targetBand.y + targetBand.h > vp.scrollTop + vp.clientHeight) {
+            vp.scrollTo({ top: targetBand.y + targetBand.h - vp.clientHeight, behavior: 'smooth' });
+          }
+        }
+      }
+    }
+
+    adjustScene(idx) {
+      this.tweakScene(idx);
+    }
+
+    tweakScene(idx) {
+      if (idx < 0 || idx >= this.scenes.length) return;
+      this.editingIndex = idx;
+      const scene = this.scenes[this.editingIndex];
+      if (!scene) return;
+
+      // 1. Recall spatial snapshot into the real Aether canvas
+      if (scene.spatialState && window.studio && Array.isArray(window.studio.tracks)) {
+        const keys = ['T1', 'T2', 'T3', 'T4'];
+        keys.forEach((key, i) => {
+          const track = window.studio.tracks[i];
+          const nodeState = scene.spatialState[key];
+          if (track && nodeState) {
+            track.setPosition(nodeState.x, nodeState.y, nodeState.z !== undefined ? nodeState.z : 0);
+          }
+        });
+        if (typeof window.studio.drawArena === 'function') {
+          window.studio.drawArena();
+        }
+      } else if (window.studio && Array.isArray(window.studio.tracks) && window.studio.tracks.length >= 4) {
+        // Initialize authoritative spatial snapshot from current tracks
+        const tracks = window.studio.tracks;
+        scene.spatialState = {
+          T1: { x: tracks[0].x, y: tracks[0].y, z: tracks[0].z },
+          T2: { x: tracks[1].x, y: tracks[1].y, z: tracks[1].z },
+          T3: { x: tracks[2].x, y: tracks[2].y, z: tracks[2].z },
+          T4: { x: tracks[3].x, y: tracks[3].y, z: tracks[3].z }
+        };
+      }
+
+      this.renderWeaveLeft();
+      this.renderTransitionRight();
+    }
+
+    exitAdjust(e) {
+      if (e) {
+        if (typeof e.stopPropagation === 'function') e.stopPropagation();
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+      }
+      this.editingIndex = null;
+      this.renderWeaveLeft();
+      this.renderTransitionRight();
+    }
+
+    onNodeDragEnd() {
+      if (this.editingIndex === null || this.editingIndex < 0 || this.editingIndex >= this.scenes.length) return;
+      const scene = this.scenes[this.editingIndex];
+      if (!scene) return;
+      if (!window.studio || !Array.isArray(window.studio.tracks) || window.studio.tracks.length < 4) return;
+
+      const tracks = window.studio.tracks;
+      scene.spatialState = {
+        T1: { x: tracks[0].x, y: tracks[0].y, z: tracks[0].z },
+        T2: { x: tracks[1].x, y: tracks[1].y, z: tracks[1].z },
+        T3: { x: tracks[2].x, y: tracks[2].y, z: tracks[2].z },
+        T4: { x: tracks[3].x, y: tracks[3].y, z: tracks[3].z }
+      };
+      scene.levels = [tracks[0].y, tracks[1].y, tracks[2].y, tracks[3].y];
+      scene.positions = [0, 1, 2, 3].map(k => [
+        (tracks[k].x - 0.5) * 2.0,
+        (tracks[k].y - 0.5) * 2.0
+      ]);
+
+      this.renderWeaveLeft();
+      this.renderTransitionRight();
+    }
+
+    deleteScene(idx) {
+      if (idx < 0 || idx >= this.scenes.length) return false;
+      // Guard against deleting actively playing scene
+      if (idx === this.playingIndex) {
+        console.warn(`[Weave] Cannot delete actively playing scene ${pad2(idx + 1)}`);
+        return false;
+      }
+      if (this.scenes.length <= 1) {
+        console.warn('[Weave] Cannot delete the only remaining scene');
+        return false;
+      }
+
+      this.scenes.splice(idx, 1);
+      // Renumber visible position/index only; preserve stable internal scene IDs
+      this.scenes.forEach((s, i) => {
+        s.index = i;
+      });
+      this.totalBarsInProject = this.calcTotalBars();
+
+      if (this.selectedIndex === idx) {
+        this.selectedIndex = Math.min(idx, this.scenes.length - 1);
+      } else if (this.selectedIndex > idx) {
+        this.selectedIndex--;
+      }
+
+      if (this.editingIndex === idx) {
+        this.editingIndex = null;
+      } else if (this.editingIndex !== null && this.editingIndex > idx) {
+        this.editingIndex--;
+      }
+
+      if (this.playingIndex > idx) {
+        this.playingIndex--;
+      }
+
+      this.renderWeaveLeft();
+      this.renderTransitionRight();
+      return true;
     }
 
     goNow() {
@@ -202,23 +346,50 @@
       }
     }
 
-    // Capture current scene snapshot seam (as requested in prompt decisions)
+    // Capture current scene snapshot from live Aether spatial state
     captureCurrentScene() {
       const newIndex = this.scenes.length;
+      let spatialState = null;
+      let levels = [0.7, 0.5, 0.5, 0.6];
+      let positions = [0, 1, 2, 3].map(k => [
+        Math.sin(newIndex * 1.7 + k * 2.1) * 0.7,
+        Math.cos(newIndex * 1.3 + k * 1.9) * 0.7
+      ]);
+
+      if (window.studio && Array.isArray(window.studio.tracks) && window.studio.tracks.length >= 4) {
+        const tracks = window.studio.tracks;
+        spatialState = {
+          T1: { x: tracks[0].x, y: tracks[0].y, z: tracks[0].z },
+          T2: { x: tracks[1].x, y: tracks[1].y, z: tracks[1].z },
+          T3: { x: tracks[2].x, y: tracks[2].y, z: tracks[2].z },
+          T4: { x: tracks[3].x, y: tracks[3].y, z: tracks[3].z }
+        };
+        // Normalized volume level for Loom ribbon thickness
+        levels = [tracks[0].y, tracks[1].y, tracks[2].y, tracks[3].y];
+        // Normalized coordinate map [-1..1] for transition mini-map
+        positions = [0, 1, 2, 3].map(k => [
+          (tracks[k].x - 0.5) * 2.0,
+          (tracks[k].y - 0.5) * 2.0
+        ]);
+      }
+
+      const sceneUid = this._nextSceneUid++;
       const newScene = {
-        id: 'scene-' + newIndex,
+        id: 'scene-uid-' + sceneUid,
         index: newIndex,
         name: `Scene ${pad2(newIndex + 1)}`,
         bars: 16,
-        levels: [0.7, 0.5, 0.5, 0.6],
-        positions: [0, 1, 2, 3].map(k => [
-          Math.sin(newIndex * 1.7 + k * 2.1) * 0.7,
-          Math.cos(newIndex * 1.3 + k * 1.9) * 0.7
-        ])
+        levels,
+        positions,
+        spatialState
       };
       this.scenes.push(newScene);
       this.totalBarsInProject = this.calcTotalBars();
       this.selectScene(newIndex);
+      const vp = this.weaveEl ? this.weaveEl.querySelector('#weave-loom-viewport') : null;
+      if (vp) {
+        vp.scrollTo({ top: vp.scrollHeight, behavior: 'smooth' });
+      }
     }
 
     startLoop() {
@@ -332,6 +503,12 @@
       if (!this.weaveEl) return;
       const isCrowded = this.scenes.length > 8;
 
+      // Preserve scroll position across renders
+      const prevVp = this.weaveEl.querySelector('#weave-loom-viewport');
+      if (prevVp) {
+        this.loomScrollTop = prevVp.scrollTop;
+      }
+
       this.weaveEl.innerHTML = `
         <div class="weave-toggle">
           <div class="wt-switch">
@@ -339,9 +516,14 @@
             <button type="button" data-mode-btn="build">BUILD</button>
             <button type="button" data-mode-btn="play">PLAY</button>
           </div>
-          <div class="wt-key" title="Press Tab to switch modes">
-            TAB
-            <small>switch</small>
+          <div class="wt-key-wrap">
+            <button type="button" class="wt-key" data-add-scene title="Capture current scene (+ Scene)">
+              <span class="wt-key-plus">+</span>
+              <small>scene</small>
+            </button>
+            <div class="weave-del-target" id="weave-del-target" title="Delete Scene">
+              <span class="wdt-x">×</span>
+            </div>
           </div>
         </div>
 
@@ -358,14 +540,141 @@
       this.weaveEl.querySelectorAll('[data-mode-btn]').forEach(btn => {
         btn.onclick = () => this.setMode(btn.dataset.modeBtn);
       });
-      const keyCap = this.weaveEl.querySelector('.wt-key');
-      if (keyCap) {
-        keyCap.onclick = () => this.toggleMode();
+
+      // Bind "+ Scene" keycap button in header (available in both BUILD and PLAY)
+      const addSceneBtn = this.weaveEl.querySelector('[data-add-scene]');
+      if (addSceneBtn) {
+        addSceneBtn.onclick = () => this.captureCurrentScene();
       }
 
-      // Bind scene selections in Loom
-      this.weaveEl.querySelectorAll('.weave-loom-band-label').forEach(el => {
-        el.onclick = () => this.selectScene(+el.dataset.sceneIndex);
+      // Restore scroll and bind Loom scroll viewport + side buttons
+      const loomVp = this.weaveEl.querySelector('#weave-loom-viewport');
+      if (loomVp) {
+        loomVp.scrollTop = this.loomScrollTop;
+        loomVp.addEventListener('scroll', () => {
+          this.loomScrollTop = loomVp.scrollTop;
+        }, { passive: true });
+      }
+      const scrollUpBtn = this.weaveEl.querySelector('[data-loom-scroll="up"]');
+      const scrollDownBtn = this.weaveEl.querySelector('[data-loom-scroll="down"]');
+      if (scrollUpBtn && loomVp) {
+        scrollUpBtn.onclick = () => loomVp.scrollBy({ top: -110, behavior: 'smooth' });
+      }
+      if (scrollDownBtn && loomVp) {
+        scrollDownBtn.onclick = () => loomVp.scrollBy({ top: 110, behavior: 'smooth' });
+      }
+
+      // Bind horizontal swipe gesture on Loom scene rows
+      const THRESHOLD_TWEAK = 64;
+      const THRESHOLD_DELETE = 185;
+      const MAX_DRAG = 240;
+      const delTarget = this.weaveEl.querySelector('#weave-del-target');
+
+      this.weaveEl.querySelectorAll('.weave-loom-row-wrap').forEach(rowWrap => {
+        const sceneIdx = +rowWrap.dataset.sceneIndex;
+        const card = rowWrap.querySelector('.weave-loom-row-card');
+        if (!card) return;
+
+        let startX = 0;
+        let startY = 0;
+        let isDown = false;
+        let gestureLocked = null; // null | 'horizontal' | 'vertical'
+        let dragX = 0;
+
+        const onPointerDown = (e) => {
+          if (e.button !== undefined && e.button !== 0) return;
+          if (e.target && e.target.closest('[data-done-adjust]')) return;
+          isDown = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          gestureLocked = null;
+          dragX = 0;
+          card.style.transition = 'none';
+        };
+
+        const onPointerMove = (e) => {
+          if (!isDown) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+
+          if (gestureLocked === null) {
+            const dist = Math.hypot(dx, dy);
+            if (dist >= 6) {
+              if (Math.abs(dy) >= Math.abs(dx) || dx < 0) {
+                gestureLocked = 'vertical';
+              } else {
+                gestureLocked = 'horizontal';
+                try {
+                  card.setPointerCapture(e.pointerId);
+                } catch (_) {}
+              }
+            }
+          }
+
+          if (gestureLocked === 'horizontal') {
+            e.preventDefault();
+            dragX = Math.max(0, Math.min(MAX_DRAG, dx));
+            card.style.transform = `translateX(${dragX}px)`;
+
+            if (dragX < THRESHOLD_TWEAK) {
+              rowWrap.classList.remove('state-tweak', 'state-delete');
+              if (delTarget) delTarget.classList.remove('active');
+            } else if (dragX < THRESHOLD_DELETE) {
+              rowWrap.classList.add('state-tweak');
+              rowWrap.classList.remove('state-delete');
+              if (delTarget) delTarget.classList.remove('active');
+            } else {
+              rowWrap.classList.remove('state-tweak');
+              rowWrap.classList.add('state-delete');
+              if (delTarget) delTarget.classList.add('active');
+            }
+          }
+        };
+
+        const onPointerUp = (e) => {
+          if (!isDown) return;
+          isDown = false;
+          if (delTarget) delTarget.classList.remove('active');
+
+          if (gestureLocked === 'horizontal') {
+            try {
+              card.releasePointerCapture(e.pointerId);
+            } catch (_) {}
+
+            const finalDrag = dragX;
+            card.style.transition = 'transform 0.22s cubic-bezier(0.18, 0.9, 0.32, 1)';
+            card.style.transform = 'translateX(0px)';
+
+            setTimeout(() => {
+              rowWrap.classList.remove('state-tweak', 'state-delete');
+            }, 230);
+
+            if (finalDrag >= THRESHOLD_DELETE) {
+              this.deleteScene(sceneIdx);
+            } else if (finalDrag >= THRESHOLD_TWEAK) {
+              this.tweakScene(sceneIdx);
+            }
+          } else if (gestureLocked === null) {
+            this.selectScene(sceneIdx);
+          }
+          gestureLocked = null;
+        };
+
+        card.addEventListener('pointerdown', onPointerDown);
+        card.addEventListener('pointermove', onPointerMove);
+        card.addEventListener('pointerup', onPointerUp);
+        card.addEventListener('pointercancel', onPointerUp);
+      });
+
+      // Bind DONE button on adjusting scene card
+      this.weaveEl.querySelectorAll('[data-done-adjust]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.exitAdjust();
+        });
+        btn.addEventListener('pointerdown', (e) => {
+          e.stopPropagation();
+        });
       });
 
       // Bind scene selections in Set List
@@ -373,137 +682,139 @@
         el.onclick = () => this.selectScene(+el.dataset.sceneIndex);
       });
 
-      // Bind "+ Scene" button
-      const addSceneBtn = this.weaveEl.querySelector('[data-add-scene]');
-      if (addSceneBtn) {
-        addSceneBtn.onclick = () => this.captureCurrentScene();
-      }
-
       this.weaveEl.style.setProperty('--p', this.mode === 'play' ? 1 : 0);
       this.weaveEl.classList.toggle('play', this.mode === 'play');
     }
 
     buildLoomHTML() {
       const width = 300;
-      const top = 70;
-      const footH = 46;
-      const availH = 760 - top - footH - 10;
+      const viewportH = 688;
       const totalBars = this.calcTotalBars();
-      const pxPerBar = Math.min(5, availH / Math.max(1, totalBars));
       const laneX = [172, 202, 232, 262];
       const maxThick = 24;
+      const minSceneH = 46;
+      const rawPxPerBar = viewportH / Math.max(1, totalBars);
+      const pxPerBar = Math.min(5, Math.max(2.4, rawPxPerBar));
       const isCrowded = this.scenes.length > 8;
       const barH = isCrowded ? 4 : 7;
+      const edgeBarH = 1.5;
       const colors = getNodeColors();
 
-      let currY = top;
+      let currY = 0;
       const bands = this.scenes.map(s => {
-        const h = s.bars * pxPerBar;
+        const h = Math.max(minSceneH, s.bars * pxPerBar);
         const b = { s, y: currY, h };
         currY += h;
         return b;
       });
+      const totalContentH = Math.max(viewportH, currY);
+      const hasScroll = currY > viewportH;
       this.loomGeo = { bands, pxPerBar };
 
       const getThick = (s, k) => s.levels[k] ? Math.max(3, s.levels[k] * maxThick) : 0;
 
-      // 1. Scene backgrounds
-      let bgSVG = '';
-      bands.forEach(({ s, y, h }) => {
-        const isPlaying = s.index === this.playingIndex;
-        const isSel = s.index === this.selectedIndex && !isPlaying;
-        bgSVG += `<rect x="0" y="${y}" width="${width}" height="${h}" fill="${isPlaying ? 'var(--weave-playing-band)' : '#ffffff'}"/>`;
-        if (isSel) {
-          bgSVG += `<rect x="0" y="${y}" width="150" height="${h}" fill="var(--weave-ink)"/>`;
-        }
-      });
-
-      // 2. Continuous threads with transition tapers
-      let threadsSVG = '';
+      let rowsHTML = '';
       bands.forEach((b, bi) => {
         const prev = bands[bi - 1];
+        const curBarH = bi === 0 ? edgeBarH : barH;
+        const isPlaying = b.s.index === this.playingIndex;
+        const isEditing = b.s.index === this.editingIndex;
+        const isSel = b.s.index === this.selectedIndex && !isPlaying && !isEditing;
+        const textColor = isSel ? '#ffffff' : 'var(--weave-ink)';
+        const small = b.h < 30 || (isPlaying && b.h < 72);
+        const bigFontSize = small
+          ? Math.max(14, Math.min(22, b.h * 0.5))
+          : isPlaying
+            ? Math.min(34, b.h * 0.4)
+            : Math.max(15, Math.min(46, (b.h - 12) * 0.55));
+
+        let threadsBandSVG = '';
         [0, 1, 2, 3].forEach(k => {
           const w1 = prev ? getThick(prev.s, k) : getThick(b.s, k);
           const w2 = getThick(b.s, k);
           const taperZone = Math.min(b.h, this.transitionMode === 'jump' ? 0.01 : this.transitionLengthBars * pxPerBar);
           if (!w1 && !w2) return;
           const x = laneX[k];
-          const y0 = b.y;
-          const y1 = b.y + taperZone;
-          const y2 = b.y + b.h;
-          threadsSVG += `<path d="M${x - w1 / 2},${y0}L${x + w1 / 2},${y0}L${x + w2 / 2},${y1}L${x + w2 / 2},${y2}L${x - w2 / 2},${y2}L${x - w2 / 2},${y1}Z" fill="${colors[k]}"/>`;
+          threadsBandSVG += `<path d="M${x - w1 / 2},0L${x + w1 / 2},0L${x + w2 / 2},${taperZone}L${x + w2 / 2},${b.h}L${x - w2 / 2},${b.h}L${x - w2 / 2},${taperZone}Z" fill="${colors[k]}"/>`;
         });
-      });
 
-      // 3. Black scene separator bars with weave over/under logic
-      let barsSVG = '';
-      bands.forEach((b, bi) => {
-        barsSVG += `<rect x="0" y="${b.y}" width="${width}" height="${barH}" fill="var(--weave-ink)"/>`;
+        let overWeaveBandSVG = '';
         [0, 1, 2, 3].forEach(k => {
-          // Weave effect: lane where (sceneIndex + lane) is even is drawn OVER the black bar
           if ((bi + k) % 2 === 0) {
             const pw = getThick(b.s, k);
             const pp = bands[bi - 1] ? getThick(bands[bi - 1].s, k) : pw;
             const w = Math.max(pw, pp);
             if (w) {
-              threadsSVG += `<rect x="${laneX[k] - w / 2}" y="${b.y}" width="${w}" height="${barH}" fill="${colors[k]}"/>`;
+              overWeaveBandSVG += `<rect x="${laneX[k] - w / 2}" y="0" width="${w}" height="${curBarH}" fill="${colors[k]}"/>`;
             }
           }
         });
-      });
-      // Closing bar after last scene
-      barsSVG += `<rect x="0" y="${currY}" width="${width}" height="${barH}" fill="var(--weave-ink)"/>`;
 
-      // 4. Text labels block
-      let labelsHTML = '';
-      bands.forEach(({ s, y, h }) => {
-        const isPlaying = s.index === this.playingIndex;
-        const isSel = s.index === this.selectedIndex && !isPlaying;
-        const textColor = isSel ? '#ffffff' : 'var(--weave-ink)';
-        const small = h < 30 || (isPlaying && h < 72);
-        const bigFontSize = small
-          ? Math.max(14, Math.min(22, h * 0.5))
-          : isPlaying
-            ? Math.min(34, h * 0.4)
-            : Math.max(15, Math.min(46, (h - 12) * 0.55));
+        const bgFill = isPlaying
+          ? 'var(--weave-playing-band)'
+          : isEditing
+            ? 'var(--weave-surface-wake, #fffbf2)'
+            : '#ffffff';
 
-        labelsHTML += `
-          <div class="weave-loom-band-label" data-scene-index="${s.index}" style="position:absolute;left:14px;top:${y + barH + 2}px;width:136px;height:${h - barH - 2}px;color:${textColor};display:flex;${small ? 'align-items:center;gap:7px;' : 'flex-direction:column;justify-content:center;'};overflow:hidden;cursor:pointer;">
-            <div style="display:flex;align-items:baseline;gap:6px">
-              <b style="font-size:${bigFontSize}px;font-weight:900;letter-spacing:-0.06em;line-height:0.85">${pad2(s.index + 1)}</b>
-              <span class="weave-mono" style="font-size:10px;font-weight:700;opacity:0.7">${s.bars}b</span>
+        rowsHTML += `
+          <div class="weave-loom-row-wrap" data-scene-index="${b.s.index}" data-scene-id="${b.s.id}" style="position:absolute;left:0;top:${b.y}px;width:${width}px;height:${b.h}px;">
+            <div class="weave-loom-row-under">
+              <div class="weave-loom-under-content adjust-msg">
+                <span class="wluc-tag">ADJUST</span>
+                <span class="wluc-hint">Release to edit</span>
+              </div>
+              <div class="weave-loom-under-content delete-msg">
+                <span class="wluc-tag delete">DELETE</span>
+                <span class="wluc-hint">Release to delete</span>
+              </div>
             </div>
-            <div style="font-size:${small ? 11 : 12.5}px;font-weight:800;width:${small ? (isPlaying ? 92 : 118) : 124}px;margin-top:${small ? 0 : 3}px">
-              ${isPlaying ? marqueeHTML(s.name) : `<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHTML(s.name)}</div>`}
+            <div class="weave-loom-row-card ${isEditing ? 'is-editing' : ''}" data-scene-index="${b.s.index}" style="position:absolute;inset:0;width:${width}px;height:${b.h}px;">
+              <svg width="${width}" height="${b.h}" style="position:absolute;left:0;top:0;display:block">
+                <rect x="0" y="0" width="${width}" height="${b.h}" fill="${bgFill}"/>
+                ${isSel ? `<rect x="0" y="0" width="150" height="${b.h}" fill="var(--weave-ink)"/>` : ''}
+                <g class="threads">${threadsBandSVG}</g>
+                <rect x="0" y="0" width="${width}" height="${curBarH}" fill="var(--weave-ink)"/>
+                ${overWeaveBandSVG}
+              </svg>
+              <div class="weave-loom-band-label labels" style="position:absolute;left:14px;top:2px;width:136px;height:${b.h - 2}px;color:${textColor};display:flex;${small ? 'align-items:center;gap:7px;' : 'flex-direction:column;justify-content:center;'};overflow:hidden;pointer-events:none;">
+                <div style="display:flex;align-items:baseline;gap:6px">
+                  <b style="font-size:${bigFontSize}px;font-weight:900;letter-spacing:-0.06em;line-height:0.85">${pad2(b.s.index + 1)}</b>
+                  <span class="weave-mono" style="font-size:10px;font-weight:700;opacity:0.7">${b.s.bars}b</span>
+                  ${isEditing ? `<button type="button" class="weave-btn-done" data-done-adjust onclick="window.weaveEngine.exitAdjust(event)" title="Done adjusting scene">DONE</button>` : ''}
+                </div>
+                <div style="font-size:${small ? 11 : 12.5}px;font-weight:800;width:${small ? (isPlaying ? 92 : 118) : 124}px;margin-top:${small ? 0 : 3}px">
+                  ${isPlaying ? marqueeHTML(b.s.name) : `<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHTML(b.s.name)}</div>`}
+                </div>
+                ${isPlaying && !small ? `<div class="weave-mono" data-loom-cd style="font-size:11px;font-weight:700;margin-top:4px;color:var(--weave-ink)"></div>` : ''}
+              </div>
             </div>
-            ${isPlaying && !small ? `<div class="weave-mono" data-loom-cd style="font-size:11px;font-weight:700;margin-top:4px;color:var(--weave-ink)"></div>` : ''}
           </div>
         `;
       });
-
-      const totalTimeSec = totalBars * this.getBarDurationSec();
 
       return `
         <div class="weave-loom-lanes-header">
           ${laneX.map((x, k) => `<span style="position:absolute;left:${x - 8}px;color:${k === 1 ? 'var(--weave-node-t2-text)' : colors[k]}">${NODE_NAMES[k]}</span>`).join('')}
         </div>
-        <svg width="${width}" height="760" style="position:absolute;left:0;top:0">${bgSVG}</svg>
-        <svg class="threads" width="${width}" height="760" style="position:absolute;left:0;top:0">${threadsSVG}</svg>
-        <div class="labels">
-          <svg width="${width}" height="760" style="position:absolute;left:0;top:0">
-            ${barsSVG}
-            <g data-ph>
-              <line x1="0" x2="${width}" y1="0" y2="0" stroke="var(--weave-ink)" stroke-width="2"/>
-              <rect x="${width - 58}" y="-9" width="58" height="18" fill="var(--weave-ink)"/>
-              <text data-phl x="${width - 29}" y="4" text-anchor="middle" font-family="var(--weave-font-mono)" font-weight="700" font-size="10" fill="#ffffff"></text>
-            </g>
-          </svg>
-          ${labelsHTML}
+        <div class="weave-loom-viewport" id="weave-loom-viewport">
+          <div class="weave-loom-content" style="position:relative;width:${width}px;height:${totalContentH}px;">
+            ${rowsHTML}
+            <div style="position:absolute;left:0;top:${currY}px;width:${width}px;height:${edgeBarH}px;background:var(--weave-ink);z-index:2;"></div>
+            <svg class="weave-loom-playhead-svg" width="${width}" height="${totalContentH}" style="position:absolute;left:0;top:0;pointer-events:none;z-index:4;">
+              <g data-ph>
+                <line x1="0" x2="${width}" y1="0" y2="0" stroke="var(--weave-ink)" stroke-width="2"/>
+                <rect x="${width - 58}" y="-9" width="58" height="18" fill="var(--weave-ink)"/>
+                <text data-phl x="${width - 29}" y="4" text-anchor="middle" font-family="var(--weave-font-mono)" font-weight="700" font-size="10" fill="#ffffff"></text>
+              </g>
+            </svg>
+          </div>
         </div>
-        <div class="weave-loom-footer">
-          <button type="button" class="weave-btn solid" data-add-scene>+ Scene</button>
-          <span class="weave-mono" style="font-size:11px;font-weight:700">${totalBars} bars · ${pad2(totalTimeSec / 60)}:${pad2(totalTimeSec % 60)}</span>
-        </div>
+        ${hasScroll ? `
+          <div class="weave-loom-scroll-nav">
+            <button type="button" class="weave-loom-scroll-btn up" data-loom-scroll="up" title="Scroll up">▲</button>
+            <button type="button" class="weave-loom-scroll-btn down" data-loom-scroll="down" title="Scroll down">▼</button>
+          </div>
+        ` : ''}
       `;
     }
 
