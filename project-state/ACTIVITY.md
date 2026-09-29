@@ -2,7 +2,8 @@
 
 ## 2026-09-29 — Codex local reconciliation audit
 
-Status: documentation prepared; publication to GitHub pending verification.
+Status: complete. Shared documents and existing local Weave history published to `origin/feature/weave-functional`.
+First documentation commit: `513f994`; push succeeded on 2026-09-29. The separate 6.0 directory is not included in this backup.
 Application source baseline: `feature/weave-functional` at `3ab6e22`.
 Scope: inspected worktrees, versioned source, installed/build bundle metadata, process working directory, remotes, recent commits, historical handoffs and Claude audit. Ran the checks listed in CURRENT.md. No application behavior changed or app restarted.
 
