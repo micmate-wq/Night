@@ -1,0 +1,16 @@
+== tests/test-weave-session.js
+✔ 34. compatible sound sets: the same AetherNode with different settings is reused — no reload; continuous settings glide, discrete ones (int/bool/options/pitch) switch at the start; every captured setting is restored on arrival; GO NEXT is ready at once
+
+34 passed, 0 failed
+== tests/test-weave-host.js
+✔ H15. Space toggles transport for every non-text focus target (buttons, range inputs, selects); it types a space in text fields; repeats and keyup never activate controls
+
+15 passed, 0 failed
+== tests/test-weave-spatial-recall.js
+✔ Loom scroll viewport and side navigation controls verified successfully.
+
+=== ALL WEAVE SPATIAL RECALL VERIFICATION TESTS PASSED ===
+== tests/test-weave-swipe-gesture.js
+✔ Loom HTML contains swipe wrappers, dynamic adjust/delete action layers, and playhead overlay.
+
+=== ALL WEAVE ROW SWIPE GESTURE TESTS PASSED ===

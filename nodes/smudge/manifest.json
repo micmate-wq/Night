@@ -1,0 +1,54 @@
+{
+  "id": "com.aether.node.smudge",
+  "name": "Smudge",
+  "version": "1.0.0",
+  "author": "Aether Community",
+  "description": "Spectral freeze and texture diffusion insert effect.",
+  "category": "Spectral / Freeze Effect",
+  "type": "effect",
+  "inputs": 2,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "dry_wet",
+      "name": "Dry / Wet",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.5,
+      "unit": "norm"
+    },
+    {
+      "id": "smudge_length",
+      "name": "Smudge Length",
+      "type": "float",
+      "min": 0.1,
+      "max": 1.0,
+      "default": 0.6,
+      "unit": "norm"
+    },
+    {
+      "id": "spectral_tilt",
+      "name": "Spectral Tilt",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.5,
+      "unit": "norm"
+    },
+    {
+      "id": "phase_dispersion",
+      "name": "Phase Dispersion",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.5,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": "spectral_bleed"
+}

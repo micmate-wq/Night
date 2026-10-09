@@ -1,0 +1,43 @@
+# S2 review regressions BEFORE fix — 2026-10-04T22:55:54Z — node v22.23.2
+# weave-assets.js sha256 891990f121330885… (as reviewed by Codex)
+$ node tests/test-weave-assets.js
+✔ sha256: known vectors through WebCrypto and Node engines
+✔ sha256: typed-array views hash exactly their offset/length, not the backing buffer
+✔ toBytes: rejects non-binary inputs with a clear error
+✔ base64: canonical encode/decode round-trips and matches Node for lengths 0–40
+✔ base64: rejects every non-canonical form
+✔ verifyAssets: the fixture table passes, every payload hashes to its key
+✔ verifyAssets: wrong hash, wrong length and corrupt base64 are each rejected
+✔ verifyAssets: malformed containers and metadata are reported, never thrown
+✔ verifyAssets: empty payloads are refused (S2 policy)
+✔ measureAssets: counts unique stored bytes and base64 text without decoding
+✔ limits: invalid limit objects are rejected before anything else
+✔ limits: exact boundaries pass and one unit over fails, per limit
+    (preflight rejection of a 4 MB payload took 1.4 ms; digest calls: 0)
+✔ limits: an over-budget table is refused before any payload is decoded or hashed
+✔ addAssetBytes: limits are checked from the byte length before hashing or encoding
+✔ addAssetBytes: new bytes produce a verifiable entry and leave the input untouched
+✔ addAssetBytes: identical bytes deduplicate to the existing entry whatever the name
+✔ addAssetBytes: same name with different bytes stays two assets
+✔ addAssetBytes: incompatible kind or bundle identity for identical bytes is rejected
+✔ addAssetBytes: metadata and container validation
+✔ derived override: a rendered buffer with different bytes is kept as its own asset, never merged
+✔ S1 boundary: S1 accepts a structurally valid table with wrong bytes; S2 is what catches it
+✘ review 1: re-adding identical bytes at each exact limit succeeds and charges nothing
+    AssertionError [ERR_ASSERTION]: {"maxTotalBytes":782} -> {"ok":false,"error":"projected total 858 bytes exceed maxTotalBytes 782","code":"limit","path":"assets"}
+
+    false !== true
+
+✘ review 2: a matching key is not trusted — the stored payload must equal the new bytes
+    AssertionError [ERR_ASSERTION]: corrupted duplicate must not be accepted
+
+    true !== false
+
+✘ review 3: input bytes and metadata changed while the promise is pending do not reach the stored asset
+    AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+
+21 passed, 3 failed
+exit=1

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tape Degrade · viz</title>
+<!-- AetherNode viz (host inspector). The host draws the window, header and
+     controls from manifest.json; this page only animates the viz band.
+     In:  aether:param-update {paramId, value}, aether:voice-trigger
+     Out: aether:motion {x, y} in -1..1, which the host borrows for the slider thumbs. -->
+<style>
+  :root { --track-color: #FC4037; }
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+  canvas { display: block; width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<canvas id="viz"></canvas>
+<script>
+  const canvas = document.getElementById('viz');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0;
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', resize); resize();
+  const COLOR = () => getComputedStyle(document.documentElement).getPropertyValue('--track-color').trim() || '#FC4037';
+  const INK = '#141414';
+  let lastMotion = 0;
+  function sendMotion(x, y, now) {
+    if (now - lastMotion < 33) return;
+    lastMotion = now;
+    try { window.parent.postMessage({ type: 'aether:motion', x: Math.max(-1, Math.min(1, x)), y: Math.max(-1, Math.min(1, y)) }, '*'); } catch (_) {}
+  }
+  // Tape Degrade: a strip of tape running past the head. Wobble bends it slowly,
+  // damage flattens the peaks, noise adds specks, compression evens the level,
+  // wear breaks the line into dropouts.
+  const state = { wobble: 0.35, damage: 0.25, noise: 0.15, compression: 0.3, wear: 0.3, mix: 1 };
+  let phase = 0, prev = performance.now(), gaps = [];
+  function frame(now) {
+    const dt = Math.min(0.05, (now - prev) / 1000); prev = now;
+    phase += dt * 1.6;
+    const wow = Math.sin(now / 1000 * 1.3) * state.wobble;
+    const flutter = Math.sin(now / 1000 * 11) * state.wobble * 0.25;
+    ctx.clearRect(0, 0, W, H);
+    const col = COLOR();
+    const mid = H / 2, amp = H * 0.32 * (1 - state.compression * 0.5);
+    const clip = amp * (1 - state.damage * 0.7);
+    if (Math.random() < state.wear * 0.08) gaps.push({ x: W + 10, w: 6 + Math.random() * 30 * state.wear });
+    gaps.forEach(g => g.x -= dt * W * 0.25);
+    gaps = gaps.filter(g => g.x + g.w > 0);
+    ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath();
+    let pen = false;
+    for (let x = 0; x <= W; x += 2) {
+      const inGap = gaps.some(g => x > g.x && x < g.x + g.w);
+      const t = x / W * 9 + phase * 4 + wow * 3;
+      let y = Math.sin(t) * amp * (0.55 + 0.45 * Math.sin(t * 0.37 + phase));
+      y = Math.max(-clip, Math.min(clip, y));
+      y += flutter * amp * 0.3;
+      if (inGap) { pen = false; continue; }
+      if (!pen) { ctx.moveTo(x, mid + y); pen = true; } else ctx.lineTo(x, mid + y);
+    }
+    ctx.stroke();
+    ctx.fillStyle = INK;
+    const specks = Math.round(state.noise * 40);
+    for (let i = 0; i < specks; i++) ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+    sendMotion(wow * 1.2, flutter * 2, now);
+    requestAnimationFrame(frame);
+  }
+  window.addEventListener('message', (event) => {
+    const d = event.data;
+    if (!d || typeof d !== 'object') return;
+    if (d.type === 'aether:param-update' || d.type === 'PARAMETER_CHANGE') {
+      const id = d.paramId || d.id;
+      if (id in state) state[id] = Number(d.value);
+    } else if (d.type === 'aether:voice-trigger' && typeof onTrigger === 'function') {
+      onTrigger(d);
+    }
+  });
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

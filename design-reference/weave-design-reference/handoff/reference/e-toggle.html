@@ -1,0 +1,144 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Aether · Weave · E Build / Play toggle</title>
+<link rel="stylesheet" href="shared/app.css"><style>
+#weave{--p:0}
+.tg{position:absolute;left:14px;right:14px;top:12px;height:40px;display:flex;gap:8px;align-items:stretch;z-index:4}
+.tg .sw{flex:1;display:flex;border:2px solid #141414;border-radius:7px;overflow:hidden;position:relative;background:#fff;isolation:isolate}
+.tg .sw button{flex:1;font-size:19px;font-weight:900;letter-spacing:-.03em;position:relative;z-index:1;color:#fff;mix-blend-mode:difference}
+.tg .sw .blk{position:absolute;top:0;bottom:0;left:0;width:50%;background:#141414;transform:translateX(calc(var(--p)*100%))}
+.tg .key{display:flex;flex-direction:column;align-items:center;justify-content:center;width:44px;border:1.5px solid #141414;border-bottom-width:4px;border-radius:6px;font-family:GM;font-size:10px;font-weight:700;line-height:1.1}
+.tg .key small{font-family:IT;font-size:7.5px;letter-spacing:.12em;color:#8a8a86}
+.lay{position:absolute;inset:0}
+.lay-b{opacity:clamp(0,calc(1.6 - var(--p)*2.2),1);pointer-events:auto}
+.lay-b .threads{transform-origin:217px 50%;transform:scaleX(clamp(.04,calc(1 - var(--p)*1.9),1))}
+.lay-b .labels{transform:translateX(calc(var(--p)*-40px))}
+.lay-p{opacity:clamp(0,calc(var(--p)*2.2 - 1.2),1);transform:translateX(calc((1 - var(--p))*60px)) rotate(calc((1 - var(--p))*3deg));pointer-events:none}
+#weave.play .lay-b{pointer-events:none}#weave.play .lay-p{pointer-events:auto}
+#weave.play{background:#e4e4e0}
+/* set list (from D) */
+.sheet{position:absolute;left:14px;right:12px;top:72px;bottom:14px;background:#fff;transform:rotate(-.8deg);box-shadow:3px 5px 10px rgba(20,20,20,.1);padding:20px 18px 16px;overflow:hidden}
+.tape{position:absolute;top:-10px;left:50%;width:96px;height:24px;margin-left:-48px;background:#efe3a6;opacity:.9;transform:rotate(2.5deg)}
+.sr{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:6px;padding:9px 0 7px;border-bottom:1.5px solid #141414;cursor:pointer}
+.sr .no{font-family:GM;font-size:11px;font-weight:700}
+.sr .t{font-size:26px;font-weight:900;letter-spacing:-.045em;text-transform:uppercase;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr .bb{font-family:GM;font-size:11px;font-weight:700;text-align:right}
+.sr .ck{grid-column:2/4;display:flex;gap:3px;margin-top:3px}
+.sr .ck i{width:22px;height:6px;display:block}
+.sr.past .t{text-decoration:line-through;text-decoration-thickness:3px;opacity:.45}
+.sr.past .ck,.sr.past .bb{opacity:.45}
+.sr.sel{background:#141414;color:#fff;margin:0 -8px;padding-left:8px;padding-right:8px}
+.crowd .sr{grid-template-columns:24px 1fr auto auto;padding:4px 0 3px}
+.crowd .sr .t{font-size:17px}
+.crowd .sr .ck{grid-column:auto;margin:0}
+.crowd .sr .ck i{width:9px;height:9px}
+/* right panel, play mode */
+.pp .big{font-family:GM;font-weight:800;letter-spacing:-.07em;line-height:1}
+.gobtn{display:block;width:100%;border:2.5px solid #141414;border-radius:8px;font-size:30px;font-weight:900;letter-spacing:-.05em;padding:12px 0 13px;text-align:center}
+.gobtn.solid{background:#141414;color:#fff}
+@media (prefers-reduced-motion: reduce){.tg .sw button{transition:none}}
+</style></head><body>
+<script src="shared/app.js"></script><script>
+let MODE = q.get('mode')==='play' ? 'play' : 'build';
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- BUILD: Loom (from A) ---------- */
+function loomHTML(){
+  const Wd=300, top=70, footH=46, avail=900-66-12-top-footH-10;
+  const tb=totalBars(), ppb=Math.min(5, avail/tb);
+  const TX=[172,202,232,262], MAXW=24, bh=CROWDED?4:7;
+  let y=top; const bands=SCENES.map(s=>{const h=s.b*ppb,b={s,y,h};y+=h;return b;});
+  const thick=(s,k)=>s.v[k]?Math.max(3,s.v[k]*MAXW):0;
+  let bg='', th='', bars='';
+  bands.forEach(({s,y,h})=>{const play=s.i===PLAY, sel=s.i===W.sel;
+    bg+=`<rect x="0" y="${y}" width="${Wd}" height="${h}" fill="${play?'#f6d24a':'#fff'}"/>`;
+    if(sel&&!play) bg+=`<rect x="0" y="${y}" width="150" height="${h}" fill="#141414"/>`;});
+  bands.forEach((b,bi)=>{const prev=bands[bi-1];[0,1,2,3].forEach(k=>{
+    const w1=prev?thick(prev.s,k):thick(b.s,k), w2=thick(b.s,k), tz=Math.min(b.h, W.mode==='jump'?0.01:W.len*ppb);
+    if(!w1&&!w2) return; const x=TX[k], y0=b.y, y1=b.y+tz, y2=b.y+b.h;
+    th+=`<path d="M${x-w1/2},${y0}L${x+w1/2},${y0}L${x+w2/2},${y1}L${x+w2/2},${y2}L${x-w2/2},${y2}L${x-w2/2},${y1}Z" fill="${COL[k]}"/>`;});});
+  bands.forEach((b,bi)=>{ bars+=`<rect x="0" y="${b.y}" width="${Wd}" height="${bh}" fill="#141414"/>`;
+    [0,1,2,3].forEach(k=>{ if((bi+k)%2===0){ const pw=thick(b.s,k), pp=bands[bi-1]?thick(bands[bi-1].s,k):pw, w=Math.max(pw,pp); if(w) th+=`<rect x="${TX[k]-w/2}" y="${b.y}" width="${w}" height="${bh}" fill="${COL[k]}"/>`; }});});
+  bars+=`<rect x="0" y="${y}" width="${Wd}" height="${bh}" fill="#141414"/>`;
+  let lab='';
+  bands.forEach(({s,y,h})=>{const play=s.i===PLAY, sel=s.i===W.sel&&!play, c=sel?'#fff':'#141414';
+    const small=h<30||(play&&h<72), big=small?Math.max(14,Math.min(22,h*.5)):play?Math.min(34,h*.4):Math.max(15,Math.min(46,(h-12)*.55));
+    lab+=`<div class="band" data-i="${s.i}" style="position:absolute;left:14px;top:${y+bh+2}px;width:136px;height:${h-bh-2}px;color:${c};display:flex;${small?'align-items:center;gap:7px':'flex-direction:column;justify-content:center'};overflow:hidden;cursor:pointer">
+      <div style="display:flex;align-items:baseline;gap:6px"><b style="font-size:${big}px;font-weight:900;letter-spacing:-.06em;line-height:.85">${pad(s.i+1)}</b><span class="mono" style="font-size:10px;font-weight:700;opacity:.7">${s.b}b</span></div>
+      <div style="font-size:${small?11:12.5}px;font-weight:800;width:${small?(play?92:118):124}px;margin-top:${small?0:3}px">${play?mq(s.n):`<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.n)}</div>`}</div>
+      ${play&&!small?`<div class="mono" data-cd style="font-size:11px;font-weight:700;margin-top:4px"></div>`:''}</div>`;});
+  loomHTML.geo={bands,ppb};
+  return `<div style="position:absolute;left:0;top:56px;width:300px;font-family:GM;font-size:9px;font-weight:700">${TX.map((x,k)=>`<span style="position:absolute;left:${x-8}px;color:${k===1?'#b59a00':COL[k]}">${NODE[k]}</span>`).join('')}</div>
+    <svg width="${Wd}" height="822" style="position:absolute;left:0;top:0">${bg}</svg>
+    <svg class="threads" width="${Wd}" height="822" style="position:absolute;left:0;top:0">${th}</svg>
+    <div class="labels"><svg width="${Wd}" height="822" style="position:absolute;left:0;top:0">${bars}
+      <g data-ph><line x1="0" x2="${Wd}" y1="0" y2="0" stroke="#141414" stroke-width="2"/><rect x="${Wd-58}" y="-9" width="58" height="18" fill="#141414"/><text data-phl x="${Wd-29}" y="4" text-anchor="middle" font-family="GM" font-weight="700" font-size="10" fill="#fff"></text></g></svg>${lab}</div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:46px;border-top:1.5px solid #141414;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#fff">
+      <button class="btn solid">+ Scene</button><span class="mono" style="font-size:11px;font-weight:700">${tb} bars · ${pad(Math.floor(tb*BAR_S/60))}:${pad(tb*BAR_S%60)}</span></div>`;
+}
+/* ---------- PLAY: Set list (from D) ---------- */
+function setHTML(){
+  const p=SCENES[PLAY], nx=SCENES[(PLAY+1)%SCENES.length], tb=totalBars();
+  return `<div class="sheet ${CROWDED?'crowd':''}"><div class="tape"></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="lab">Set · ${SCENES.length} scenes</span><span class="lab mute">${tb} bars</span></div>
+    <div class="mono" data-cd style="font-size:${CROWDED?48:60}px;font-weight:800;letter-spacing:-.07em;line-height:1;margin-top:${CROWDED?8:14}px"></div>
+    <div class="lab" style="margin-top:2px">till ${pad(nx.i+1)} · ${W.mode} ${W.len} bars</div>
+    <div style="margin-top:${CROWDED?8:12}px;display:flex;gap:8px;align-items:flex-start">
+      <b style="font-size:17px;font-weight:900;background:#141414;color:#f6d24a;padding:3px 5px 2px;line-height:1">${pad(p.i+1)}</b>
+      <div style="font-size:${CROWDED?42:54}px;font-weight:900;letter-spacing:-.065em;line-height:.9;text-transform:uppercase;width:216px;padding-bottom:2px">${mq(p.n,'',7)}</div></div>
+    <div style="display:flex;gap:3px;margin:8px 0 4px 33px">${p.v.map((v,k)=>v?`<i style="display:block;height:10px;width:${14+v*40}px;background:${COL[k]}"></i>`:'').join('')}</div>
+    <div style="height:4px;background:#e2e2de;margin:10px 0 2px;position:relative"><i data-prog style="position:absolute;left:0;top:-4px;height:12px;width:0;background:#141414;display:block"></i></div>
+    <div style="margin-top:4px">${SCENES.map((s,i)=>i===PLAY?'':`<div class="sr ${i<PLAY?'past':''} ${i===W.sel&&i!==PLAY?'sel':''}" data-i="${i}">
+      <span class="no">${pad(i+1)}</span><span class="t">${esc(s.n)}</span>${CROWDED?'':`<span class="bb">${s.b}</span><span></span>`}<span class="ck">${s.v.map((v,k)=>`<i style="background:${v?COL[k]:'transparent'};${v?'':'box-shadow:inset 0 0 0 1px #d0d0cc'}"></i>`).join('')}</span>${CROWDED?`<span class="bb">${s.b}</span>`:''}</div>`).join('')}</div>
+  </div>`;
+}
+/* ---------- panel ---------- */
+let LB, LP, P = MODE==='play'?1:0;
+function renderWeave(el){
+  if(!LB){
+    el.innerHTML=`<div class="tg"><div class="sw"><span class="blk"></span><button data-m="build">BUILD</button><button data-m="play">PLAY</button></div><div class="key" title="Tab switches">TAB<small>switch</small></div></div>
+      <div class="lay lay-b"></div><div class="lay lay-p"></div>`;
+    LB=el.querySelector('.lay-b'); LP=el.querySelector('.lay-p');
+    el.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+  }
+  LB.innerHTML=loomHTML(); LP.innerHTML=setHTML();
+  el.querySelectorAll('[data-i]').forEach(n=>n.onclick=()=>selectScene(+n.dataset.i));
+  el.querySelectorAll('[data-m]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===MODE));
+  el.classList.toggle('play',MODE==='play'); el.style.setProperty('--p',P);
+}
+function setMode(m){
+  if(m===MODE) return; MODE=m; const el=document.getElementById('weave');
+  el.querySelectorAll('[data-m]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===MODE)); el.classList.toggle('play',MODE==='play');
+  W.renderTx();
+  const to=MODE==='play'?1:0, from=P, t0=performance.now(), D=reduce?0:460;
+  (function step(now){ const f=D?Math.min(1,(now-t0)/D):1, e=f<.5?2*f*f:1-2*(1-f)*(1-f); P=from+(to-from)*e; el.style.setProperty('--p',P.toFixed(3)); if(f<1) requestAnimationFrame(step); })(t0);
+}
+addEventListener('keydown',e=>{ if(e.key==='Tab'&&!e.shiftKey&&!e.altKey&&!e.metaKey){ e.preventDefault(); setMode(MODE==='build'?'play':'build'); }});
+
+/* ---------- right panel: full controls in BUILD, stripped to the next move in PLAY ---------- */
+function playPanel(el){
+  const a=SCENES[PLAY], b=SCENES[(PLAY+1)%SCENES.length], dg=txDiagram(a,b,W.len,W.curve,236); el._dg=dg;
+  el.innerHTML=`<div class="ph"><span class="lab">Next</span><span class="mono" style="font-size:11px;font-weight:700">${pad(a.i+1)} → ${pad(b.i+1)}</span></div>
+  <div class="tx pp">
+    <div style="display:flex;align-items:baseline;gap:8px"><span class="big" data-txbars style="font-size:76px"></span><span style="font-size:22px;font-weight:900;letter-spacing:-.04em">bars<br>to go</span></div>
+    <div style="display:flex;gap:5px;margin:8px 0 18px">${[1,2,3,4].map(n=>`<i data-beat="${n}" style="width:22px;height:8px;background:#141414;display:block"></i>`).join('')}<span class="lab" style="margin-left:6px">beat</span></div>
+    <h2 style="font-size:40px;text-transform:uppercase">${esc(b.n)}</h2>
+    <div class="lab" style="margin-top:8px">${W.mode} · ${W.len} bars · ${W.curve} curve</div>
+    <div style="margin:22px 0 0 18px">${dg.svg}</div>
+    <div style="position:absolute;left:16px;right:16px;bottom:16px">
+      <button class="gobtn solid" style="margin-bottom:10px">GO NOW</button>
+      <button class="gobtn">HOLD ${pad(a.i+1)}</button>
+      <div class="lab mute" style="text-align:center;margin-top:10px">Space = go · H = hold (loops the scene)</div>
+    </div>
+  </div>`;
+}
+boot(renderWeave);
+const trans=document.getElementById('trans'), fullTx=W.renderTx;
+W.renderTx=()=>{ if(MODE==='play') playPanel(trans); else fullTx(); };
+W.renderTx();
+// q ?p=0.5 freezes the switch mid-way (for a still)
+if(q.has('p')){ P=+q.get('p'); document.getElementById('weave').style.setProperty('--p',P); }
+tick(c=>{
+  if(LB){ const g=loomHTML.geo, ph=LB.querySelector('[data-ph]'); if(ph){ ph.setAttribute('transform',`translate(0,${g.bands[PLAY].y+c.bar*g.ppb})`); const cd=LB.querySelector('[data-cd]'); LB.querySelector('[data-phl]').textContent=cd?(c.bar+1).toFixed(1):`−${fmtS(c.left).slice(0,5)}`; if(cd) cd.textContent=`−${fmtS(c.left)} → ${pad(PLAY+2)}`; } }
+  if(LP){ const cd=LP.querySelector('[data-cd]'); if(cd) cd.textContent=fmtS(c.left); const pr=LP.querySelector('[data-prog]'); if(pr) pr.style.width=(c.frac*100).toFixed(1)+'%'; }
+  const tb=trans.querySelector('[data-txbars]'); if(tb&&MODE==='play'){ tb.textContent=Math.ceil(SCENES[PLAY].b-c.bar); trans.querySelectorAll('[data-beat]').forEach(i=>i.style.opacity=+i.dataset.beat<=c.beat?1:.15); }
+});
+</script></body></html>

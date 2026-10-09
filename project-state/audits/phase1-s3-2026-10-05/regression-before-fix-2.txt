@@ -1,0 +1,28 @@
+# S3 correction 4 (last-resort guard independence) — regression BEFORE the fix — 2026-10-05T12:44:21Z — module md5 54a88a3c2995ac6ce25a43df3d5f57d4 (unfixed, 54a88a3c…), suite md5 e5bdf58d41db50283bac665c216ea34a
+✔ 1. fixture session imports into a valid document equal to the S1-built oracle; master kept and reported
+✔ 2. identical bytes on two tracks become one asset; first writer's name kept
+✔ 3. importing into a document that already holds the bytes adds nothing
+✔ 4. a saved buffer that differs from the selected item is kept as a rendered-buffer override
+✔ 5. equality: (a) byte-equal buffer → sampleEqualsSelectedItem; (b) same name/different bytes → override; (c) corrupted matching key fails
+✔ 6. node: zip with metadata; zip without metadata; JSON fallback is canonical and path-free; neither → track
+✔ 7. live-input, stream, node and motion tracks carry the expected unsupported codes
+✔ 8. malformed sessions fail clearly without mutation
+✔ 9. a bad payload on a later track leaves no partial table and the document unchanged
+✔ 10. limits: preflight refusals hash nothing; growth refusals after dedupe may hash; exact limits pass
+✔ 11. thread mapping by colour token, explicit ctx.threadIds, and S1 refusals surface
+✔ 12. S1 and S2 are reached through their frozen public exports
+✔ 13. mutations to the session, table, document, ctx and limits while pending do not reach the result
+✔ 14. absent z, generatedReturn and captureBpm survive import exactly
+✔ 15. unreferenced payloads are refused by default, or disclosed as incomplete with allowOmissions
+✔ 16. path-only sources fail; live-input/stream ignore a leftover path; no path ever appears in a result
+✔ 17. verifyExisting catches a corrupted untouched entry; the default does not and says so
+✔ 18. malformed motionPath/eq/customNodeParams/playlist-type and empty payload strings are rejected with field and track
+✘ 19. cyclic nested session data and cyclic existing-table data give structured failures; nothing leaks or throws
+    AssertionError [ERR_ASSERTION]: Got unwanted rejection.
+    Actual message: "SECRET-NAME-GETTER"
+        at async Object.fn (/sessions/rcw-01ut1ycxhrs1tlgbw5yyspcj/mnt/referenced-chatgpt-conversation-this-is-an/work/aether-weave-v01-lab/tests/test-weave-import.js:685:5)
+        at async /sessions/rcw-01ut1ycxhrs1tlgbw5yyspcj/mnt/referenced-chatgpt-conversation-this-is-an/work/aether-weave-v01-lab/tests/test-weave-import.js:723:11
+✔ 20. sparse arrays are rejected as encoding errors; every successful encoding parses back to the same array contents
+
+19 passed, 1 failed
+exit: 1

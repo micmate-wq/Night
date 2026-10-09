@@ -1,0 +1,53 @@
+✔ 1. boot: valid empty document, demo rows equal the legacy demo set, nothing bound
+✔ 2. capture happy path: real Scene with capture provenance, dedupe, bindings, docRevision +1, demo gone
+✔ 3. origin proof uses press values only: pruned when decoded-item matches revision, buffer and selected file; override kept otherwise
+✔ 4. source change after encoding (before commit) fails the capture: nothing added, nothing bound; also while waiting behind another capture
+✔ 5. deletion during hashing is preserved: the capture composes onto the latest document; docRevision is monotonic
+✔ 6. an ADJUST drag-end made during hashing survives the capture commit
+✔ 7. a failed earlier capture does not block a later successful one; press order kept
+✔ 8. stale epoch: every pending capture is discarded
+✔ 9. binding invalidation: every replacement path (via the host discipline) invalidates; transport-like changes do not
+✔ 10. per-frame glide gating: only bound, matching slots move; invalidation mid-glide stops that slot and is reported once
+✔ 11. demo-only: GO NOW, auto-advance and Preview move nothing; ADJUST and delete on a demo Scene are refused
+✔ 12. delayed Preview: cancelled by invalidation, suspension or a newer Preview; runs with the gate otherwise
+✔ 13. ADJUST (provisional D5): bound spatial recall only; same-source/different-Scene drag-end is refused; DONE writes nothing
+✔ 14. suspension and detach: writes blocked while suspended; successful/partial loads detach; failed preflight does not; rebuild detaches; capture clears detached
+✔ 15. live-input and stream replacement: bound slots are skipped by glides and refused by drag-end; a pending capture fails
+✔ 16. capacity and validity are checked before every commit; refusals add nothing
+✔ 17. immutability: every document change validates; the view is re-derived; S1–S3 reached through frozen exports; capture snapshot copies origin but keeps File/AudioBuffer references
+✔ 18. without the model scripts the engine still shows the demo set and refuses capture cleanly
+✘ 19. deletion keeps playing, selected and editing identities (Codex review 2): delete the first of three while the last is played, selected and edited
+    AssertionError [ERR_ASSERTION]: playing Scene identity kept
+    + actual - expected
+
+    + 'sc_007b010c-fa60-4fb9-90a5-f121001c8e86'
+✘ 20. delayed jump Preview targets a stable Scene ID (Codex review 2): a selection change while waiting does not retarget; a deleted target cancels
+    AssertionError [ERR_ASSERTION]: snapped to Scene 01 at start, then to Scene 02 (not Scene 03)
+    + actual - expected
+
+      [
+
+18 passed, 2 failed
+✔ H1. _noteSourceReplaced bumps the revision, clears the origin proof and invalidates a pending loader token
+✔ H2. clearSource (real) bumps once and clears the origin; cleanupSources itself does not bump
+✔ H3. connectLiveInput (real) replaces the source: revision bumped, origin cleared, live flags set
+✔ H4. loadStreamUrl (real) replaces the source: revision bumped, origin cleared, buffer nulled, stream flags set
+✔ H5. _loadAudioFile (real) sets a decoded-item origin bound to this revision, buffer and file; a cancelled load sets nothing
+✔ H6. loadDemoStems (real) marks every track replaced with a synthetic origin
+✔ H7. stopNodeOnly/play/stop are transport paths and do not touch the revision (sampled via stopNodeOnly on the real prototype)
+✘ H8. _applySession wrapper: token issued, released on success with replaced:true and failures; released on throw with replaced:false
+    TypeError: onReplacing is not a function
+        at st._applySessionCore (/home/claude/s4w/audit2/before/tests/test-weave-host.js:182:54)
+        at SpatialStudio._applySession (evalmachine.<anonymous>:4191:28)
+        at Object.fn (/home/claude/s4w/audit2/before/tests/test-weave-host.js:183:22)
+✔ H9. real _applySessionCore: failed preflight throws before touching tracks (replaced:false); successful load restores buffers with a session origin (replaced:true)
+✘ H9b. real _applySessionCore throwing after track cleanup (Codex review 2): replaced:true is reported and the token released; a per-track failure is a partial load
+    AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+✔ H10. rebuildAudioGraph wrapper + real core: early return reports replaced:false; a real rebuild bumps every track, marks restored buffers rebuilt and releases
+✔ H11. overlapping operations hold distinct tokens; releasing one does not release the other
+✔ H12. script order: S1, S2, S3 are loaded before weave.js; no other markup changed
+
+11 passed, 2 failed

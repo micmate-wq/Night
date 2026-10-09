@@ -1,0 +1,29 @@
+{
+  "id": "com.aether.node.singing-bowls",
+  "name": "Singing Bowls",
+  "version": "2.0.0",
+  "author": "Aether",
+  "description": "Five generative singing bowls (minor pentatonic on a root pitch) with acoustic beating and per-bowl tone. Runs on the audio thread; strikes only while the transport plays.",
+  "role": "instrument",
+  "timingTier": "ambient-generative",
+  "category": "Generative / Resonator",
+  "inputs": 0,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "inspector": "host",
+  "parameters": [
+    { "id": "rootPitch",  "name": "Root Pitch", "label": "Root Pitch",  "type": "float", "min": 60,   "max": 300, "default": 120, "unit": "Hz",   "morph": "glide" },
+    { "id": "activity",   "name": "Activity", "label": "Activity",    "type": "float", "min": 0.05, "max": 1,   "default": 0.5, "unit": "norm", "morph": "glide" },
+    { "id": "resonance",  "name": "Resonance", "label": "Resonance",   "type": "float", "min": 0.1,  "max": 1,   "default": 0.7, "unit": "norm", "morph": "glide" },
+    { "id": "beatingMix", "name": "Beating Mix", "label": "Beating", "type": "float", "min": 0,    "max": 1,   "default": 0.6, "unit": "norm", "morph": "glide" },
+    { "id": "tone_1",     "name": "Bowl 1 Tone", "label": "Bowl 1 Tone", "type": "float", "min": 0,    "max": 1,   "default": 0.8, "unit": "norm", "morph": "glide" },
+    { "id": "tone_2",     "name": "Bowl 2 Tone", "label": "Bowl 2 Tone", "type": "float", "min": 0,    "max": 1,   "default": 0.8, "unit": "norm", "morph": "glide" },
+    { "id": "tone_3",     "name": "Bowl 3 Tone", "label": "Bowl 3 Tone", "type": "float", "min": 0,    "max": 1,   "default": 0.8, "unit": "norm", "morph": "glide" },
+    { "id": "tone_4",     "name": "Bowl 4 Tone", "label": "Bowl 4 Tone", "type": "float", "min": 0,    "max": 1,   "default": 0.8, "unit": "norm", "morph": "glide" },
+    { "id": "tone_5",     "name": "Bowl 5 Tone", "label": "Bowl 5 Tone", "type": "float", "min": 0,    "max": 1,   "default": 0.8, "unit": "norm", "morph": "glide" }
+  ],
+  "canvas_animation": "interference_wave"
+}

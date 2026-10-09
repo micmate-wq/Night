@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>F* 'EM</title>
+  <style>
+    :root {
+      --bg: var(--aether-bg, var(--bg-main, #0A0A0A));
+      --panel: var(--aether-panel, var(--bg-card, #141414));
+      --accent: var(--track-color, var(--aether-accent, #FF3E55));
+      --text: var(--aether-text, var(--text-main, #FFFFFF));
+      --muted: var(--aether-text-muted, var(--text-muted, #888888));
+      --border: var(--aether-border, var(--border-light, #2B2B2B));
+      --font-h: var(--aether-font-heading, 'Space Grotesk', sans-serif);
+      --font-m: var(--aether-font-mono, 'JetBrains Mono', monospace);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-h);
+      font-size: 11px;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 12px;
+      gap: 8px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 5px;
+    }
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .title {
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 11px;
+      color: var(--accent);
+    }
+    .bpm-indicator {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.4;
+      display: inline-block;
+    }
+    .genre-badge {
+      font-family: var(--font-m);
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: #FFF;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .mixer-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 100%;
+      flex: 1;
+      min-height: 120px;
+      padding: 10px 14px;
+      background-color: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    .channel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      flex: 1;
+      gap: 6px;
+    }
+    .channel label {
+      font-family: var(--font-m, monospace);
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: 1.2px;
+      color: var(--text, #FFF);
+    }
+    .fader-val {
+      font-family: var(--font-m, monospace);
+      font-size: 9px;
+      color: var(--muted);
+    }
+    .fader-track {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 70px;
+    }
+    .fader {
+      -webkit-appearance: none;
+      appearance: none;
+      writing-mode: vertical-lr;
+      direction: rtl;
+      width: 6px;
+      height: 100%;
+      min-height: 70px;
+      background: #222;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+    .fader::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 12px;
+      border-radius: 2px;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+    }
+    .controls-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .section-label {
+      font-family: var(--font-m);
+      font-size: 8px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: -2px;
+    }
+    .controls-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .val {
+      font-family: var(--font-m);
+      color: var(--text);
+    }
+    input[type=range]:not(.fader) {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: #222;
+      border: 1px solid var(--border);
+      outline: none;
+      border-radius: 2px;
+    }
+    input[type=range]:not(.fader)::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-row">
+      <div class="title">F* 'EM</div>
+      <div class="bpm-indicator" id="bpm-dot"></div>
+    </div>
+    <div class="genre-badge" id="genre-badge">House / 4-4</div>
+  </header>
+
+  <div class="mixer-container">
+    <div class="channel">
+      <span class="fader-val" id="val-kick">80%</span>
+      <div class="fader-track">
+        <input type="range" class="fader" id="vol-kick" min="0" max="1" step="0.01" value="0.8">
+      </div>
+      <label>KICK</label>
+    </div>
+    <div class="channel">
+      <span class="fader-val" id="val-snare">80%</span>
+      <div class="fader-track">
+        <input type="range" class="fader" id="vol-snare" min="0" max="1" step="0.01" value="0.8">
+      </div>
+      <label>SNARE</label>
+    </div>
+    <div class="channel">
+      <span class="fader-val" id="val-hat">80%</span>
+      <div class="fader-track">
+        <input type="range" class="fader" id="vol-hat" min="0" max="1" step="0.01" value="0.8">
+      </div>
+      <label>HAT</label>
+    </div>
+  </div>
+
+  <div class="controls-wrapper">
+    <div class="section-label">Macros: Timbre Shapers</div>
+    <div class="controls-row">
+      <label>
+        <div class="row"><span>Kick</span><span class="val" id="v-macro_kick">0.50</span></div>
+        <input id="macro_kick" type="range" min="0" max="1" step="0.01" value="0.50">
+      </label>
+      <label>
+        <div class="row"><span>Snare</span><span class="val" id="v-macro_snare">0.50</span></div>
+        <input id="macro_snare" type="range" min="0" max="1" step="0.01" value="0.50">
+      </label>
+      <label>
+        <div class="row"><span>Hat</span><span class="val" id="v-macro_hat">0.50</span></div>
+        <input id="macro_hat" type="range" min="0" max="1" step="0.01" value="0.50">
+      </label>
+    </div>
+
+    <div class="section-label">Row 1: Sequencing</div>
+    <div class="controls-row">
+      <label>
+        <div class="row"><span>Evolution</span><span class="val" id="v-evolution">0.00</span></div>
+        <input id="evolution" type="range" min="0" max="1" step="0.01" value="0.00">
+      </label>
+      <label>
+        <div class="row"><span>Congestion</span><span class="val" id="v-congestion">0.50</span></div>
+        <input id="congestion" type="range" min="0" max="1" step="0.01" value="0.50">
+      </label>
+      <label>
+        <div class="row"><span>Space</span><span class="val" id="v-space">0.50</span></div>
+        <input id="space" type="range" min="0" max="1" step="0.01" value="0.50">
+      </label>
+    </div>
+
+    <div class="section-label">Row 2: Global</div>
+    <div class="controls-row">
+      <label>
+        <div class="row"><span>Tempo</span><span class="val" id="v-bpm">120</span></div>
+        <input id="bpm" type="range" min="60" max="200" step="1" value="120">
+      </label>
+      <label>
+        <div class="row"><span>Character</span><span class="val" id="v-character">0.50</span></div>
+        <input id="character" type="range" min="0" max="1" step="0.01" value="0.50">
+      </label>
+      <label>
+        <div class="row"><span>WTF</span><span class="val" id="v-wtf">0.00</span></div>
+        <input id="wtf" type="range" min="0" max="0.30" step="0.005" value="0.00">
+      </label>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      macro_kick: 0.50,
+      macro_snare: 0.50,
+      macro_hat: 0.50,
+      evolution: 0.0,
+      congestion: 0.50,
+      space: 0.50,
+      bpm: 120,
+      character: 0.50,
+      wtf: 0.00,
+      nodeColor: '#FF3E55'
+    };
+
+    const genreBadge = document.getElementById('genre-badge');
+    const bpmDot = document.getElementById('bpm-dot');
+
+    function updateThemeColor(color) {
+      if (!color) return;
+      state.nodeColor = color;
+      document.documentElement.style.setProperty('--accent', color);
+    }
+
+    const computedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+    if (computedAccent) updateThemeColor(computedAccent);
+
+    function updateGenreBadge(evo) {
+      if (evo < 0.35) {
+        genreBadge.textContent = 'House / 4-4';
+      } else if (evo < 0.75) {
+        genreBadge.textContent = 'Breaks / Sync';
+      } else {
+        genreBadge.textContent = 'IDM / Glitch';
+      }
+    }
+
+    function notify(id, value) {
+      window.parent.postMessage({ type: 'aether:param-change', paramId: id, value: value }, '*');
+      window.parent.postMessage({ type: 'PARAMETER_CHANGE', id: id, value: value }, '*');
+      if (id === 'bpm') {
+        window.parent.postMessage({ type: 'aether:bpm', value: value }, '*');
+      }
+    }
+
+    function bind(id) {
+      const el = document.getElementById(id);
+      const v = document.getElementById('v-' + id);
+      if (!el || !v) return;
+      el.addEventListener('input', () => {
+        const n = parseFloat(el.value);
+        state[id] = n;
+        v.textContent = (id === 'bpm') ? Math.round(n).toString() : n.toFixed(id === 'wtf' ? 3 : 2);
+        if (id === 'evolution') updateGenreBadge(n);
+        notify(id, n);
+      });
+    }
+
+    ['macro_kick', 'macro_snare', 'macro_hat', 'evolution', 'congestion', 'space', 'bpm', 'character', 'wtf'].forEach(bind);
+
+    // 3-Channel Voice Volume Routing
+    const voices = ['kick', 'snare', 'hat'];
+    voices.forEach(voice => {
+      const knob = document.getElementById(`vol-${voice}`);
+      const valDisp = document.getElementById(`val-${voice}`);
+      if (knob) {
+        knob.addEventListener('input', (e) => {
+          const val = parseFloat(e.target.value);
+          if (valDisp) valDisp.textContent = Math.round(val * 100) + '%';
+          window.parent.postMessage({
+            type: 'SET_VOICE_VOL',
+            voice: voice,
+            value: val
+          }, '*');
+        });
+      }
+    });
+
+    // BPM Pulse animation on header indicator
+    function pulseLoop() {
+      const bpm = Math.max(30, state.bpm || 120);
+      const beatMs = 60000 / bpm;
+      const phase = (performance.now() % beatMs) / beatMs;
+      const pulseEase = Math.pow(1 - phase, 3);
+
+      if (bpmDot) {
+        bpmDot.style.opacity = (0.2 + pulseEase * 0.8).toFixed(2);
+        bpmDot.style.transform = `scale(${(1 + pulseEase * 0.35).toFixed(2)})`;
+      }
+      requestAnimationFrame(pulseLoop);
+    }
+    requestAnimationFrame(pulseLoop);
+
+    // Host IPC Bridge
+    window.addEventListener('message', (event) => {
+      if (!event.data) return;
+      const { type, paramId, id, value, bpm, color, trackColor, nodeColor } = event.data;
+
+      const themeCol = color || trackColor || nodeColor;
+      if (themeCol) {
+        updateThemeColor(themeCol);
+      }
+
+      if (type === 'aether:voice-trigger' && bpm) {
+        state.bpm = bpm;
+        const bpmEl = document.getElementById('bpm');
+        const bpmVal = document.getElementById('v-bpm');
+        if (bpmEl && document.activeElement !== bpmEl) bpmEl.value = bpm;
+        if (bpmVal) bpmVal.textContent = Math.round(bpm).toString();
+      }
+
+      const pid = paramId || id;
+      if (pid && state[pid] !== undefined) {
+        state[pid] = value;
+        const el = document.getElementById(pid);
+        const v = document.getElementById('v-' + pid);
+        if (el && document.activeElement !== el) el.value = value;
+        if (v) v.textContent = (pid === 'bpm') ? Math.round(value).toString() : Number(value).toFixed(pid === 'wtf' ? 3 : 2);
+        if (pid === 'evolution') updateGenreBadge(value);
+      }
+    });
+  </script>
+</body>
+</html>

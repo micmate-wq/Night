@@ -1,0 +1,770 @@
+{
+  "s4Url": "http://localhost:3456/index.html",
+  "baselineUrl": "http://localhost:3457/index.html",
+  "checks": [
+    {
+      "name": "S1–S3 and the engine load; session.available",
+      "ok": true,
+      "detail": {
+        "S1": "object",
+        "S2": "object",
+        "S3": "object",
+        "engine": "object",
+        "available": true
+      }
+    },
+    {
+      "name": "fresh page: demo set rows equal the pre-S4 rows",
+      "ok": true,
+      "detail": {
+        "s4": [
+          [
+            "Slow emergence",
+            16,
+            true
+          ],
+          [
+            "Open water",
+            32,
+            true
+          ],
+          [
+            "Afterglow",
+            16,
+            true
+          ]
+        ],
+        "base": [
+          [
+            "Slow emergence",
+            16,
+            false
+          ],
+          [
+            "Open water",
+            32,
+            false
+          ],
+          [
+            "Afterglow",
+            16,
+            false
+          ]
+        ]
+      }
+    },
+    {
+      "name": "fresh page: panel and row rectangles equal the pre-S4 page",
+      "ok": true,
+      "detail": {
+        "s4": {
+          "weave": [
+            7,
+            57,
+            299,
+            835
+          ],
+          "trans": [
+            1134,
+            57,
+            299,
+            835
+          ],
+          "arena": [
+            319,
+            56,
+            802,
+            837
+          ],
+          "toolbar": [
+            6,
+            4,
+            1428,
+            46
+          ],
+          "rows": [
+            [
+              129,
+              80
+            ],
+            [
+              210,
+              160
+            ],
+            [
+              370,
+              80
+            ]
+          ]
+        },
+        "base": {
+          "weave": [
+            7,
+            57,
+            299,
+            835
+          ],
+          "trans": [
+            1134,
+            57,
+            299,
+            835
+          ],
+          "arena": [
+            319,
+            56,
+            802,
+            837
+          ],
+          "toolbar": [
+            6,
+            4,
+            1428,
+            46
+          ],
+          "rows": [
+            [
+              129,
+              80
+            ],
+            [
+              210,
+              160
+            ],
+            [
+              370,
+              80
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "name": "fresh page: pixel-equivalent to the pre-S4 page (same browser, viewport, fonts, frozen clock and animations; anti-aliasing noise only)",
+      "ok": true,
+      "detail": {
+        "sameSize": true,
+        "total": 1296000,
+        "diff": 78,
+        "maxDelta": 2,
+        "bbox": [
+          15,
+          13,
+          1356,
+          670
+        ]
+      }
+    },
+    {
+      "name": "demo row ADJUST swipe is refused with the demo toast",
+      "ok": true,
+      "detail": "Demo Scene — press + SCENE to capture a real one"
+    },
+    {
+      "name": "demo row ADJUST swipe leaves editingIndex null",
+      "ok": true
+    },
+    {
+      "name": "+ SCENE button present",
+      "ok": true
+    },
+    {
+      "name": "first capture: one real Scene row, demo set gone",
+      "ok": true,
+      "detail": [
+        [
+          "Scene 01",
+          16,
+          false,
+          true
+        ]
+      ]
+    },
+    {
+      "name": "first capture: provenance capture, valid document, dirty, not detached, docRevision 1",
+      "ok": true,
+      "detail": {
+        "rows": [
+          [
+            "Scene 01",
+            16,
+            false,
+            true
+          ]
+        ],
+        "docScenes": 1,
+        "dirty": true,
+        "detached": false,
+        "provenance": "capture",
+        "valid": true,
+        "docRevision": 1,
+        "bindings": [
+          [
+            true,
+            "empty"
+          ],
+          [
+            true,
+            "empty"
+          ],
+          [
+            true,
+            "empty"
+          ],
+          [
+            true,
+            "empty"
+          ]
+        ],
+        "rowsInDom": 1
+      }
+    },
+    {
+      "name": "first capture: four slots bound to the new Scene as empty sources",
+      "ok": true,
+      "detail": [
+        [
+          true,
+          "empty"
+        ],
+        [
+          true,
+          "empty"
+        ],
+        [
+          true,
+          "empty"
+        ],
+        [
+          true,
+          "empty"
+        ]
+      ]
+    },
+    {
+      "name": "after capture: panel rectangles unchanged",
+      "ok": true,
+      "detail": {
+        "weave": [
+          7,
+          57,
+          299,
+          835
+        ],
+        "trans": [
+          1134,
+          57,
+          299,
+          835
+        ],
+        "arena": [
+          319,
+          56,
+          802,
+          837
+        ],
+        "toolbar": [
+          6,
+          4,
+          1428,
+          46
+        ],
+        "rows": [
+          [
+            129,
+            80
+          ]
+        ]
+      }
+    },
+    {
+      "name": "three Scenes after three button captures",
+      "ok": true,
+      "detail": 3
+    },
+    {
+      "name": "GO NOW (jump) to Scene 02 moves bound T1/T2 to the captured positions",
+      "ok": true,
+      "detail": {
+        "rows": 3,
+        "playing": 1,
+        "t1": [
+          0.2,
+          0.8
+        ],
+        "t2": [
+          0.8,
+          0.2
+        ],
+        "ids": [
+          "sc_3eb16b25-df14-4acf-802c-72718e61d1b0",
+          "sc_a872eb5c-873b-4a9f-b9fc-656ddecf8fd4",
+          "sc_cf2eaf32-76ce-471a-8338-579a7b734879"
+        ]
+      }
+    },
+    {
+      "name": "ADJUST on Scene 02 recalls the matching slot (same source) but the drag-end is refused: slots belong to Scene 03",
+      "ok": true,
+      "detail": {
+        "editing": 1,
+        "recalled": [
+          0.2,
+          0.8
+        ],
+        "stored": {
+          "x": 0.2,
+          "y": 0.8,
+          "z": 0
+        },
+        "docRevision": 3,
+        "rev": 3,
+        "toast": "Positions not saved to Scene 02 for T1, T2, T3, T4 — they belong to another Scene or play a different source"
+      }
+    },
+    {
+      "name": "refused drag-end shows the product toast",
+      "ok": true,
+      "detail": "Positions not saved to Scene 02 for T1, T2, T3, T4 — they belong to another Scene or play a different source"
+    },
+    {
+      "name": "ADJUST swipe on Scene 03 enters adjust and recalls the bound slot",
+      "ok": true,
+      "detail": {
+        "editing": 2,
+        "recalled": [
+          0.7,
+          0.3
+        ],
+        "written": {
+          "x": 0.33,
+          "y": 0.66,
+          "z": 0
+        },
+        "other": {
+          "x": 0.2,
+          "y": 0.8,
+          "z": 0
+        },
+        "doneInDom": true,
+        "docRevision": 4,
+        "valid": true
+      }
+    },
+    {
+      "name": "drag-end writes the moved slot into Scene 03 only; document valid; docRevision advanced",
+      "ok": true,
+      "detail": {
+        "editing": 2,
+        "recalled": [
+          0.7,
+          0.3
+        ],
+        "written": {
+          "x": 0.33,
+          "y": 0.66,
+          "z": 0
+        },
+        "other": {
+          "x": 0.2,
+          "y": 0.8,
+          "z": 0
+        },
+        "doneInDom": true,
+        "docRevision": 4,
+        "valid": true
+      }
+    },
+    {
+      "name": "DONE chip rendered while adjusting",
+      "ok": true
+    },
+    {
+      "name": "DONE click exits adjust",
+      "ok": true
+    },
+    {
+      "name": "delete swipe removes Scene 01; playing and selected keep the Scene 03 identity",
+      "ok": true,
+      "detail": {
+        "ids": [
+          "sc_3eb16b25-df14-4acf-802c-72718e61d1b0",
+          "sc_a872eb5c-873b-4a9f-b9fc-656ddecf8fd4",
+          "sc_cf2eaf32-76ce-471a-8338-579a7b734879"
+        ],
+        "after": {
+          "ids": [
+            "sc_a872eb5c-873b-4a9f-b9fc-656ddecf8fd4",
+            "sc_cf2eaf32-76ce-471a-8338-579a7b734879"
+          ],
+          "playing": 1,
+          "selected": 1,
+          "rowsInDom": 2
+        }
+      }
+    },
+    {
+      "name": "delayed Preview moved T1 to the originally intended Scene (Scene 03), not to the Scene after the new selection",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "target": "sc_cf2eaf32-76ce-471a-8338-579a7b734879",
+        "movedTo": [
+          0.33,
+          0.66
+        ],
+        "expected": {
+          "x": 0.33,
+          "y": 0.66,
+          "z": 0
+        },
+        "before": 0.33
+      }
+    },
+    {
+      "name": "detach after a real session replacement: detached, every binding invalid, GO NOW moves nothing",
+      "ok": true,
+      "detail": {
+        "detached": true,
+        "movedAfterDetach": false,
+        "toast": "Weave detached — live sound is now x.aether. + SCENE to capture it into the Weave.",
+        "bindingsValid": [
+          false,
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "name": "detach toast carries the product wording",
+      "ok": true,
+      "detail": "Weave detached — live sound is now x.aether. + SCENE to capture it into the Weave."
+    },
+    {
+      "name": "no page errors or new console errors on the S4 page",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "baseline": {
+    "rows": [
+      [
+        "Slow emergence",
+        16,
+        false
+      ],
+      [
+        "Open water",
+        32,
+        false
+      ],
+      [
+        "Afterglow",
+        16,
+        false
+      ]
+    ],
+    "layout": {
+      "weave": [
+        7,
+        57,
+        299,
+        835
+      ],
+      "trans": [
+        1134,
+        57,
+        299,
+        835
+      ],
+      "arena": [
+        319,
+        56,
+        802,
+        837
+      ],
+      "toolbar": [
+        6,
+        4,
+        1428,
+        46
+      ],
+      "rows": [
+        [
+          129,
+          80
+        ],
+        [
+          210,
+          160
+        ],
+        [
+          370,
+          80
+        ]
+      ]
+    }
+  },
+  "scriptsLoaded": {
+    "S1": "object",
+    "S2": "object",
+    "S3": "object",
+    "engine": "object",
+    "available": true
+  },
+  "initial": {
+    "rows": [
+      [
+        "Slow emergence",
+        16,
+        true
+      ],
+      [
+        "Open water",
+        32,
+        true
+      ],
+      [
+        "Afterglow",
+        16,
+        true
+      ]
+    ],
+    "demo": true,
+    "docScenes": 0,
+    "layout": {
+      "weave": [
+        7,
+        57,
+        299,
+        835
+      ],
+      "trans": [
+        1134,
+        57,
+        299,
+        835
+      ],
+      "arena": [
+        319,
+        56,
+        802,
+        837
+      ],
+      "toolbar": [
+        6,
+        4,
+        1428,
+        46
+      ],
+      "rows": [
+        [
+          129,
+          80
+        ],
+        [
+          210,
+          160
+        ],
+        [
+          370,
+          80
+        ]
+      ]
+    }
+  },
+  "freshPixelDiff": {
+    "sameSize": true,
+    "total": 1296000,
+    "diff": 78,
+    "maxDelta": 2,
+    "bbox": [
+      15,
+      13,
+      1356,
+      670
+    ]
+  },
+  "demoAdjustToast": "Demo Scene — press + SCENE to capture a real one",
+  "capture1": {
+    "rows": [
+      [
+        "Scene 01",
+        16,
+        false,
+        true
+      ]
+    ],
+    "docScenes": 1,
+    "dirty": true,
+    "detached": false,
+    "provenance": "capture",
+    "valid": true,
+    "docRevision": 1,
+    "bindings": [
+      [
+        true,
+        "empty"
+      ],
+      [
+        true,
+        "empty"
+      ],
+      [
+        true,
+        "empty"
+      ],
+      [
+        true,
+        "empty"
+      ]
+    ],
+    "rowsInDom": 1
+  },
+  "afterCaptureLayout": {
+    "weave": [
+      7,
+      57,
+      299,
+      835
+    ],
+    "trans": [
+      1134,
+      57,
+      299,
+      835
+    ],
+    "arena": [
+      319,
+      56,
+      802,
+      837
+    ],
+    "toolbar": [
+      6,
+      4,
+      1428,
+      46
+    ],
+    "rows": [
+      [
+        129,
+        80
+      ]
+    ]
+  },
+  "capture3": {
+    "rows": 3,
+    "playing": 1,
+    "t1": [
+      0.2,
+      0.8
+    ],
+    "t2": [
+      0.8,
+      0.2
+    ],
+    "ids": [
+      "sc_3eb16b25-df14-4acf-802c-72718e61d1b0",
+      "sc_a872eb5c-873b-4a9f-b9fc-656ddecf8fd4",
+      "sc_cf2eaf32-76ce-471a-8338-579a7b734879"
+    ]
+  },
+  "adjustOther": {
+    "editing": 1,
+    "recalled": [
+      0.2,
+      0.8
+    ],
+    "stored": {
+      "x": 0.2,
+      "y": 0.8,
+      "z": 0
+    },
+    "docRevision": 3,
+    "rev": 3,
+    "toast": "Positions not saved to Scene 02 for T1, T2, T3, T4 — they belong to another Scene or play a different source"
+  },
+  "adjust": {
+    "editing": 2,
+    "recalled": [
+      0.7,
+      0.3
+    ],
+    "written": {
+      "x": 0.33,
+      "y": 0.66,
+      "z": 0
+    },
+    "other": {
+      "x": 0.2,
+      "y": 0.8,
+      "z": 0
+    },
+    "doneInDom": true,
+    "docRevision": 4,
+    "valid": true
+  },
+  "deletion": {
+    "ids": [
+      "sc_3eb16b25-df14-4acf-802c-72718e61d1b0",
+      "sc_a872eb5c-873b-4a9f-b9fc-656ddecf8fd4",
+      "sc_cf2eaf32-76ce-471a-8338-579a7b734879"
+    ],
+    "after": {
+      "ids": [
+        "sc_a872eb5c-873b-4a9f-b9fc-656ddecf8fd4",
+        "sc_cf2eaf32-76ce-471a-8338-579a7b734879"
+      ],
+      "playing": 1,
+      "selected": 1,
+      "rowsInDom": 2
+    }
+  },
+  "preview": {
+    "ok": true,
+    "target": "sc_cf2eaf32-76ce-471a-8338-579a7b734879",
+    "movedTo": [
+      0.33,
+      0.66
+    ],
+    "expected": {
+      "x": 0.33,
+      "y": 0.66,
+      "z": 0
+    },
+    "before": 0.33
+  },
+  "detach": {
+    "detached": true,
+    "movedAfterDetach": false,
+    "toast": "Weave detached — live sound is now x.aether. + SCENE to capture it into the Weave.",
+    "bindingsValid": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "console": {
+    "s4": [],
+    "baseline": [],
+    "s4Raw": [
+      "error: WebSocket connection to 'ws://localhost:8765/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+      "log: 🔌 WebSocket disconnected (server optional). Retrying in background.",
+      "requestfailed: https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap",
+      "error: Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"
+    ],
+    "baselineRaw": [
+      "error: WebSocket connection to 'ws://localhost:8765/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+      "log: 🔌 WebSocket disconnected (server optional). Retrying in background.",
+      "requestfailed: https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap",
+      "error: Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"
+    ]
+  },
+  "summary": {
+    "passed": 24,
+    "failed": 0
+  }
+}

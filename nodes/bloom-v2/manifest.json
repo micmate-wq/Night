@@ -1,0 +1,39 @@
+{
+  "id": "com.aether.node.bloom-v2",
+  "name": "Bloom v2",
+  "version": "2.7.4",
+  "author": "Aether",
+  "description": "Gift for Lera \u2014 Seed randomizes. Grow captures. Growth loops.",
+  "category": "Texture / Generator",
+  "inputs": 0,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [],
+  "canvas_animation": {
+    "type": "art",
+    "settings": {
+      "family": "bloom",
+      "energy": 0.71,
+      "spread": 0.87,
+      "detail": 0.88,
+      "speed": 1.26,
+      "hue": -71,
+      "fade": 0.75
+    }
+  },
+  "art": {
+    "type": "art",
+    "settings": {
+      "family": "bloom",
+      "energy": 0.71,
+      "spread": 0.87,
+      "detail": 0.88,
+      "speed": 1.26,
+      "hue": -71,
+      "fade": 0.75
+    }
+  }
+}

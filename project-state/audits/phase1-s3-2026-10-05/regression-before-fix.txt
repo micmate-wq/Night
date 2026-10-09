@@ -1,0 +1,36 @@
+# S3 review corrections — regressions BEFORE the fix — 2026-10-05T12:38:58Z — module md5 23f0464d3ec74a1f1d0f482ef2390154 (unfixed, 23f0464d…), suite md5 3073f8162c14b9eac5e20b5a4532455f with tests 18–20 added
+✔ 1. fixture session imports into a valid document equal to the S1-built oracle; master kept and reported
+✔ 2. identical bytes on two tracks become one asset; first writer's name kept
+✔ 3. importing into a document that already holds the bytes adds nothing
+✔ 4. a saved buffer that differs from the selected item is kept as a rendered-buffer override
+✔ 5. equality: (a) byte-equal buffer → sampleEqualsSelectedItem; (b) same name/different bytes → override; (c) corrupted matching key fails
+✔ 6. node: zip with metadata; zip without metadata; JSON fallback is canonical and path-free; neither → track
+✔ 7. live-input, stream, node and motion tracks carry the expected unsupported codes
+✔ 8. malformed sessions fail clearly without mutation
+✔ 9. a bad payload on a later track leaves no partial table and the document unchanged
+✔ 10. limits: preflight refusals hash nothing; growth refusals after dedupe may hash; exact limits pass
+✔ 11. thread mapping by colour token, explicit ctx.threadIds, and S1 refusals surface
+✔ 12. S1 and S2 are reached through their frozen public exports
+✔ 13. mutations to the session, table, document, ctx and limits while pending do not reach the result
+✔ 14. absent z, generatedReturn and captureBpm survive import exactly
+✔ 15. unreferenced payloads are refused by default, or disclosed as incomplete with allowOmissions
+✔ 16. path-only sources fail; live-input/stream ignore a leftover path; no path ever appears in a result
+✔ 17. verifyExisting catches a corrupted untouched entry; the default does not and says so
+✘ 18. malformed motionPath/eq/customNodeParams/playlist-type and empty payload strings are rejected with field and track
+    AssertionError [ERR_ASSERTION]: expected failure, got {"ok":true,"doc":{"type":"aether_weave","schemaVersion":1,"id":"wv_00000000-0000-4000-8000-000000000001","name":"Import target","createdAt":"2026-10-05T12:00:00.000Z","modifiedAt":"2026-10-05T12:00:00
+
+    true !== false
+
+✘ 19. cyclic nested session data and cyclic existing-table data give structured failures; nothing leaks or throws
+    AssertionError [ERR_ASSERTION]: Got unwanted rejection: eq
+    Actual message: "Maximum call stack size exceeded"
+        at async Object.fn (/sessions/rcw-01ut1ycxhrs1tlgbw5yyspcj/mnt/referenced-chatgpt-conversation-this-is-an/work/aether-weave-v01-lab/tests/test-weave-import.js:650:5)
+        at async /sessions/rcw-01ut1ycxhrs1tlgbw5yyspcj/mnt/referenced-chatgpt-conversation-this-is-an/work/aether-weave-v01-lab/tests/test-weave-import.js:708:11
+✘ 20. sparse arrays are rejected as encoding errors; every successful encoding parses back to the same array contents
+    AssertionError [ERR_ASSERTION]: sparse must fail: 1,,3
+
+    true !== false
+
+
+17 passed, 3 failed
+exit: 1

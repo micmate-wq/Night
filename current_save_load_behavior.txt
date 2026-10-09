@@ -1,0 +1,144 @@
+# AETHER 3.0 — CURRENT SAVE, LOAD & PRESET BEHAVIOR SPECIFICATION
+
+## 1. Overview & Context
+- **Environment:** Standalone Web Audio Workstation running in macOS Tauri WebView (Frontend served at `http://localhost:3456`).
+- **Core File:** `desktop/index.html` (Single-file HTML/CSS/JS engine).
+- **Core State Class:** `AetherStudio` managing 4 track nodes (`TrackNode`), Web Audio API graphs (`PannerNode`, `BiquadFilterNode` EQ, `GainNode`), and 2D canvas coordinates.
+
+---
+
+## 2. Current Implementation Details
+
+### A. Preset Dropdown (`#preset-selector`)
+- **UI Element:** `<select id="preset-selector" class="header-select">` located in the top header.
+- **Factory Presets:**
+  - `factory:default` (Default Init): Resets all 4 tracks to default quadrant positions (`(0.25, 0.75)`, `(0.75, 0.75)`, `(0.25, 0.25)`, `(0.75, 0.25)`), 0 dB flat EQ, Master Volume 85%.
+  - `factory:wide` (Wide Ambient Stage): Pushes tracks to wide stereo extremes (`X: 0.08` & `X: 0.92`), rear/front Z-depth, with highs boosted (+3 dB) and low/mid adjustments.
+  - `factory:quad` (Spatial Quad Split): Places tracks in 4 distinct geometric corners with Z-depth layering (+0.6 to -0.6).
+  - `factory:club` (Club Front Center): Centers bass (`T1`) and rhythm (`T2`) at front-stage center with low-end boost (+6 dB, +3 dB), spreading synth/lead tracks wide.
+- **User Saved States:**
+  - Stored in browser `localStorage` under key `aether_user_presets` as an array of `{ id, name, session, date }`.
+  - Dynamically populated inside `<optgroup id="user-presets-group">`.
+  - Selecting a user preset from the dropdown immediately parses the session object and executes `applySession(target.session)`.
+
+---
+
+### B. Save Operation (`#export-session-btn` -> `exportSession()`)
+1. **User Naming:** Displays a browser `prompt()` asking for a preset name (default: `Aether_Preset_YYYY-MM-DD`).
+2. **Session Snapshot Serialization:** Collects current studio state into a JSON object via `getCurrentSessionData(presetName)`:
+   - `version`: `'3.0'`
+   - `name`: presetName
+   - `timestamp`: ISO-8601 string
+   - `masterVolume`: Current slider value (float 0.0 – 1.0)
+   - `tracks`: Array of 4 track objects containing:
+     - `index`: Track index (0–3)
+     - `name`: Custom track name string
+     - `x`, `y`, `z`: Spatial 3D coordinates (0.0 – 1.0, and -1.0 – 1.0)
+     - `isMuted`, `isSoloed`: Booleans
+     - `motionSpeed`, `motionPath`: Keyframe automation loop coordinates
+     - `eq`: Object with `{ low, mid, high }` in dB (-15 to +15)
+     - `isStream`, `streamUrl`: Stream source configurations
+3. **File Writing (Finder / OS Dialog):**
+   - **Primary:** Attempts `window.showSaveFilePicker()` with suggested filename `${presetName}.json` and MIME filter `application/json`.
+   - **Fallback:** If File System Access API is unavailable or restricted in WebView, falls back to programmatic Blob URL creation (`URL.createObjectURL`) and triggering an `<a download>` click.
+4. **Preset Registry & Local Storage:**
+   - Writes the session JSON to `localStorage['aether_saved_session']`.
+   - Calls `saveUserPresetState(presetName, sessionData, true)` which saves the preset into `localStorage['aether_user_presets']`, updates the dropdown menu, and selects the new state.
+   - Triggers a green "Saved!" button flash and toast notification.
+
+---
+
+### C. Load Operation (`#import-session-btn` -> `importSession()`)
+1. **File Opening (Finder / OS Dialog):**
+   - **Primary:** Calls `window.showOpenFilePicker({ types: [{ accept: { 'application/json': ['.json'] } }], multiple: false })` which launches the native OS file picker window.
+   - **Fallback:** Invokes `.click()` on hidden `<input type="file" id="import-session-file" accept=".json,application/json">`.
+2. **Parsing & Hydration:**
+   - Reads file content as text, parses JSON.
+   - Calls `applySession(session)`:
+     - Hydrates Master Volume slider and updates Web Audio master gain node.
+     - Iterates through the 4 tracks and restores:
+       - Spatial 2D/3D positions (`t.setPosition(x, y, z)`).
+       - Bipolar EQ Knobs (`t.knobLow`, `t.knobMid`, `t.knobHigh`) and audio filter parameters (`updateAudioParamsFromPosition()`).
+       - Mute & Solo button UI classes and audio node disconnect/reconnect states.
+       - Motion loop paths and playback animation state.
+       - Stream URLs if applicable.
+     - Refreshes global solo summing across all tracks.
+3. **State Registry:** Automatically registers the imported file as a named user state in `localStorage['aether_user_presets']` and updates the preset dropdown.
+
+---
+
+## 3. Session JSON Schema Example
+```json
+{
+  "version": "3.0",
+  "name": "Wide Ambient Stage",
+  "timestamp": "2026-08-24T20:37:26.000Z",
+  "masterVolume": 0.85,
+  "tracks": [
+    {
+      "index": 0,
+      "name": "Poppy Coral",
+      "x": 0.08,
+      "y": 0.35,
+      "z": -0.4,
+      "isMuted": false,
+      "isSoloed": false,
+      "motionSpeed": 1,
+      "motionPath": [],
+      "eq": { "low": 2, "mid": -1, "high": 3 },
+      "isStream": false,
+      "streamUrl": ""
+    },
+    {
+      "index": 1,
+      "name": "Canary Yellow",
+      "x": 0.92,
+      "y": 0.35,
+      "z": -0.4,
+      "isMuted": false,
+      "isSoloed": false,
+      "motionSpeed": 1,
+      "motionPath": [],
+      "eq": { "low": 2, "mid": -1, "high": 3 },
+      "isStream": false,
+      "streamUrl": ""
+    },
+    {
+      "index": 2,
+      "name": "Slate Lavender",
+      "x": 0.18,
+      "y": 0.75,
+      "z": 0.3,
+      "isMuted": false,
+      "isSoloed": false,
+      "motionSpeed": 1,
+      "motionPath": [],
+      "eq": { "low": -1, "mid": 2, "high": 2 },
+      "isStream": false,
+      "streamUrl": ""
+    },
+    {
+      "index": 3,
+      "name": "Signal Green",
+      "x": 0.82,
+      "y": 0.75,
+      "z": 0.3,
+      "isMuted": false,
+      "isSoloed": false,
+      "motionSpeed": 1,
+      "motionPath": [],
+      "eq": { "low": -1, "mid": 2, "high": 2 },
+      "isStream": false,
+      "streamUrl": ""
+    }
+  ]
+}
+```
+
+---
+
+## 4. Current Gaps / Potential Areas for Research
+1. **File Storage vs In-Memory/Local Storage:** Currently, user preset states in the dropdown are kept in `localStorage` rather than synced dynamically to a dedicated on-disk preset folder (e.g., `~/Documents/Aether/Presets/` or Tauri FS plugin directory).
+2. **Raw Audio Sample Caching:** Presets save metadata, stream URLs, EQ, and spatial coordinates, but loaded local audio sample buffer blobs themselves are not embedded into the JSON file (requires base64 or project folder bundles).
+3. **Tauri Native Dialog Plugin Integration:** File picker currently uses Web standard APIs (`window.showOpenFilePicker` / `window.showSaveFilePicker` / `<input type="file">`) rather than Tauri Rust-native dialog plugin (`@tauri-apps/plugin-dialog` / `rfd`).
+4. **Preset Bank Management:** No built-in deletion, renaming, or export/import of entire preset banks in bulk.

@@ -1,0 +1,140 @@
+# S1 test run — 2026-10-04T21:45:22Z, HEAD 359fb12fee6651c4df0765c4ce81d6fab7e83843, node v22.23.2, Linux VM on Matt's Mac (mocked/pure; no native app)
+
+$ node tests/test-weave-model.js
+✔ fixture is structurally valid and fits compact v0.1
+✔ fixture IDs follow the grammar
+✔ validator reports (never throws) on malformed, null and wrong-container input
+✔ rejects: wrong type, newer schema, malformed weave ID, unknown field, ending
+✔ rejects: asset key syntax, missing and wrong-kind references, unreferenced assets
+✔ rejects: node manifestId/version not matching its bundle; bad param values
+✔ rejects: order and Scene identity problems
+✔ rejects: edges that are missing, duplicated or not adjacent
+✔ rejects: threads (duplicate ID, colour token) and unknown thread keys
+✔ rejects: duplicate slot, slot range, source-kind mixing, override misuse
+✔ rejects: numeric ranges and non-finite values
+✔ rejects: duration (positive, beats only; reserved modes named as reserved)
+✔ rejects: motion points that go backwards or carry unknown fields; unknown unsupported codes
+✔ S2 boundary: S1 does not verify payload bytes or hashes
+✔ optional legacy z / generatedReturn / captureBpm are accepted and kept exactly
+✔ compact capacity is separate from validity
+✔ newId: grammar, injected generator, bad prefix/generator refused
+✔ createWeave: valid, empty, four colour-token threads, no ending
+✔ commands never mutate their input (deep-frozen input works)
+✔ commands refuse invalid input documents and bad arguments without throwing
+✔ addScene: new ID, inserted in order, default edge for the new pair, old edge kept
+✔ addScene merges caller-supplied assets; conflicting content for one ID is refused
+✔ duplicateScene: new ID after the original, references unchanged, edges by pair
+✔ moveScene: all IDs kept, edges re-derived by pair (adjacent pairs keep their edge ID)
+✔ deleteScene: guards, survivor IDs, edges, pruning of assets only that Scene used
+✔ renameScene / setDuration: bounds, reserved modes refused with a clear reason
+✔ sceneFromAetherState: caller-supplied IDs, verbatim motion, kept derived buffer, unsupported codes
+✔ sceneFromAetherState: missing caller IDs and malformed sessions are errors, not throws
+✔ deriveView matches WeaveEngine.onNodeDragEnd formulas; absent slots are empty
+
+29 passed, 0 failed
+[exit 0]
+
+$ node tests/test-weave-spatial-recall.js
+=== Running Weave Spatial State Capture & Recall Verification ===
+
+Step 1: Positioning T1-T4 distinctly...
+Step 2 & 3: Capturing Scene A with captureCurrentScene()...
+Inspecting captured Scene A spatialState:
+{
+  "T1": {
+    "x": 0.2,
+    "y": 0.9,
+    "z": 0
+  },
+  "T2": {
+    "x": 0.8,
+    "y": 0.2,
+    "z": 0
+  },
+  "T3": {
+    "x": 0.3,
+    "y": 0.4,
+    "z": 0
+  },
+  "T4": {
+    "x": 0.7,
+    "y": 0.7,
+    "z": 0
+  }
+}
+✔ Scene A captured values verified successfully.
+
+Step 4: Moving all four nodes substantially to center (0.5, 0.5)...
+✔ All nodes moved to (0.5, 0.5).
+
+Step 5: Selecting Scene A via selectScene(indexA) — inspect only, nodes must not move...
+✔ Tap = inspect only: selection changed, nodes unchanged.
+
+Step 6 & 7: Recalling Scene A via ADJUST (adjustScene(indexA))...
+✔ ADJUST recalled Scene A accurately; Web Audio state matches node state.
+
+Step 8: Simulating user dragging nodes again...
+✔ Subsequent node manipulation works seamlessly.
+
+Step 9: Capturing second scene (Scene B)...
+✔ Scene B captured.
+
+Step 10: Alternating Scene A / Scene B (5 cycles): ADJUST recalls, tap inspects...
+✔ Deterministic ADJUST recall and inspect-only selection over 5 cycles.
+
+Step 10b: GO NOW with JUMP lands exactly on the next scene...
+✔ JUMP transition verified.
+
+Step 10c: GO NOW with MORPH glides from live positions to the next scene...
+✔ MORPH transition verified (start, midpoint, end).
+
+Step 11: Testing seed scene selection safety...
+✔ Seed scene selection leaves tracks unchanged.
+
+Step 12: Testing Loom scroll viewport and scroll controls...
+✔ Loom scroll viewport and side navigation controls verified successfully.
+
+=== ALL WEAVE SPATIAL RECALL VERIFICATION TESTS PASSED ===
+[exit 0]
+
+$ node tests/test-ticktok-v2.js
+=== Running Aether Node V2 Patient Zero Verification Suite ===
+
+✔ Test 0 Passed: Silence upon instantiation (no audio leakage)
+✔ Test A Passed: Two nodes from zero share identical musical phase (1 steps verified)
+✔ Test B Passed: Pause/Resume anchors directly to master musical phase without restart
+✔ Test C Passed: Hot insertion joins running musical phase at Step 27 with sample-accurate alignment
+✔ Test D Passed: 10 repeated Pause/Resume cycles produce zero cumulative phase divergence
+✔ Test E Passed: Lifecycle cleanup completely releases resources and halts sequencers
+✔ Test F Passed: Parameter edits while paused remain completely silent
+✔ Test G Passed: Local swing offsets odd subdivisions without drifting subsequent master grid
+✔ Test H Passed: Argumentless start() and fallback clock resolution activate without silence
+
+=== ALL 9 VERIFICATION TESTS PASSED SUCCESSFULLY ===
+[exit 0]
+
+$ node tests/test-weave-swipe-gesture.js
+=== Running Weave Row Swipe Gesture Verification ===
+
+✔ Initial state verified: 3 scenes, editingIndex = null.
+✔ Scene 4 captured with distinct positions and stable ID: scene-uid-3.
+Testing ADJUST interaction...
+✔ ADJUST recalled spatial coordinates, set editingIndex, and rendered DONE control.
+Testing exit ADJUST with DONE control...
+✔ Exiting ADJUST with DONE returns scene to normal resting visual state.
+Testing canvas node drag completion and snapshot update...
+✔ Live canvas node movements correctly updated the snapshot in place.
+✔ Subsequent adjust restores the newly updated positions.
+Testing deletion guards...
+[Weave] Cannot delete actively playing scene 01
+✔ Actively playing scene deletion safely guarded and blocked.
+Testing scene deletion and stable surviving IDs...
+✔ Non-playing scene deleted cleanly: visible positions renumbered, surviving scene IDs stably preserved.
+Testing HTML markup generation...
+✔ Loom HTML contains swipe wrappers, dynamic adjust/delete action layers, and playhead overlay.
+
+=== ALL WEAVE ROW SWIPE GESTURE TESTS PASSED ===
+[exit 0]
+
+$ git diff --check
+[exit 0]

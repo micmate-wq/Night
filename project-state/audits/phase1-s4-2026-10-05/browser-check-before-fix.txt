@@ -1,0 +1,28 @@
+FAIL delete swipe removes Scene 01; playing and selected keep the Scene 03 identity — {"ids":["sc_89d42ce6-1306-4cce-8d08-fa5b7e765b4b","sc_3bf47aad-fce4-4da3-b362-28696fda27c5","sc_52dc3624-7643-47b7-9cbc-69189e2cace0"],"after":{"ids":["sc_3bf47aad-fce4-4da3-b362-28696fda27c5","sc_52dc3624-7643-47b7-9cbc-69189e2cace0"],"playing":0,"selected":0,"rowsInDom":2}}
+FAIL delayed Preview moved T1 to the originally intended Scene (Scene 03), not to the Scene after the new selection — {"ok":true,"target":"sc_52dc3624-7643-47b7-9cbc-69189e2cace0","movedTo":[0.2,0.8],"expected":{"x":0.33,"y":0.66,"z":0},"before":0.33}
+ok   S1–S3 and the engine load; session.available
+ok   fresh page: demo set rows equal the pre-S4 rows
+ok   fresh page: panel and row rectangles equal the pre-S4 page
+ok   fresh page: pixel-equivalent to the pre-S4 page (same browser, viewport, fonts, frozen clock and animations; anti-aliasing noise only)
+ok   demo row ADJUST swipe is refused with the demo toast
+ok   demo row ADJUST swipe leaves editingIndex null
+ok   + SCENE button present
+ok   first capture: one real Scene row, demo set gone
+ok   first capture: provenance capture, valid document, dirty, not detached, docRevision 1
+ok   first capture: four slots bound to the new Scene as empty sources
+ok   after capture: panel rectangles unchanged
+ok   three Scenes after three button captures
+ok   GO NOW (jump) to Scene 02 moves bound T1/T2 to the captured positions
+ok   ADJUST on Scene 02 recalls the matching slot (same source) but the drag-end is refused: slots belong to Scene 03
+ok   refused drag-end shows the product toast
+ok   ADJUST swipe on Scene 03 enters adjust and recalls the bound slot
+ok   drag-end writes the moved slot into Scene 03 only; document valid; docRevision advanced
+ok   DONE chip rendered while adjusting
+ok   DONE click exits adjust
+FAIL delete swipe removes Scene 01; playing and selected keep the Scene 03 identity
+FAIL delayed Preview moved T1 to the originally intended Scene (Scene 03), not to the Scene after the new selection
+ok   detach after a real session replacement: detached, every binding invalid, GO NOW moves nothing
+ok   detach toast carries the product wording
+ok   no page errors or new console errors on the S4 page
+
+22 passed, 2 failed

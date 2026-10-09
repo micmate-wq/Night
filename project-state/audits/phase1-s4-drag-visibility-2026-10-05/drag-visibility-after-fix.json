@@ -1,0 +1,153 @@
+{
+  "label": "after",
+  "pageErrors": [],
+  "idsBefore": [
+    "sc_15fea004-8d16-4ac2-a7ff-13e7ef7481f5",
+    "sc_aacc54d8-7ecc-405f-966a-0f7dac7574fe",
+    "sc_cec23fbb-bb78-4dfa-b02b-d5ead66b96c4",
+    "sc_fd428b60-1038-4b9b-997b-a2650dfdc9a6",
+    "sc_ad394b85-8e49-44ca-8e04-93b188f7c288"
+  ],
+  "heldClass": "weave-loom-row-wrap is-reordering",
+  "samples": [
+    {
+      "y": 467,
+      "cardTop": 427,
+      "transform": "translateY(-23.0022px)",
+      "hitCenter": true,
+      "hitTL": true,
+      "hitBR": true,
+      "dropIdx": 3,
+      "dropAfter": true
+    },
+    {
+      "y": 444,
+      "cardTop": 404,
+      "transform": "translateY(-46.0044px)",
+      "hitCenter": true,
+      "hitTL": true,
+      "hitBR": true,
+      "dropIdx": 3,
+      "dropAfter": true
+    },
+    {
+      "y": 421,
+      "cardTop": 381,
+      "transform": "translateY(-69.0066px)",
+      "hitCenter": true,
+      "hitTL": true,
+      "hitBR": true,
+      "dropIdx": 3,
+      "dropAfter": true
+    },
+    {
+      "y": 398,
+      "cardTop": 358,
+      "transform": "translateY(-92.0088px)",
+      "hitCenter": true,
+      "hitTL": true,
+      "hitBR": true,
+      "dropIdx": 3,
+      "dropAfter": false
+    },
+    {
+      "y": 375,
+      "cardTop": 335,
+      "transform": "translateY(-115.011px)",
+      "hitCenter": true,
+      "hitTL": true,
+      "hitBR": true,
+      "dropIdx": 3,
+      "dropAfter": false
+    },
+    {
+      "y": 352,
+      "cardTop": 312,
+      "transform": "translateY(-138.013px)",
+      "hitCenter": true,
+      "hitTL": true,
+      "hitBR": true,
+      "dropIdx": 3,
+      "dropAfter": false
+    },
+    {
+      "y": 329,
+      "cardTop": 289,
+      "transform": "translateY(-161.015px)",
+      "hitCenter": true,
+      "hitTL": true,
+      "hitBR": true,
+      "dropIdx": 2,
+      "dropAfter": false
+    },
+    {
+      "y": 306,
+      "cardTop": 266,
+      "transform": "translateY(-184.018px)",
+      "hitCenter": true,
+      "hitTL": true,
+      "hitBR": true,
+      "dropIdx": 2,
+      "dropAfter": false
+    },
+    {
+      "y": 283,
+      "cardTop": 243,
+      "transform": "translateY(-207.02px)",
+      "hitCenter": true,
+      "hitTL": true,
+      "hitBR": true,
+      "dropIdx": 2,
+      "dropAfter": false
+    },
+    {
+      "y": 260,
+      "cardTop": 220,
+      "transform": "translateY(-230.022px)",
+      "hitCenter": true,
+      "hitTL": true,
+      "hitBR": true,
+      "dropIdx": 2,
+      "dropAfter": false
+    },
+    {
+      "y": 237,
+      "cardTop": 196,
+      "transform": "translateY(-253.024px)",
+      "hitCenter": true,
+      "hitTL": true,
+      "hitBR": true,
+      "dropIdx": 1,
+      "dropAfter": false
+    },
+    {
+      "y": 214,
+      "cardTop": 173,
+      "transform": "translateY(-276.026px)",
+      "hitCenter": true,
+      "hitTL": true,
+      "hitBR": true,
+      "dropIdx": 1,
+      "dropAfter": false
+    }
+  ],
+  "styles": {
+    "wrapOverflow": "visible",
+    "wrapZ": "6",
+    "wrapPos": "absolute",
+    "vpOverflowY": "auto",
+    "vpOverflowX": "hidden"
+  },
+  "idsAfter": [
+    "sc_15fea004-8d16-4ac2-a7ff-13e7ef7481f5",
+    "sc_ad394b85-8e49-44ca-8e04-93b188f7c288",
+    "sc_aacc54d8-7ecc-405f-966a-0f7dac7574fe",
+    "sc_cec23fbb-bb78-4dfa-b02b-d5ead66b96c4",
+    "sc_fd428b60-1038-4b9b-997b-a2650dfdc9a6"
+  ],
+  "movedTo2": true,
+  "playSel": "",
+  "playSelFromHeader": "",
+  "buildSel": "",
+  "editableUserSelect": "auto"
+}

@@ -1,0 +1,124 @@
+/* Aether Weave tokens v0.1 — generated from weave-tokens.json. Status in comments.
+   Implement these tokens using Aether's existing styling approach; map to existing tokens where they already match. */
+:root{
+  /* font */
+  --aether-font-family-sans: 'Inter Tight', system-ui, sans-serif; /* observed; bundled TTF in mockup (shared/it.ttf); SIL OFL 1.1 */
+  --aether-font-family-mono: 'Geist Mono', ui-monospace, monospace; /* observed; bundled TTF in mockup (shared/gm.ttf); SIL OFL 1.1 */
+  /* weight */
+  --aether-weight-medium: 500; /* observed */
+  --aether-weight-bold: 700; /* observed */
+  --aether-weight-extrabold: 800; /* observed */
+  --aether-weight-black: 900; /* observed */
+  /* size */
+  --aether-size-label: 10px; /* observed; uppercase, .14em tracking */
+  --aether-size-micro: 9px; /* observed; node-lane labels, slider ticks, fade-bar row labels */
+  --aether-size-button: 11px; /* observed */
+  --aether-size-mono-sm: 11px; /* observed */
+  --aether-size-loom-name: 12.5px; /* observed */
+  --aether-size-loom-name-compact: 11px; /* observed */
+  --aether-size-loom-number-min: 14px; /* observed */
+  --aether-size-loom-number-max: 46px; /* observed */
+  --aether-size-toggle: 19px; /* observed */
+  --aether-size-setlist-row: 26px; /* observed */
+  --aether-size-setlist-row-compact: 17px; /* observed */
+  --aether-size-setlist-now-name: 54px; /* observed */
+  --aether-size-setlist-now-name-compact: 42px; /* observed */
+  --aether-size-setlist-countdown: 60px; /* observed */
+  --aether-size-setlist-countdown-compact: 48px; /* observed */
+  --aether-size-tx-title: 30px; /* observed */
+  --aether-size-tx-title-play: 40px; /* observed */
+  --aether-size-tx-length-number: 40px; /* observed */
+  --aether-size-tx-starts-in: 22px; /* observed */
+  --aether-size-play-bars-to-go: 76px; /* observed */
+  --aether-size-play-bars-caption: 22px; /* observed */
+  --aether-size-go-button: 30px; /* observed */
+  --aether-size-panel-title: 22px; /* observed */
+  /* tracking */
+  --aether-tracking-label: .14em; /* observed */
+  --aether-tracking-heavy-tight: -.045em; /* observed */
+  --aether-tracking-number: -.06em; /* observed */
+  --aether-tracking-huge: -.065em; /* observed */
+  --aether-tracking-mono-huge: -.07em; /* observed */
+  --aether-tracking-toggle: -.03em; /* observed */
+  --aether-tracking-button-seg: .1em; /* observed */
+  /* color */
+  --aether-text-primary: #141414; /* observed; #141414 'ink': text primary; also strong borders/rules, solid buttons, playhead */
+  --aether-surface: #ffffff; /* observed; gutter panels, set-list sheet */
+  --aether-surface-raised: #f7f7f5; /* observed; top bar, channel strip */
+  --aether-surface-canvas: #fbfbfa; /* observed; centre canvas, morph map */
+  --aether-app-bg: #ececea; /* observed */
+  --aether-gutter-play-bg: #e4e4e0; /* observed; Weave gutter behind the set-list sheet in PLAY */
+  --aether-tint: #f3f3f0; /* observed; transition overlap zone, pressed curve button */
+  --aether-border-subtle: #dcdcd8; /* observed */
+  --aether-tick-empty: #d0d0cc; /* observed; empty colour tick outline */
+  --aether-progress-track: #e2e2de; /* observed */
+  --aether-text-muted: #8a8a86; /* observed */
+  --aether-node-t1: #f2463a; /* observed; red */
+  --aether-node-t2: #f7dc38; /* observed; yellow */
+  --aether-node-t3: #8f63c8; /* observed; purple */
+  --aether-node-t4: #56c83a; /* observed; green */
+  --aether-node-t2-text: #b59a00; /* observed; T2 label on white (legibility); strip mock used #c9ad00 — see spec */
+  --aether-playing: #f6d24a; /* observed; Aether sticky yellow: playing band, playing number badge text */
+  --aether-tape: #efe3a6; /* observed; at opacity .9 */
+  /* opacity */
+  --aether-opacity-past: 0.45; /* observed */
+  --aether-opacity-beat-future: 0.15; /* observed */
+  --aether-opacity-tape: 0.9; /* observed */
+  --aether-opacity-disabled: 0.3; /* observed; length slider in JUMP */
+  --aether-opacity-loom-bars-count: 0.7; /* observed */
+  /* space */
+  --aether-space-1: 3px; /* observed */
+  --aether-space-2: 6px; /* observed */
+  --aether-space-3: 8px; /* observed */
+  --aether-space-4: 12px; /* observed */
+  --aether-space-5: 14px; /* observed */
+  --aether-space-6: 16px; /* observed */
+  --aether-space-7: 18px; /* observed */
+  --aether-space-8: 22px; /* observed */
+  /* radius */
+  --aether-radius-sm: 6px; /* observed; segmented switch, curve buttons, key cap, morph map */
+  --aether-radius-toggle: 7px; /* observed */
+  --aether-radius-md: 8px; /* observed; GO NOW / HOLD */
+  --aether-radius-lg: 10px; /* observed; panels, strip */
+  --aether-radius-pill: 999px; /* observed */
+  /* border */
+  --aether-border-hair: 1px; /* observed; panel outlines (subtle) */
+  --aether-border-base: 1.5px; /* observed; rules, rows, buttons, seg */
+  --aether-border-toggle: 2px; /* observed */
+  --aether-border-go: 2.5px; /* observed */
+  --aether-border-keycap-bottom: 4px; /* observed */
+  --aether-border-loom-bar: 7px; /* observed; 4px when crowded */
+  --aether-border-playhead: 2px; /* observed */
+  /* shadow */
+  --aether-shadow-sheet: 3px 5px 10px rgba(20,20,20,.10); /* observed; soft offset, down-right; set-list sheet only */
+  --aether-shadow-none-elsewhere: none; /* observed */
+  /* layout */
+  --aether-layout-gutter-width: 300px; /* observed */
+  --aether-layout-gutter-inset: 12px; /* observed */
+  --aether-layout-panel-top: 66px; /* observed; below 46px top bar at 10px */
+  --aether-layout-canvas-inset-x: 324px; /* observed */
+  --aether-layout-toggle-height: 40px; /* observed */
+  --aether-layout-loom-top: 70px; /* observed */
+  --aether-layout-loom-footer: 46px; /* observed */
+  --aether-layout-loom-px-per-bar-max: 5px; /* observed */
+  /* --aether-layout-loom-lanes-x: 172,202,232,262px (observed) */
+  --aether-layout-loom-thread-max: 24px; /* observed */
+  --aether-layout-loom-thread-min: 3px; /* observed */
+  --aether-layout-loom-label-width: 136px; /* observed */
+  --aether-layout-loom-selected-block: 150px; /* observed */
+  --aether-layout-fadebars-width: 236px; /* observed */
+  --aether-layout-fadebars-row: 30px; /* observed */
+  --aether-layout-fadebars-max-thickness: 22px; /* observed */
+  --aether-layout-morph-map: 112px; /* observed */
+  --aether-layout-sheet-rotate: -0.8deg; /* observed */
+  /* motion */
+  --aether-motion-mode-switch-duration: 460ms; /* observed */
+  /* --aether-motion-mode-switch-easing: easeInOutQuad (2t² / 1-2(1-t)²) (observed; ≈ cubic-bezier(.45,0,.55,1)) */
+  --aether-motion-mode-switch-easing-css: cubic-bezier(.45,0,.55,1); /* estimated; approximation of easeInOutQuad */
+  /* --aether-motion-marquee-duration: max(6s, chars × 0.45s) per loop (observed) */
+  --aether-motion-marquee-now-name: 7s; /* observed */
+  /* --aether-motion-countdown-format: mm:ss.t (observed) */
+  /* --aether-motion-countdown-refresh: every frame (shows tenths) (observed) */
+  /* --aether-motion-tx-preview-playhead: 4s loop, linear (observed) */
+  /* --aether-motion-reduced-motion: mode switch instant (0ms) (observed; marquee/playhead under reduced motion: suggested stop/static) */
+}

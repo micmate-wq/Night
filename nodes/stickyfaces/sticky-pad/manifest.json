@@ -1,0 +1,63 @@
+{
+  "id": "com.aether.node.sticky-pad",
+  "name": "Sticky Pad",
+  "version": "0.1.0",
+  "author": "Aether",
+  "description": "Canary-yellow sticky face for the Desktop 2D canvas. Real track telemetry. Always Aether.",
+  "category": "Pad / Face",
+  "inputs": 0,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "level",
+      "name": "Level",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.08,
+      "unit": "norm"
+    },
+    {
+      "id": "tone",
+      "name": "Tone",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.45,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": {
+    "type": "art",
+    "settings": {
+      "family": "sticky",
+      "fill": "#FFE637",
+      "ink": "#0A0A0A",
+      "energy": 0.4,
+      "spread": 0.9,
+      "detail": 0.7,
+      "speed": 0.2,
+      "hue": 50,
+      "fade": 0.1
+    }
+  },
+  "art": {
+    "type": "art",
+    "settings": {
+      "family": "sticky",
+      "fill": "#FFE637",
+      "ink": "#0A0A0A",
+      "energy": 0.4,
+      "spread": 0.9,
+      "detail": 0.7,
+      "speed": 0.2,
+      "hue": 50,
+      "fade": 0.1
+    }
+  },
+  "face": "sticky"
+}

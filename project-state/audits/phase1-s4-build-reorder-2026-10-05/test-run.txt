@@ -1,0 +1,109 @@
+test-weave-session.js
+✔ 1. boot: valid empty document, demo rows equal the legacy demo set, nothing bound
+✔ 2. capture happy path: real Scene with capture provenance, dedupe, bindings, docRevision +1, demo gone
+✔ 3. origin proof uses press values only: pruned when decoded-item matches revision, buffer and selected file; override kept otherwise
+✔ 4. source change after encoding (before commit) fails the capture: nothing added, nothing bound; also while waiting behind another capture
+✔ 5. deletion during hashing is preserved: the capture composes onto the latest document; docRevision is monotonic
+✔ 6. an ADJUST drag-end made during hashing survives the capture commit
+✔ 7. a failed earlier capture does not block a later successful one; press order kept
+✔ 8. stale epoch: every pending capture is discarded
+✔ 9. binding invalidation: every replacement path (via the host discipline) invalidates; transport-like changes do not
+✔ 10. per-frame glide gating: only bound, matching slots move; invalidation mid-glide stops that slot and is reported once
+✔ 11. demo-only: GO NOW, auto-advance and Preview move nothing; ADJUST and delete on a demo Scene are refused
+✔ 12. delayed Preview: cancelled by invalidation, suspension or a newer Preview; runs with the gate otherwise
+✔ 13. ADJUST (provisional D5): bound spatial recall only; same-source/different-Scene drag-end is refused; DONE writes nothing
+✔ 14. suspension and detach: writes blocked while suspended; successful/partial loads detach; failed preflight does not; rebuild detaches; capture clears detached
+✔ 15. live-input and stream replacement: bound slots are skipped by glides and refused by drag-end; a pending capture fails
+✔ 16. capacity and validity are checked before every commit; refusals add nothing
+✔ 17. immutability: every document change validates; the view is re-derived; S1–S3 reached through frozen exports; capture snapshot copies origin but keeps File/AudioBuffer references
+✔ 18. without the model scripts the engine still shows the demo set and refuses capture cleanly
+✔ 19. deletion keeps playing, selected and editing identities (Codex review 2): delete the first of three while the last is played, selected and edited
+✔ 20. delayed jump Preview targets a stable Scene ID (Codex review 2): a selection change while waiting does not retarget; a deleted target cancels
+✔ 21. BUILD reorder preserves playing/selected/editing IDs, source bindings and assets; PLAY/demo refuse
+✔ 22. capture pending while reordering composes onto the latest order
+
+22 passed, 0 failed
+
+test-weave-swipe-gesture.js
+=== Running Weave Row Swipe Gesture Verification ===
+
+✔ Initial state verified: 3 demo scenes, editingIndex = null.
+✔ Scene 2 captured with distinct positions and stable ID: sc_f1bdff8c-0c04-4ca4-aefe-33b78ab7a6ef.
+Testing ADJUST interaction...
+✔ ADJUST recalled spatial coordinates, set editingIndex, and rendered DONE control.
+Testing exit ADJUST with DONE control...
+✔ Exiting ADJUST with DONE returns scene to normal resting visual state.
+Testing canvas node drag completion and snapshot update...
+✔ Live canvas node movements correctly updated the snapshot in place.
+✔ Subsequent adjust restores the newly updated positions.
+Testing deletion guards...
+✔ Actively playing scene deletion safely guarded and blocked.
+Testing scene deletion and stable surviving IDs...
+✔ Non-playing scene deleted cleanly: visible positions renumbered, surviving scene IDs stably preserved.
+Testing HTML markup generation...
+✔ Loom HTML contains swipe wrappers, dynamic adjust/delete action layers, and playhead overlay.
+
+=== ALL WEAVE ROW SWIPE GESTURE TESTS PASSED ===
+[Weave] Cannot delete actively playing scene 01
+
+test-weave-spatial-recall.js
+=== Running Weave Spatial State Capture & Recall Verification ===
+
+Step 1: Positioning T1-T4 distinctly...
+Step 2 & 3: Capturing Scene A with captureCurrentScene()...
+Inspecting captured Scene A spatialState:
+{
+  "T1": {
+    "x": 0.2,
+    "y": 0.9,
+    "z": 0
+  },
+  "T2": {
+    "x": 0.8,
+    "y": 0.2,
+    "z": 0
+  },
+  "T3": {
+    "x": 0.3,
+    "y": 0.4,
+    "z": 0
+  },
+  "T4": {
+    "x": 0.7,
+    "y": 0.7,
+    "z": 0
+  }
+}
+✔ Scene A captured values verified successfully.
+
+Step 4: Moving all four nodes substantially to center (0.5, 0.5)...
+✔ All nodes moved to (0.5, 0.5).
+
+Step 5: Selecting Scene A via selectScene(indexA) — inspect only, nodes must not move...
+✔ Tap = inspect only: selection changed, nodes unchanged.
+
+Step 6 & 7: Recalling Scene A via ADJUST (adjustScene(indexA))...
+✔ ADJUST recalled Scene A accurately; Web Audio state matches node state.
+
+Step 8: Simulating user dragging nodes again...
+✔ Subsequent node manipulation works seamlessly.
+
+Step 9: Capturing second scene (Scene B)...
+✔ Scene B captured.
+
+Step 10: Alternating Scene A / Scene B (5 cycles): ADJUST recalls, tap inspects...
+✔ Deterministic ADJUST recall and inspect-only selection over 5 cycles.
+
+Step 10b: GO NOW with JUMP lands exactly on the next scene...
+✔ JUMP transition verified.
+
+Step 10c: GO NOW with MORPH glides from live positions to the next scene...
+✔ MORPH transition verified (start, midpoint, end).
+
+Step 11: Testing selection safety...
+✔ Selection leaves tracks unchanged.
+
+Step 12: Testing Loom scroll viewport and scroll controls...
+✔ Loom scroll viewport and side navigation controls verified successfully.
+
+=== ALL WEAVE SPATIAL RECALL VERIFICATION TESTS PASSED ===

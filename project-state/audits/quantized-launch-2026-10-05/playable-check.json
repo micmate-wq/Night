@@ -1,0 +1,1285 @@
+{
+  "checks": [
+    {
+      "name": "demo set shown before any capture, nothing applied",
+      "ok": true
+    },
+    {
+      "name": "State 1 captured",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "sceneId": "sc_6128634c-61cb-4ba1-bbe6-ceab77dc556e",
+        "captureId": 1,
+        "index": 0,
+        "pruned": []
+      }
+    },
+    {
+      "name": "State 2 captured",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "sceneId": "sc_ba8e2d2f-6770-4e32-8d3e-53323625154d",
+        "captureId": 2,
+        "index": 1,
+        "pruned": []
+      }
+    },
+    {
+      "name": "two real Scenes, demo gone",
+      "ok": true
+    },
+    {
+      "name": "Scene lengths snapped to 1 bar",
+      "ok": true
+    },
+    {
+      "name": "Space starts the transport",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 0.14170000000000005,
+        "fade": 0.14170000000000005,
+        "glide": false,
+        "master": 0.106,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.224,
+            "y": 0.776,
+            "z": 0.8,
+            "gain": -9,
+            "buf": "A",
+            "motion": true,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 0,
+            "gain": 0,
+            "buf": "B",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Play puts T1 at State 1 (near 0.2,0.8: its loop is already running), gain -9, loop running, T2 muted with sound B",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 0.14170000000000005,
+        "fade": 0.14170000000000005,
+        "glide": false,
+        "master": 0.106,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.224,
+            "y": 0.776,
+            "z": 0.8,
+            "gain": -9,
+            "buf": "A",
+            "motion": true,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 0,
+            "gain": 0,
+            "buf": "B",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "entrance fade in progress (master below slider)",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 0.14170000000000005,
+        "fade": 0.14170000000000005,
+        "glide": false,
+        "master": 0.106,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.224,
+            "y": 0.776,
+            "z": 0.8,
+            "gain": -9,
+            "buf": "A",
+            "motion": true,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 0,
+            "gain": 0,
+            "buf": "B",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "JUMP reached State 2: T1 at (0.85,0.35,30) gain 0 no loop; T2 unmuted at (0.7,0.7,10)",
+      "ok": true,
+      "detail": {
+        "idx": 1,
+        "bar": 0.3000000000000007,
+        "fade": 1,
+        "glide": false,
+        "master": 0.8,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.85,
+            "y": 0.35,
+            "z": 30,
+            "gain": 0,
+            "buf": "A",
+            "motion": false,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.7,
+            "y": 0.7,
+            "z": 10,
+            "gain": 0,
+            "buf": "C",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "changed sound switched in for T2 (C) and playing",
+      "ok": true,
+      "detail": {
+        "idx": 1,
+        "bar": 0.3000000000000007,
+        "fade": 1,
+        "glide": false,
+        "master": 0.8,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.85,
+            "y": 0.35,
+            "z": 30,
+            "gain": 0,
+            "buf": "A",
+            "motion": false,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.7,
+            "y": 0.7,
+            "z": 10,
+            "gain": 0,
+            "buf": "C",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "wrapped back to State 1 with sound B again, loop restarted",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 0.2999499999999995,
+        "fade": 1,
+        "glide": false,
+        "master": 0.8,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.258,
+            "y": 0.742,
+            "z": 1.9,
+            "gain": -9,
+            "buf": "A",
+            "motion": true,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 0,
+            "gain": 0,
+            "buf": "B",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Stop: transport off, arrangement rewound, nothing moves",
+      "ok": true,
+      "detail": [
+        {
+          "idx": 0,
+          "bar": 0,
+          "fade": 1,
+          "glide": false,
+          "master": 0.8,
+          "playing": false,
+          "t": [
+            {
+              "x": 0.26,
+              "y": 0.74,
+              "z": 2,
+              "gain": -9,
+              "buf": "A",
+              "motion": true,
+              "path": 2,
+              "src": false,
+              "muted": false
+            },
+            {
+              "x": 0.5,
+              "y": 0.3,
+              "z": 0,
+              "gain": 0,
+              "buf": "B",
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": true
+            },
+            {
+              "x": 0.25,
+              "y": 0.5,
+              "z": 0,
+              "gain": 0,
+              "buf": null,
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": false
+            },
+            {
+              "x": 0.75,
+              "y": 0.5,
+              "z": 0,
+              "gain": 0,
+              "buf": null,
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": false
+            }
+          ]
+        },
+        {
+          "idx": 0,
+          "bar": 0,
+          "fade": 1,
+          "glide": false,
+          "master": 0.8,
+          "playing": false,
+          "t": [
+            {
+              "x": 0.26,
+              "y": 0.74,
+              "z": 2,
+              "gain": -9,
+              "buf": "A",
+              "motion": true,
+              "path": 2,
+              "src": false,
+              "muted": false
+            },
+            {
+              "x": 0.5,
+              "y": 0.3,
+              "z": 0,
+              "gain": 0,
+              "buf": "B",
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": true
+            },
+            {
+              "x": 0.25,
+              "y": 0.5,
+              "z": 0,
+              "gain": 0,
+              "buf": null,
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": false
+            },
+            {
+              "x": 0.75,
+              "y": 0.5,
+              "z": 0,
+              "gain": 0,
+              "buf": null,
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "repeat without rebuilding: Play from stop recalls State 1 again",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 0.12494999999999984,
+        "fade": 0.12494999999999984,
+        "glide": false,
+        "master": 0.096,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.221,
+            "y": 0.779,
+            "z": 0.7,
+            "gain": -9,
+            "buf": "A",
+            "motion": true,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 0,
+            "gain": 0,
+            "buf": "B",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "MORPH mid-glide: T1 between the states, gain between -9 and 0, loop frozen, T2 already on sound C",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 1.5332499999999998,
+        "fade": 1,
+        "glide": true,
+        "master": 0.8,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.567,
+            "y": 0.539,
+            "z": 16.6,
+            "gain": -4.2,
+            "buf": "A",
+            "motion": false,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.606,
+            "y": 0.512,
+            "z": 5.3,
+            "gain": 0,
+            "buf": "C",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "MORPH arrived at State 2 exactly",
+      "ok": true,
+      "detail": {
+        "idx": 1,
+        "bar": 0.1915499999999986,
+        "fade": 1,
+        "glide": false,
+        "master": 0.8,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.85,
+            "y": 0.35,
+            "z": 30,
+            "gain": 0,
+            "buf": "A",
+            "motion": false,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.7,
+            "y": 0.7,
+            "z": 10,
+            "gain": 0,
+            "buf": "C",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "FADE: master level never dips (no silence between Scenes)",
+      "ok": true,
+      "detail": {
+        "minFade": 1,
+        "masters": [
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8,
+          0.8
+        ]
+      }
+    },
+    {
+      "name": "FADE: scenes still alternate and states recalled (positions change with the index)",
+      "ok": true,
+      "detail": [
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.817,
+          1
+        ],
+        [
+          1,
+          0.784,
+          1
+        ],
+        [
+          1,
+          0.752,
+          1
+        ],
+        [
+          1,
+          0.713,
+          1
+        ],
+        [
+          1,
+          0.681,
+          1
+        ],
+        [
+          1,
+          0.648,
+          1
+        ],
+        [
+          1,
+          0.61,
+          1
+        ],
+        [
+          1,
+          0.577,
+          1
+        ],
+        [
+          1,
+          0.539,
+          1
+        ],
+        [
+          1,
+          0.506,
+          1
+        ],
+        [
+          1,
+          0.468,
+          1
+        ],
+        [
+          1,
+          0.435,
+          1
+        ],
+        [
+          1,
+          0.397,
+          1
+        ],
+        [
+          1,
+          0.364,
+          1
+        ],
+        [
+          1,
+          0.331,
+          1
+        ],
+        [
+          1,
+          0.293,
+          1
+        ],
+        [
+          1,
+          0.26,
+          1
+        ],
+        [
+          1,
+          0.222,
+          1
+        ],
+        [
+          0,
+          0.202,
+          1
+        ],
+        [
+          0,
+          0.212,
+          1
+        ],
+        [
+          0,
+          0.222,
+          1
+        ],
+        [
+          0,
+          0.233,
+          1
+        ],
+        [
+          0,
+          0.243,
+          1
+        ],
+        [
+          0,
+          0.255,
+          1
+        ],
+        [
+          0,
+          0.265,
+          1
+        ],
+        [
+          0,
+          0.275,
+          1
+        ],
+        [
+          0,
+          0.287,
+          1
+        ],
+        [
+          0,
+          0.297,
+          1
+        ],
+        [
+          0,
+          0.307,
+          1
+        ],
+        [
+          0,
+          0.317,
+          1
+        ],
+        [
+          0,
+          0.328,
+          1
+        ],
+        [
+          0,
+          0.338,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "FADE: T2 sound B/C crossfaded through a real overlap (gain curves scheduled, no page errors)",
+      "ok": true
+    },
+    {
+      "name": "GO NOW arms a launch for the next bar line and does not move yet",
+      "ok": true,
+      "detail": {
+        "s1": {
+          "idx": 0,
+          "bar": 0.4499999999999998,
+          "fade": 0.4499999999999998,
+          "glide": false,
+          "master": 0.352,
+          "playing": true,
+          "t": [
+            {
+              "x": 0.289,
+              "y": 0.711,
+              "z": 3,
+              "gain": -9,
+              "buf": "A",
+              "motion": true,
+              "path": 2,
+              "src": true,
+              "muted": false
+            },
+            {
+              "x": 0.5,
+              "y": 0.3,
+              "z": 0,
+              "gain": 0,
+              "buf": "B",
+              "motion": false,
+              "path": 0,
+              "src": true,
+              "muted": true
+            },
+            {
+              "x": 0.25,
+              "y": 0.5,
+              "z": 0,
+              "gain": 0,
+              "buf": null,
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": false
+            },
+            {
+              "x": 0.75,
+              "y": 0.5,
+              "z": 0,
+              "gain": 0,
+              "buf": null,
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": false
+            }
+          ]
+        },
+        "armed": 1
+      }
+    },
+    {
+      "name": "…fires on the bar line: Scene 02 playing, crossfade glide running, master at full",
+      "ok": true,
+      "detail": {
+        "idx": 1,
+        "bar": 0.06664999999999964,
+        "fade": 1,
+        "glide": true,
+        "master": 0.8,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.29,
+            "y": 0.723,
+            "z": 3.5,
+            "gain": -8.4,
+            "buf": "A",
+            "motion": false,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.513,
+            "y": 0.327,
+            "z": 0.7,
+            "gain": 0,
+            "buf": "C",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "…one bar later the crossfade is done and T1 sits at State 2",
+      "ok": true,
+      "detail": {
+        "idx": 1,
+        "bar": 1.183300000000001,
+        "fade": 1,
+        "glide": false,
+        "master": 0.8,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.85,
+            "y": 0.35,
+            "z": 30,
+            "gain": 0,
+            "buf": "A",
+            "motion": false,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.7,
+            "y": 0.7,
+            "z": 10,
+            "gain": 0,
+            "buf": "C",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Space pauses with a focused button",
+      "ok": true,
+      "detail": {
+        "idx": 1,
+        "bar": 1.1916000000000002,
+        "fade": 1,
+        "glide": false,
+        "master": 0.8,
+        "playing": false,
+        "t": [
+          {
+            "x": 0.85,
+            "y": 0.35,
+            "z": 30,
+            "gain": 0,
+            "buf": "A",
+            "motion": false,
+            "path": 2,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.7,
+            "y": 0.7,
+            "z": 10,
+            "gain": 0,
+            "buf": "C",
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Space resumes",
+      "ok": true,
+      "detail": {
+        "idx": 1,
+        "bar": 1.2666,
+        "fade": 1,
+        "glide": false,
+        "master": 0.8,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.85,
+            "y": 0.35,
+            "z": 30,
+            "gain": 0,
+            "buf": "A",
+            "motion": false,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.7,
+            "y": 0.7,
+            "z": 10,
+            "gain": 0,
+            "buf": "C",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "errs": [
+    "console: WebSocket connection to 'ws://localhost:8765/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "console: Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+    "console: WebSocket connection to 'ws://localhost:8765/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "console: WebSocket connection to 'ws://localhost:8765/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED"
+  ]
+}

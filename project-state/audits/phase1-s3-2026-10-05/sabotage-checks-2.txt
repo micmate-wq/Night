@@ -1,0 +1,27 @@
+CAUGHT  skip dedupe accounting (count duplicates as added) — 16 passed, 4 failed — failing: 1. fixture session imports into a valid document equal to the S1-built oracle; master kept and reported, 2. identical bytes on two tracks become one asset; first writer's name kept, 3. importing into a document that already holds the bytes adds nothing, 10. limits
+CAUGHT  equality from a name match instead of S2's byte comparison — 19 passed, 1 failed — failing: 5. equality
+CAUGHT  drop all-or-nothing on failure (partial table returned) — 13 passed, 7 failed — failing: 5. equality, 8. malformed sessions fail clearly without mutation, 9. a bad payload on a later track leaves no partial table and the document unchanged, 10. limits, 13. mutations to the session, table, document, ctx and limits while pending do not reach the result, 18. malformed motionPath/eq/customNodeParams/playlist-type and empty payload strings are rejected with field and track, 19. cyclic nested session data and cyclic existing-table data give structured failures; nothing leaks or throws
+CAUGHT  lose unsupported codes — 18 passed, 2 failed — failing: 1. fixture session imports into a valid document equal to the S1-built oracle; master kept and reported, 7. live-input, stream, node and motion tracks carry the expected unsupported codes
+CAUGHT  keep file_path in the JSON fallback — 19 passed, 1 failed — failing: 6. node
+CAUGHT  store an omitted payload — 19 passed, 1 failed — failing: 15. unreferenced payloads are refused by default, or disclosed as incomplete with allowOmissions
+CAUGHT  apply the legacy master to the document — 19 passed, 1 failed — failing: 1. fixture session imports into a valid document equal to the S1-built oracle; master kept and reported
+CAUGHT  read the live session after the await — 19 passed, 1 failed — failing: 13. mutations to the session, table, document, ctx and limits while pending do not reach the result
+CAUGHT  snapshot the asset table by reference, not by copy — 18 passed, 2 failed — failing: 13. mutations to the session, table, document, ctx and limits while pending do not reach the result, 19. cyclic nested session data and cyclic existing-table data give structured failures; nothing leaks or throws
+CAUGHT  use the caller's document instead of the clone — 19 passed, 1 failed — failing: 13. mutations to the session, table, document, ctx and limits while pending do not reach the result
+CAUGHT  drop the certain-growth preflight — 19 passed, 1 failed — failing: 10. limits
+CAUGHT  let a path-only source become an empty track — 19 passed, 1 failed — failing: 16. path-only sources fail; live-input/stream ignore a leftover path; no path ever appears in a result
+CAUGHT  accept a zip without manifest metadata by inventing it — 19 passed, 1 failed — failing: 6. node
+CAUGHT  report existing assets as verified without verifying — 17 passed, 3 failed — failing: 1. fixture session imports into a valid document equal to the S1-built oracle; master kept and reported, 3. importing into a document that already holds the bytes adds nothing, 17. verifyExisting catches a corrupted untouched entry; the default does not and says so
+CAUGHT  stage every limit failure as preflight — 19 passed, 1 failed — failing: 10. limits
+CAUGHT  treat live-input leftover filePath as path-only — 19 passed, 1 failed — failing: 16. path-only sources fail; live-input/stream ignore a leftover path; no path ever appears in a result
+CAUGHT  default a malformed motionPath to absent instead of refusing — 19 passed, 1 failed — failing: 18. malformed motionPath/eq/customNodeParams/playlist-type and empty payload strings are rejected with field and track
+CAUGHT  treat an empty sampleData string as absent — 19 passed, 1 failed — failing: 18. malformed motionPath/eq/customNodeParams/playlist-type and empty payload strings are rejected with field and track
+CAUGHT  accept a non-object eq by defaulting it — 19 passed, 1 failed — failing: 18. malformed motionPath/eq/customNodeParams/playlist-type and empty payload strings are rejected with field and track
+CAUGHT  let a cyclic session field reject the promise — 19 passed, 1 failed — failing: 19. cyclic nested session data and cyclic existing-table data give structured failures; nothing leaks or throws
+CAUGHT  let a cyclic table entry reject the promise — 19 passed, 1 failed — failing: 19. cyclic nested session data and cyclic existing-table data give structured failures; nothing leaks or throws
+CAUGHT  remove the last-resort guard on importAetherState — 19 passed, 1 failed — failing: 19. cyclic nested session data and cyclic existing-table data give structured failures; nothing leaks or throws
+CAUGHT  echo an input value in the cyclic-field failure — 19 passed, 1 failed — failing: 19. cyclic nested session data and cyclic existing-table data give structured failures; nothing leaks or throws
+CAUGHT  encode sparse arrays by skipping holes — 19 passed, 1 failed — failing: 20. sparse arrays are rejected as encoding errors; every successful encoding parses back to the same array contents
+CAUGHT  encode sparse arrays as empty slots (invalid JSON) — 19 passed, 1 failed — failing: 20. sparse arrays are rejected as encoding errors; every successful encoding parses back to the same array contents
+
+25 sabotage cases, 25 caught, 0 missed

@@ -1,0 +1,105 @@
+{
+  "id": "com.aether.node.prism-polar-cloud",
+  "name": "Polar Cloud",
+  "version": "1.1.0",
+  "author": "Aether Community",
+  "category": "Generator / Ambient Drone",
+  "description": "Generative harmonic chord cloud routed through a Reason Polar-inspired Doppler pitch-shifting cascade delay loop.",
+  "inputs": 0,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "interval",
+      "name": "Cascade",
+      "type": "int",
+      "min": 0,
+      "max": 4,
+      "default": 4,
+      "unit": "interval"
+    },
+    {
+      "id": "chord",
+      "name": "Voice",
+      "type": "int",
+      "min": 0,
+      "max": 5,
+      "default": 0,
+      "unit": "chord"
+    },
+    {
+      "id": "delayTime",
+      "name": "Delay",
+      "type": "float",
+      "min": 0.2,
+      "max": 1.0,
+      "default": 0.43,
+      "step": 0.01,
+      "unit": "s"
+    },
+    {
+      "id": "feedback",
+      "name": "Feedback",
+      "type": "float",
+      "min": 0.0,
+      "max": 0.85,
+      "default": 0.39,
+      "step": 0.01,
+      "unit": "norm"
+    },
+    {
+      "id": "wash",
+      "name": "Wash",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.29,
+      "step": 0.01,
+      "unit": "norm"
+    },
+    {
+      "id": "rootPitch",
+      "name": "Pitch",
+      "type": "float",
+      "min": -12.0,
+      "max": 12.0,
+      "default": -1.0,
+      "step": 1.0,
+      "unit": "st"
+    },
+    {
+      "id": "density",
+      "name": "Density",
+      "type": "float",
+      "min": 0.1,
+      "max": 1.0,
+      "default": 0.36,
+      "step": 0.01,
+      "unit": "norm"
+    },
+    {
+      "id": "swellRate",
+      "name": "Breathing",
+      "type": "float",
+      "min": 0.08,
+      "max": 0.55,
+      "default": 0.30,
+      "step": 0.01,
+      "unit": "Hz"
+    },
+    {
+      "id": "gain",
+      "name": "Gain",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.75,
+      "step": 0.01,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": "wobbly_shimmer"
+}

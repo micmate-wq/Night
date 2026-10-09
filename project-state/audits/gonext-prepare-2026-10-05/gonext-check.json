@@ -1,0 +1,426 @@
+{
+  "checks": [
+    {
+      "name": "three Scenes captured, GO NEXT shows its target",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": false,
+        "idx": 0,
+        "sel": 2,
+        "bar": 0,
+        "launch": null,
+        "fade": 1,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ],
+        "t0": [
+          0.5,
+          0.5
+        ],
+        "t1buf": null,
+        "t1src": false,
+        "fades": 0,
+        "go": "\n              GO NEXT → 03\n            "
+      }
+    },
+    {
+      "name": "Play from Stop: Scene 01 recalled (T1 left, T2 = B)",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": true,
+        "idx": 0,
+        "sel": 0,
+        "bar": 0.20829999999999999,
+        "launch": null,
+        "fade": 0.20829999999999999,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ],
+        "t0": [
+          0.2,
+          0.2
+        ],
+        "t1buf": "B",
+        "t1src": true,
+        "fades": 0,
+        "go": "\n              GO NEXT → 02\n            "
+      }
+    },
+    {
+      "name": "clicking a row picks the GO NEXT destination",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": true,
+        "idx": 0,
+        "sel": 1,
+        "bar": 0.3249500000000001,
+        "launch": null,
+        "fade": 0.3249500000000001,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ],
+        "t0": [
+          0.2,
+          0.2
+        ],
+        "t1buf": "B",
+        "t1src": true,
+        "fades": 0,
+        "go": "\n              GO NEXT → 02\n            "
+      }
+    },
+    {
+      "name": "GO NEXT: same sound set → ready at once: NEXT BAR → Scene 02, nothing moved yet",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": true,
+        "idx": 0,
+        "sel": 1,
+        "bar": 0.4166000000000003,
+        "launch": {
+          "ready": true,
+          "idx": 1
+        },
+        "fade": 0.4166000000000003,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ],
+        "t0": [
+          0.2,
+          0.2
+        ],
+        "t1buf": "B",
+        "t1src": true,
+        "fades": 0,
+        "go": "\n              NEXT BAR → 02\n            ",
+        "status": "NEXT BAR → Scene 02"
+      }
+    },
+    {
+      "name": "fires on the host bar line: Scene 02 playing, T2 crossfading B→C (outgoing tracked), master full",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": true,
+        "idx": 1,
+        "sel": 1,
+        "bar": 0.07500000000000001,
+        "launch": null,
+        "fade": 1,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ],
+        "t0": [
+          0.21,
+          0.21
+        ],
+        "t1buf": "C",
+        "t1src": true,
+        "fades": 1,
+        "go": "\n              GO NEXT → 03\n            "
+      }
+    },
+    {
+      "name": "Stop mid-crossfade ends the outgoing source at once",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": false,
+        "idx": 0,
+        "sel": 1,
+        "bar": 0,
+        "launch": null,
+        "fade": 1,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ],
+        "t0": [
+          0.21,
+          0.21
+        ],
+        "t1buf": "C",
+        "t1src": false,
+        "fades": 0,
+        "go": "\n              GO NEXT → 02\n            "
+      }
+    },
+    {
+      "name": "a captured empty slot recalls silence: T2 unloaded on Scene 03",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": true,
+        "idx": 2,
+        "sel": 2,
+        "bar": 0.07236428571428588,
+        "launch": null,
+        "fade": 1,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ],
+        "t0": [
+          0.2,
+          0.2
+        ],
+        "t1buf": null,
+        "t1src": false,
+        "fades": 1,
+        "go": "\n              GO NEXT → 01\n            "
+      }
+    },
+    {
+      "name": "a new destination replaces the pending one",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": true,
+        "idx": 2,
+        "sel": 1,
+        "bar": 0.23906428571428576,
+        "launch": {
+          "ready": true,
+          "idx": 1
+        },
+        "fade": 1,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ],
+        "t0": [
+          0.21,
+          0.21
+        ],
+        "t1buf": null,
+        "t1src": false,
+        "fades": 1,
+        "go": "\n              NEXT BAR → 02\n            ",
+        "status": "NEXT BAR → Scene 02"
+      }
+    },
+    {
+      "name": "…and only Scene 02 launches",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": true,
+        "idx": 1,
+        "sel": 1,
+        "bar": 0.07227358276643957,
+        "launch": null,
+        "fade": 1,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ],
+        "t0": [
+          0.22,
+          0.22
+        ],
+        "t1buf": "C",
+        "t1src": true,
+        "fades": 0,
+        "go": "\n              GO NEXT → 03\n            "
+      }
+    },
+    {
+      "name": "swipe left reveals RENAME",
+      "ok": true
+    },
+    {
+      "name": "RENAME opens the inline field with the current name selected",
+      "ok": true
+    },
+    {
+      "name": "typing with spaces and Enter renames the Scene (Space typed, transport untouched)",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": false,
+        "idx": 0,
+        "sel": 1,
+        "bar": 0,
+        "launch": null,
+        "fade": 1,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Open water two"
+        ],
+        "t0": [
+          0.22,
+          0.22
+        ],
+        "t1buf": "C",
+        "t1src": false,
+        "fades": 0,
+        "go": "\n              GO NEXT → 02\n            "
+      }
+    },
+    {
+      "name": "Escape cancels a rename",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": false,
+        "idx": 0,
+        "sel": 1,
+        "bar": 0,
+        "launch": null,
+        "fade": 1,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Open water two"
+        ],
+        "t0": [
+          0.22,
+          0.22
+        ],
+        "t1buf": "C",
+        "t1src": false,
+        "fades": 0,
+        "go": "\n              GO NEXT → 02\n            "
+      }
+    },
+    {
+      "name": "swipe right reveals DELETE (nothing deleted yet)",
+      "ok": true
+    },
+    {
+      "name": "tapping DELETE removes Scene 02 and offers Undo",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": false,
+        "idx": 0,
+        "sel": 1,
+        "bar": 0,
+        "launch": null,
+        "fade": 1,
+        "names": [
+          "Scene 01",
+          "Open water two"
+        ],
+        "t0": [
+          0.22,
+          0.22
+        ],
+        "t1buf": "C",
+        "t1src": false,
+        "fades": 0,
+        "go": "\n              GO NEXT → 02\n            "
+      }
+    },
+    {
+      "name": "UNDO restores it in its place with its name",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": false,
+        "idx": 0,
+        "sel": 1,
+        "bar": 0,
+        "launch": null,
+        "fade": 1,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Open water two"
+        ],
+        "t0": [
+          0.22,
+          0.22
+        ],
+        "t1buf": "C",
+        "t1src": false,
+        "fades": 0,
+        "go": "\n              GO NEXT → 02\n            "
+      }
+    },
+    {
+      "name": "the sounding Scene cannot be deleted",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": true,
+        "idx": 0,
+        "sel": 0,
+        "bar": 3.541050000000084,
+        "launch": null,
+        "fade": 1,
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Open water two"
+        ],
+        "t0": [
+          0.72,
+          0.72
+        ],
+        "t1buf": "C",
+        "t1src": true,
+        "fades": 1,
+        "go": "\n              GO NEXT → 02\n            "
+      }
+    },
+    {
+      "name": "deleting the pending destination cancels its launch",
+      "ok": true,
+      "detail": {
+        "mode": "play",
+        "playing": true,
+        "idx": 1,
+        "sel": 1,
+        "bar": 0.09940000000008725,
+        "launch": null,
+        "fade": 1,
+        "names": [
+          "Scene 01",
+          "Scene 02"
+        ],
+        "t0": [
+          0.8,
+          0.8
+        ],
+        "t1buf": "C",
+        "t1src": true,
+        "fades": 1,
+        "go": "\n              GO NEXT → 01\n            "
+      }
+    },
+    {
+      "name": "BUILD double-tap opens the name field",
+      "ok": true
+    },
+    {
+      "name": "BUILD rename lands in the document and the right panel",
+      "ok": true
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "errs": []
+}

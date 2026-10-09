@@ -1,0 +1,38 @@
+'use strict';
+const $=id=>document.getElementById(id);
+const ideas=[
+{id:'orbit',name:'Quiet orbit',family:'ribbons',energy:.24,spread:.7,detail:.2,speed:.35,fade:.25,hue:0,description:'From the Orbit: fewer, tilted lines create depth without a dense spherical cage. Keep the centre readable.'},
+{id:'pulse',name:'Soft pulse',family:'contour',energy:.3,spread:.65,detail:.2,speed:.5,fade:.35,hue:0,description:'From Pulse-Wave: a breathing, irregular outline. Motion stays close to the node instead of swallowing the canvas.'},
+{id:'cloud',name:'Drifting grains',family:'cinders',energy:.35,spread:1.05,detail:.35,speed:.45,fade:.4,hue:0,description:'From Granular Cloud: a sparse, directional drift. Particles emerge from behind the centre and dissolve outward.'},
+{id:'field',name:'Magnetic feelers',family:'filaments',energy:.3,spread:.8,detail:.25,speed:.4,fade:.3,hue:0,description:'From Field Distorter: asymmetric, fine filaments. A few moving tips communicate energy without noisy full rings.'},
+{id:'fracture',name:'Broken orbit',family:'shards',energy:.4,spread:.8,detail:.25,speed:.4,fade:.2,hue:0,description:'From Fracture-Nova: interrupted arcs and a few fragments. The silhouette stays legible even at small node sizes.'},
+{id:'spores',name:'Pixel Spores',family:'constellation',energy:.45,spread:1,detail:.4,speed:.45,fade:.3,hue:0,description:'A favourite reference: a sparse pixel organism around the original node. Check the small preview before adding more detail.'},
+{id:'orb',name:'Luminous orb',family:'luminous_orb',energy:.6,spread:1.0,detail:.35,speed:.55,fade:.25,hue:0,description:'Tri-light fluid orb: organic undulating perimeter and drifting focal lights that dynamically follow each node\'s track color.'}
+];
+const palettes={kiln:['#d86b47','#cfab36','#8b79be','#4eaa83'],blueprint:['#ed8965','#e2c453','#ad95de','#64c2a4'],chromatic:['#df654e','#d6b43e','#917ac7','#42aa89'],oxide:['#e08459','#d7b754','#af8fce','#67b795'],risograph:['#e06b58','#d4b236','#9c7fcd','#45a98c']};
+let selected=2,settings={},previous=null,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,time=0,last=0,focus=0;
+const slots=[{x:.23,y:.34},{x:.67,y:.3},{x:.4,y:.7},{x:.79,y:.68}];
+let saved={};try{saved=JSON.parse(localStorage.getItem('aether-animation-variations-v1')||'{}')}catch{}
+const fields=[['energy','Energy',0,1,.01],['spread','Reach',.3,1.8,.01],['detail','Detail',0,1,.01],['speed','Speed',0,3,.01],['fade','Edge fade',0,1,.01],['hue','Color hue shift',-180,180,1]];
+function fragment(){return{canvas_animation:{type:'art',settings:{family:settings.family,...Object.fromEntries(fields.map(([k])=>[k,settings[k]]))}}}}
+function sync(){fields.forEach(([k])=>{$(k).value=settings[k];$(k+'-out').textContent=Number(settings[k]).toFixed(k==='hue'?0:2)});$('json').textContent=JSON.stringify(fragment(),null,2);$('description').textContent=ideas[selected].description;document.querySelectorAll('#presets button').forEach((b,i)=>b.setAttribute('aria-pressed',i===selected));$('pause').textContent=paused?'Play':'Pause'}
+fields.forEach(([k,label,min,max,step])=>{const row=document.createElement('label');row.innerHTML=`${label}<output id="${k}-out"></output><input id="${k}" aria-label="${label}" type="range" min="${min}" max="${max}" step="${step}">`;row.querySelector('input').oninput=e=>{settings[k]=+e.target.value;sync()};$('controls').append(row)});
+function select(i){selected=i;settings={...ideas[i]};sync()}
+ideas.forEach((idea,i)=>{const b=document.createElement('button');b.textContent=idea.name;b.onclick=()=>select(i);$('presets').append(b)});
+$('theme').onclick=()=>document.body.classList.toggle('light');$('pause').onclick=()=>{paused=!paused;sync()};$('reset').onclick=()=>select(selected);
+$('variation').onclick=()=>{previous={...settings};$('undo').disabled=false;fields.forEach(([k,,min,max])=>{if(k==='hue')return;settings[k]=Math.round(Math.max(min,Math.min(max,settings[k]+(Math.random()-.5)*(max-min)*.15))*100)/100});sync()};$('undo').onclick=()=>{if(previous){settings=previous;previous=null;$('undo').disabled=true;sync()}};
+function list(){$('saved').replaceChildren(new Option('Saved animations',''));Object.keys(saved).forEach(n=>$('saved').add(new Option(n,n)))}
+$('save').onclick=()=>{const name=$('name').value.trim();if(!name)return $('status').textContent='Give the variation a name first.';saved[name]={selected,settings:{...settings},palette:$('palette').value};try{localStorage.setItem('aether-animation-variations-v1',JSON.stringify(saved));list();$('saved').value=name;$('status').textContent='Saved locally: '+name}catch{$('status').textContent='Storage unavailable. Download JSON instead.'}};
+$('load').onclick=()=>{const v=saved[$('saved').value];if(v){selected=v.selected;settings={...v.settings};$('palette').value=v.palette;sync()}};
+$('copy').onclick=async()=>{try{await navigator.clipboard.writeText(JSON.stringify(fragment(),null,2));$('status').textContent='Manifest fragment copied. Merge into an existing manifest; do not replace the entire file.'}catch{$('status').textContent='Clipboard unavailable. Use Download JSON.'}};
+$('download').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(fragment(),null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='aether-'+ideas[selected].id+'-animation.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('status').textContent='Downloaded animation fragment, not a complete instrument.'};
+let drag=-1;function position(e){const r=$('stage').getBoundingClientRect();return{x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height}}
+$('stage').onpointerdown=e=>{const p=position(e);drag=slots.findIndex(n=>Math.hypot((n.x-p.x)*$('stage').clientWidth,(n.y-p.y)*$('stage').clientHeight)<40);if(drag>=0){focus=drag;$('stage').setPointerCapture(e.pointerId)}};$('stage').onpointermove=e=>{if(drag<0)return;const p=position(e);slots[drag]={x:Math.max(.12,Math.min(.88,p.x)),y:Math.max(.16,Math.min(.84,p.y))}};$('stage').onpointerup=$('stage').onpointercancel=()=>drag=-1;
+function prepare(id){const c=$(id),w=c.clientWidth,h=c.clientHeight,dpr=Math.min(devicePixelRatio||1,2);if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr)}const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);return{ctx,w,h}}
+function node(ctx,x,y,r,i){const color=palettes[$('palette').value][i];AetherNodeArt.draw(ctx,{x,y,radius:r+6,color,time,settings});ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.fillStyle='#101816';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`500 ${r>40?18:11}px system-ui`;ctx.fillText('T'+(i+1),x,y)}
+function frame(now){if(!paused&&!document.hidden)time+=Math.min(50,now-last);last=now;if(!document.hidden){let s=prepare('stage');slots.forEach((n,i)=>node(s.ctx,n.x*s.w,n.y*s.h,24,i));s=prepare('detail-view');node(s.ctx,s.w/2,s.h/2,44,focus);s=prepare('small');node(s.ctx,s.w/2,s.h/2,18,focus)}requestAnimationFrame(frame)}
+// The original 3D view passes a bounded starting interpretation; its camera and layers do not transfer.
+const q=new URLSearchParams(location.search),map={A:0,B:1,C:2,D:3,E:4};select(map[q.get('from')]??2);
+for(const [key,param,min,max] of [['energy','activity',0,1],['detail','timbre',0,1],['speed','speed',0,3]]){if(q.has(param)){const n=Number(q.get(param));if(Number.isFinite(n))settings[key]=Math.max(min,Math.min(max,n))}}
+if(q.has('from'))$('origin').textContent='Starting interpretation from your 3D study. Camera tilt, layered rings and lighting stay in the original study.';
+list();sync();requestAnimationFrame(frame);

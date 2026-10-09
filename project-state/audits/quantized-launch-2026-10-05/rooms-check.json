@@ -1,0 +1,275 @@
+{
+  "checks": [
+    {
+      "name": "WEAVE ON opens PLAY",
+      "ok": true
+    },
+    {
+      "name": "captured 0.2",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "sceneId": "sc_3ccdbbe9-1c8d-4070-b624-328f10be30fc",
+        "captureId": 1,
+        "index": 0,
+        "pruned": []
+      }
+    },
+    {
+      "name": "captured 0.8",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "sceneId": "sc_c7fabce8-b281-40e2-bf88-c0c03b421a1e",
+        "captureId": 2,
+        "index": 1,
+        "pruned": []
+      }
+    },
+    {
+      "name": "captured 0.5",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "sceneId": "sc_df50ce32-61c5-4283-8c8b-e8f57abd706a",
+        "captureId": 3,
+        "index": 2,
+        "pruned": []
+      }
+    },
+    {
+      "name": "PLAY double-click while stopped starts the transport on that Scene",
+      "ok": true,
+      "detail": {
+        "s": {
+          "mode": "play",
+          "playing": true,
+          "idx": 2,
+          "bar": 0.2666999999999999,
+          "hold": false,
+          "audition": null,
+          "fade": 1,
+          "t0": [
+            0.5,
+            0.5
+          ],
+          "names": [
+            "Scene 01",
+            "Scene 02",
+            "Scene 03"
+          ]
+        },
+        "r": {
+          "x": 69.77218818664551,
+          "y": 439.6703338623047,
+          "idx": 2
+        }
+      }
+    },
+    {
+      "name": "PLAY double-click while playing arms a launch for the next bar (nothing moves yet)",
+      "ok": true,
+      "detail": {
+        "s": {
+          "mode": "play",
+          "playing": true,
+          "idx": 2,
+          "bar": 0.34165,
+          "hold": false,
+          "audition": null,
+          "fade": 1,
+          "t0": [
+            0.5,
+            0.5
+          ],
+          "names": [
+            "Scene 01",
+            "Scene 02",
+            "Scene 03"
+          ]
+        },
+        "r": {
+          "x": 76.97526168823242,
+          "y": 381.5353698730469,
+          "idx": 0
+        },
+        "armed": 1
+      }
+    },
+    {
+      "name": "…and on the bar line it lands there (one-bar crossfade), state recalled",
+      "ok": true,
+      "detail": {
+        "s": {
+          "mode": "play",
+          "playing": true,
+          "idx": 0,
+          "bar": 0.1083499999999999,
+          "hold": false,
+          "audition": null,
+          "fade": 1,
+          "t0": [
+            0.49,
+            0.49
+          ],
+          "names": [
+            "Scene 01",
+            "Scene 02",
+            "Scene 03"
+          ]
+        },
+        "r": {
+          "x": 76.97526168823242,
+          "y": 381.5353698730469,
+          "idx": 0
+        }
+      }
+    },
+    {
+      "name": "switching to BUILD stops the transport",
+      "ok": true,
+      "detail": {
+        "mode": "build",
+        "playing": false,
+        "idx": 0,
+        "bar": 0,
+        "hold": false,
+        "audition": null,
+        "fade": 1,
+        "t0": [
+          0.49,
+          0.49
+        ],
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ]
+      }
+    },
+    {
+      "name": "swipe-left reveals the AUDITION speaker tag on the right",
+      "ok": true,
+      "detail": {
+        "state": true,
+        "visible": true,
+        "right": true
+      }
+    },
+    {
+      "name": "release past the threshold auditions Scene 03: transport runs, holds on it, state recalled",
+      "ok": true,
+      "detail": {
+        "mode": "build",
+        "playing": true,
+        "idx": 2,
+        "bar": 0.30835000000000007,
+        "hold": true,
+        "audition": 2,
+        "fade": 1,
+        "t0": [
+          0.5,
+          0.5
+        ],
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ]
+      }
+    },
+    {
+      "name": "swiping the auditioned Scene again stops it",
+      "ok": true,
+      "detail": {
+        "mode": "build",
+        "playing": false,
+        "idx": 0,
+        "bar": 0,
+        "hold": false,
+        "audition": null,
+        "fade": 1,
+        "t0": [
+          0.5,
+          0.5
+        ],
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ]
+      }
+    },
+    {
+      "name": "swipe-right still enters ADJUST",
+      "ok": true
+    },
+    {
+      "name": "AUDITION button starts the transport near the end of Scene 01",
+      "ok": true,
+      "detail": {
+        "mode": "build",
+        "playing": true,
+        "idx": 0,
+        "bar": 14.783300000000004,
+        "hold": false,
+        "audition": 0,
+        "fade": 1,
+        "t0": [
+          0.2,
+          0.2
+        ],
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ]
+      }
+    },
+    {
+      "name": "…lands on Scene 02 and stops itself",
+      "ok": true,
+      "detail": {
+        "mode": "build",
+        "playing": false,
+        "idx": 0,
+        "bar": 0,
+        "hold": false,
+        "audition": null,
+        "fade": 1,
+        "t0": [
+          0.8,
+          0.8
+        ],
+        "names": [
+          "Scene 01",
+          "Scene 02",
+          "Scene 03"
+        ]
+      }
+    },
+    {
+      "name": "double-click in BUILD opens the inline name field",
+      "ok": true
+    },
+    {
+      "name": "Enter renames the Scene through the document",
+      "ok": true,
+      "detail": [
+        "Opening",
+        "Scene 02",
+        "Scene 03"
+      ]
+    },
+    {
+      "name": "Space still toggles transport (name field closed)",
+      "ok": true
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "errs": []
+}

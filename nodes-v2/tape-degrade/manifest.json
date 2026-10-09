@@ -1,0 +1,26 @@
+{
+  "id": "com.aether.node.tape-degrade",
+  "name": "Tape Degrade",
+  "version": "2.0.0",
+  "author": "Aether",
+  "description": "Tape insert: wow/flutter wobble, saturation damage, hiss, compression and head wear. Load a sample (or live input / stream) on the track first, then drop this node on it.",
+  "role": "insert",
+  "timingTier": "not-tempo-aware",
+  "category": "Tape / Insert",
+  "inputs": 1,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "inspector": "host",
+  "parameters": [
+    { "id": "wobble",      "name": "Wobble",      "type": "float", "min": 0, "max": 1, "default": 0.35, "step": 0.01, "unit": "norm", "morph": "glide" },
+    { "id": "damage",      "name": "Damage",      "type": "float", "min": 0, "max": 1, "default": 0.25, "step": 0.01, "unit": "norm", "morph": "glide" },
+    { "id": "noise",       "name": "Noise",       "type": "float", "min": 0, "max": 1, "default": 0.15, "step": 0.01, "unit": "norm", "morph": "glide" },
+    { "id": "compression", "name": "Compression", "type": "float", "min": 0, "max": 1, "default": 0.30, "step": 0.01, "unit": "norm", "morph": "glide" },
+    { "id": "wear",        "name": "Wear",        "type": "float", "min": 0, "max": 1, "default": 0.30, "step": 0.01, "unit": "norm", "morph": "glide" },
+    { "id": "mix",         "name": "Mix",         "type": "float", "min": 0, "max": 1, "default": 1.0,  "step": 0.01, "unit": "norm", "morph": "glide" }
+  ],
+  "canvas_animation": "pulse_wave"
+}

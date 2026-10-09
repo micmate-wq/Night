@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tick Tok · viz</title>
+<!-- AetherNode viz (host inspector). The host draws the window, header and
+     controls from manifest.json; this page only animates the viz band.
+     In:  aether:param-update {paramId, value}, aether:voice-trigger
+     Out: aether:motion {x, y} in -1..1, which the host borrows for the slider thumbs. -->
+<style>
+  :root { --track-color: #FC4037; }
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+  canvas { display: block; width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<canvas id="viz"></canvas>
+<script>
+  const canvas = document.getElementById('viz');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0;
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', resize); resize();
+  const COLOR = () => getComputedStyle(document.documentElement).getPropertyValue('--track-color').trim() || '#FC4037';
+  const INK = '#141414';
+  let lastMotion = 0;
+  function sendMotion(x, y, now) {
+    if (now - lastMotion < 33) return;
+    lastMotion = now;
+    try { window.parent.postMessage({ type: 'aether:motion', x: Math.max(-1, Math.min(1, x)), y: Math.max(-1, Math.min(1, y)) }, '*'); } catch (_) {}
+  }
+  // Tick Tok: the 16-step pattern. Filled = kick, small = talk, the ring follows
+  // the master clock's step while the transport plays.
+  const state = { bpm: 120, pattern: 0.22, talk: 0.62, decay: 0.38, density: 0.5, lock: 0.7, color: 0.4 };
+  const P_LANDMARKS = [0b1000100010001000, 0b1100100010001000, 0b1000000010001000, 0b1110000010000000, 0b1001001000100100];
+  const TALK_EXTRAS = [0b0000000000000000, 0b0000001000000000, 0b0000001000100000, 0b0000001000100010];
+  function blendPattern(pattern) {
+    const N = P_LANDMARKS.length, f = Math.max(0, Math.min(1, pattern)) * (N - 1);
+    if (f >= N - 1) return P_LANDMARKS[N - 1];
+    const i = Math.floor(f), t = f - i;
+    if (t < 0.18) return P_LANDMARKS[i];
+    if (t > 0.82) return P_LANDMARKS[i + 1];
+    return P_LANDMARKS[i] | P_LANDMARKS[i + 1];
+  }
+  function talkMask(talk, pattern) {
+    if (talk < 0.06) return 0;
+    let m = 0b0000100000001000;
+    const N = TALK_EXTRAS.length, climb = talk * 0.65 + pattern * 0.35;
+    const u = Math.max(0, Math.min(1, (climb - 0.55) / 0.45)), f = u * (N - 1);
+    if (f >= N - 1) m |= TALK_EXTRAS[N - 1];
+    else { const i = Math.floor(f), t = f - i; m |= t < 0.18 ? TALK_EXTRAS[i] : t > 0.82 ? TALK_EXTRAS[i + 1] : (TALK_EXTRAS[i] | TALK_EXTRAS[i + 1]); }
+    return m;
+  }
+  let lastStep = -1, kick = 0;
+  function frame(now) {
+    let step = -1, playing = false;
+    try {
+      const studio = window.parent && window.parent.studio;
+      const snap = studio && typeof studio.getClockSnapshot === 'function' ? studio.getClockSnapshot() : null;
+      if (snap && snap.state !== 'stopped') { step = snap.stepIndex; playing = snap.state === 'playing'; }
+    } catch (_) {}
+    const kickMask = blendPattern(state.pattern), talk = talkMask(state.talk, state.pattern);
+    if (playing && step !== lastStep && step >= 0 && (kickMask & (1 << (15 - step)))) kick = 1;
+    lastStep = step;
+    kick *= 0.88 - state.decay * 0.1;
+    ctx.clearRect(0, 0, W, H);
+    const col = COLOR(), gap = W / 17, r = Math.min(gap * 0.32, H * 0.18);
+    for (let i = 0; i < 16; i++) {
+      const x = gap * (i + 1), y = H / 2, bit = 1 << (15 - i);
+      ctx.fillStyle = (kickMask & bit) ? col : (talk & bit) ? INK : '#d9d9d4';
+      const rr = (kickMask & bit) ? r : (talk & bit) ? r * 0.55 : r * 0.4;
+      ctx.beginPath(); ctx.arc(x, y, rr, 0, Math.PI * 2); ctx.fill();
+      if (i === step) { ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, r + 4, 0, Math.PI * 2); ctx.stroke(); }
+    }
+    sendMotion(step >= 0 ? (step / 7.5 - 1) * 0.4 : 0, -kick, now);
+    requestAnimationFrame(frame);
+  }
+  window.addEventListener('message', (event) => {
+    const d = event.data;
+    if (!d || typeof d !== 'object') return;
+    if (d.type === 'aether:param-update' || d.type === 'PARAMETER_CHANGE') {
+      const id = d.paramId || d.id;
+      if (id in state) state[id] = Number(d.value);
+    } else if (d.type === 'aether:voice-trigger' && typeof onTrigger === 'function') {
+      onTrigger(d);
+    }
+  });
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

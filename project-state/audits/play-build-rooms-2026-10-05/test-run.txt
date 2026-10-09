@@ -1,0 +1,17 @@
+# Test run — 2026-10-05 19:43:34 — node v22.23.2 — Mac, working tree + PLAY/BUILD rooms (audition, double-click, rename)
+== node tests/test-weave-session.js
+30 passed, 0 failed
+== node tests/test-weave-host.js
+15 passed, 0 failed
+== node tests/test-weave-spatial-recall.js
+=== ALL WEAVE SPATIAL RECALL VERIFICATION TESTS PASSED ===
+== node tests/test-weave-swipe-gesture.js
+=== ALL WEAVE ROW SWIPE GESTURE TESTS PASSED ===
+== node tests/test-weave-model.js
+31 passed, 0 failed
+== node tests/test-weave-assets.js
+28 passed, 0 failed
+== node tests/test-weave-import.js
+20 passed, 0 failed
+== node tests/test-ticktok-v2.js
+=== ALL 9 VERIFICATION TESTS PASSED SUCCESSFULLY ===

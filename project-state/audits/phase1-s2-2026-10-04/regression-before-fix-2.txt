@@ -1,0 +1,40 @@
+# S2 second-review regressions BEFORE fix — 2026-10-04T23:07:52Z — node v22.23.2
+# weave-assets.js sha256 9e1c26f75598b598… (as reviewed by Codex, after the first corrections)
+$ node tests/test-weave-assets.js
+✔ sha256: known vectors through WebCrypto and Node engines
+✔ sha256: typed-array views hash exactly their offset/length, not the backing buffer
+✔ toBytes: rejects non-binary inputs with a clear error
+✔ base64: canonical encode/decode round-trips and matches Node for lengths 0–40
+✔ base64: rejects every non-canonical form
+✔ verifyAssets: the fixture table passes, every payload hashes to its key
+✔ verifyAssets: wrong hash, wrong length and corrupt base64 are each rejected
+✔ verifyAssets: malformed containers and metadata are reported, never thrown
+✔ verifyAssets: empty payloads are refused (S2 policy)
+✔ measureAssets: counts unique stored bytes and base64 text without decoding
+✔ limits: invalid limit objects are rejected before anything else
+✔ limits: exact boundaries pass and one unit over fails, per limit
+    (preflight rejection of a 4 MB payload took 2.6 ms; digest calls: 0)
+✔ limits: an over-budget table is refused before any payload is decoded or hashed
+✔ addAssetBytes: limits are checked from the byte length before hashing or encoding
+✔ addAssetBytes: new bytes produce a verifiable entry and leave the input untouched
+✔ addAssetBytes: identical bytes deduplicate to the existing entry whatever the name
+✔ addAssetBytes: same name with different bytes stays two assets
+✔ addAssetBytes: incompatible kind or bundle identity for identical bytes is rejected
+✔ addAssetBytes: metadata and container validation
+✔ derived override: a rendered buffer with different bytes is kept as its own asset, never merged
+✔ S1 boundary: S1 accepts a structurally valid table with wrong bytes; S2 is what catches it
+✔ review 1: re-adding identical bytes at each exact limit succeeds and charges nothing
+✔ review 2: a matching key is not trusted — the stored payload must equal the new bytes
+✔ review 3: input bytes and metadata changed while the promise is pending do not reach the stored asset
+✘ review 4: an already-over-budget table is refused even for a duplicate, before any hashing
+    AssertionError [ERR_ASSERTION]: {"maxTotalBytes":781} -> {"ok":true,"assets":{"sha256:d63057c6b23c9a0498300dc7bd17a081c6092d47733b7c4e339a66f9c07ccaba":{"kind":"audio","name":"fixture-a440.wav","mime":"audio/wav","bytes":76,"origin":"original-file","storage":{"kind":"inline-base64","data":"UklGRkQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSAAAAAAAOAP4R1YKAsuTC4TKf8eQRF4AYTxRuNt2EHSf9E81g=="}},"sha256:b522adc47b2becae2e0c6b427028c4d5b9fcc390762a3983eb91a9b10d34f367":{"kind":"audio","name":"fixture-a660.wav","mime":"audio/wav","bytes":76,"origin":"original-file","storage":{"kind":"inline-base64","data":"UklGRkQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSAAAAAAADkXWCjeLhMpfRh4ARHqbdgu0TzWROYP/Z8UxCa7Lg=="}},"sha256:7fbf14ebd62962a158b788f56b9f785103dab5c4691aab350164b8e4d4a04b6a":{"kind":"node-bundle","name":"Fixture Pulse","mime":"application/zip","bytes":630,"origin":"aethernode-zip","manifestId":"com.aether.test.fixture-pulse","version":"0.0.1","storage":{"kind":"inline-base64","data":"UEsDBBQAAAAAAAAAIQAg0bn+KQEAACkBAAANAAAAbWFuaWZlc3QuanNvbnsiaWQiOiJjb20uYWV0aGVyLnRlc3QuZml4dHVyZS1wdWxzZSIsIm5hbWUiOiJGaXh0dXJlIFB1bHNlIiwidmVyc2lvbiI6IjAuMC4xIiwicm9sZSI6Imluc3RydW1lbnQiLCJpbnB1dHMiOjAsIm91dHB1dHMiOjIsImVudHJ5Ijp7ImRzcCI6ImRzcC5qcyJ9LCJpbnNwZWN0b3IiOiJob3N0IiwicGFyYW1ldGVycyI6W3siaWQiOiJsZXZlbCIsInR5cGUiOiJmbG9hdCIsIm1pbiI6MCwibWF4IjoxLCJkZWZhdWx0IjowLjV9LHsiaWQiOiJzdGVwcyIsInR5cGUiOiJpbnQiLCJtaW4iOjEsIm1heCI6OCwiZGVmYXVsdCI6NH1dfVBLAwQUAAAAAAAAACEALUb6gXkAAAB5AAAABgAAAGRzcC5qc2NsYXNzIEZpeHR1cmVQdWxzZXtjb25zdHJ1Y3Rvcigpe3RoaXMucGFyYW1zPXtsZXZlbDowLjUsc3RlcHM6NH19c2V0UGFyYW1ldGVyKGlkLHYpe3RoaXMucGFyYW1zW2lkXT12fXN0YXJ0KCl7fXN0b3AoKXt9fQpQSwECFAMUAAAAAAAAACEAING5/ikBAAApAQAADQAAAAAAAAAAAAAApAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAAAAAAIQAtRvqBeQAAAHkAAAAGAAAAAAAAAAAAAACkAVQBAABkc3AuanNQSwUGAAAAAAIAAgBvAAAA8QEAAAAA"}}},"id":"sha256:d63057c6b23c9a0498300dc7bd17a081c6092d47733b7c4e339a66f9c07ccaba","deduplicated":true,"asset":{"kind":"audio","name":"fixture-a440.wav","mime":"audio/wav","bytes":76,"origin":"original-file","storage":{"kind":"inline-base64","data":"UklGRkQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSAAAAAAAOAP4R1YKAsuTC4TKf8eQRF4AYTxRuNt2EHSf9E81g=="}}}
+
+    true !== false
+
+✘ review 5: entries added to the live table while the promise is pending cannot bypass the limits
+    AssertionError [ERR_ASSERTION]: total 892 > 792
+        at Object.fn (/sessions/rcw-017cacij98lw7t7z42f4emc6/mnt/referenced-chatgpt-conversation-this-is-an/work/aether-weave-v01-lab/tests/test-weave-assets.js:529:10)
+        at async /sessions/rcw-017cacij98lw7t7z42f4emc6/mnt/referenced-chatgpt-conversation-this-is-an/work/aether-weave-v01-lab/tests/test-weave-assets.js:548:11
+
+24 passed, 2 failed
+exit=1

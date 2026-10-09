@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bloom</title>
+  <style>
+    :root {
+      --bg: var(--aether-bg, var(--bg-main, #0A0A0A));
+      --panel: var(--aether-panel, var(--bg-card, #141414));
+      --accent: var(--track-color, var(--aether-accent, #FFFFFF));
+      --text: var(--aether-text, var(--text-main, #FFFFFF));
+      --muted: var(--aether-text-muted, var(--text-muted, #888));
+      --border: var(--aether-border, var(--border-light, #333));
+      --track: var(--knob-track, var(--border-subtle, #222));
+      --font-h: var(--aether-font-heading, 'Space Grotesk', sans-serif);
+      --font-m: var(--aether-font-mono, 'JetBrains Mono', monospace);
+      /* Host injects light :root always; dark overrides live on body.theme-dark.
+         Viz must not resolve --bg-canvas from html :root (stays #FAFAFA). */
+      --viz-panel: #000000;
+      --viz-clear: #000000;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: var(--aether-bg, var(--bg-main, #FFFFFF));
+        --panel: var(--aether-panel, var(--bg-card, #F4F4F4));
+        --text: var(--aether-text, var(--text-main, #000000));
+        --muted: var(--aether-text-muted, var(--text-muted, #666));
+        --border: var(--aether-border, var(--border-light, #CCC));
+        --track: var(--knob-track, #DDD);
+        --viz-panel: #FAFAFA;
+        --viz-clear: #FAFAFA;
+      }
+    }
+    body.theme-dark {
+      --bg: var(--aether-bg, var(--bg-main, #0A0A0A));
+      --panel: var(--aether-panel, var(--bg-card, #141414));
+      --text: var(--aether-text, var(--text-main, #FFFFFF));
+      --muted: var(--aether-text-muted, var(--text-muted, #888));
+      --border: var(--aether-border, var(--border-light, #333));
+      --track: var(--knob-track, #333);
+      --viz-panel: #000000;
+      --viz-clear: #000000;
+      color-scheme: dark;
+    }
+    body.theme-light {
+      --bg: var(--aether-bg, var(--bg-main, #FFFFFF));
+      --panel: var(--aether-panel, var(--bg-card, #F4F4F4));
+      --text: var(--aether-text, var(--text-main, #000000));
+      --muted: var(--aether-text-muted, var(--text-muted, #666));
+      --border: var(--aether-border, var(--border-light, #CCC));
+      --track: var(--knob-track, #DDD);
+      --viz-panel: #FAFAFA;
+      --viz-clear: #FAFAFA;
+      color-scheme: light;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--font-h); font-size: 11px;
+      width: 100vw; height: 100vh; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    header {
+      padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .title { font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; font-size: 11px; }
+    .badge { font-family: var(--font-m); font-size: 9px; opacity: 0.65; letter-spacing: 0.08em; }
+    .viz-wrap {
+      margin: 10px 12px 0; height: 110px; border: 1px solid var(--border);
+      position: relative; overflow: hidden; background: var(--viz-panel);
+    }
+    #bloom-viz { width: 100%; height: 100%; display: block; }
+    .grid { padding: 10px 12px 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+    .grid label:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    label { display: flex; flex-direction: column; gap: 4px; }
+    .row { display: flex; justify-content: space-between; color: var(--muted); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .val { font-family: var(--font-m); color: var(--text); }
+    input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 4px;
+      background: var(--track); border: 1px solid var(--border); outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--text); cursor: pointer; border: none;
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--text); cursor: pointer; border: none;
+    }
+    input[type=range]::-moz-range-track {
+      height: 4px; background: var(--track); border: 1px solid var(--border);
+    }
+    .seed-row { padding: 0 12px 12px; }
+    .seed-btn {
+      width: 100%; padding: 8px 10px;
+      font-family: var(--font-h); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text); background: transparent;
+      border: 1px solid var(--border); cursor: pointer;
+      border-radius: 2px;
+    }
+    .seed-btn:hover { border-color: var(--text); }
+    .seed-btn:active { opacity: 0.7; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">Bloom</div>
+    <div class="badge" id="mood-badge">SWEET</div>
+  </header>
+  <div class="viz-wrap"><canvas id="bloom-viz"></canvas></div>
+  <div class="grid">
+    <label><div class="row"><span>Growth</span><span class="val" id="v-growth">0.55</span></div>
+      <input id="growth" type="range" min="0" max="1" step="0.01" value="0.55"></label>
+    <label><div class="row"><span>Breeze</span><span class="val" id="v-breeze">0.45</span></div>
+      <input id="breeze" type="range" min="0" max="1" step="0.01" value="0.45"></label>
+    <label><div class="row"><span>Bloom</span><span class="val" id="v-bloom">0.62</span></div>
+      <input id="bloom" type="range" min="0" max="1" step="0.01" value="0.62"></label>
+    <label><div class="row"><span>Garden</span><span class="val" id="v-garden">0.28</span></div>
+      <input id="garden" type="range" min="0" max="1" step="0.01" value="0.28"></label>
+    <label><div class="row"><span>Pitch</span><span class="val" id="v-pitch">0.50</span></div>
+      <input id="pitch" type="range" min="0" max="1" step="0.01" value="0.50"></label>
+    <label><div class="row"><span>Drift</span><span class="val" id="v-drift">0.50</span></div>
+      <input id="drift" type="range" min="0" max="1" step="0.01" value="0.5"></label>
+    <label><div class="row"><span>Dusk / Dawn</span><span class="val" id="v-dusk">0.42</span></div>
+      <input id="dusk" type="range" min="0" max="1" step="0.01" value="0.42"></label>
+  </div>
+  <div class="seed-row">
+    <button type="button" class="seed-btn" id="seed-btn" title="Space-style stop → silence → new garden">Seed</button>
+  </div>
+  <script>
+    // Matt's bloom art settings — outer-ring family baseline; knobs drive live params.
+    const ART = {
+      type: 'art',
+      settings: {
+        family: 'bloom',
+        energy: 0.71,
+        spread: 0.87,
+        detail: 0.88,
+        speed: 1.26,
+        hue: -71,
+        fade: 0.75
+      }
+    };
+
+    const state = {
+      growth: 0.55, breeze: 0.45, bloom: 0.62,
+      garden: 0.28, pitch: 0.5, drift: 0.5, dusk: 0.42
+    };
+    const badge = document.getElementById('mood-badge');
+    const canvas = document.getElementById('bloom-viz');
+    const ctx = canvas.getContext('2d');
+    let cssW = 1, cssH = 1;
+    let t0 = performance.now();
+    const petals = [];
+    const motes = [];
+    const stems = [];
+    let themeDark = true;
+
+    function notify(id, value) {
+      window.parent.postMessage({ type: 'aether:param-change', paramId: id, value: value }, '*');
+    }
+
+    function parseRgb(str) {
+      if (!str) return null;
+      str = String(str).trim();
+      let m = str.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+      if (m) {
+        let h = m[1];
+        if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+        return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+      }
+      m = str.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
+      if (m) return [Number(m[1]), Number(m[2]), Number(m[3])];
+      return null;
+    }
+
+    function hostThemeDark() {
+      // Codex: applyTheme toggles only body.theme-dark (no theme-light class).
+      // openNodeInspector injects that class into srcdoc at open; sun toggle flips parent.
+      // Same-origin (Tauri/srcdoc) can read parent; cross-origin → null.
+      try {
+        if (window.parent && window.parent !== window) {
+          const pb = window.parent.document && window.parent.document.body;
+          if (pb) return pb.classList.contains('theme-dark');
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function detectTheme() {
+      const fromHost = hostThemeDark();
+      if (fromHost !== null) return fromHost;
+      if (document.body.classList.contains('theme-dark')) return true;
+      if (document.body.classList.contains('theme-light')) return false;
+      // IMPORTANT: read body, not documentElement. Host injects light :root always
+      // and only overrides --bg-* on body.theme-dark — html stays #FAFAFA.
+      const cs = getComputedStyle(document.body);
+      const raw = (cs.getPropertyValue('--bg-main') || cs.getPropertyValue('--bg') || cs.getPropertyValue('--bg-canvas') || cs.getPropertyValue('--viz-clear') || '').trim();
+      const rgb = parseRgb(raw);
+      if (rgb) {
+        const lum = (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255;
+        return lum < 0.45;
+      }
+      if (window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+      return true;
+    }
+
+    function vizClearCss() {
+      return themeDark ? '#000000' : '#FAFAFA';
+    }
+
+    function syncTheme() {
+      const next = detectTheme();
+      const flipped = next !== themeDark;
+      themeDark = next;
+      document.body.classList.toggle('theme-dark', themeDark);
+      document.body.classList.toggle('theme-light', !themeDark);
+      const clear = vizClearCss();
+      document.documentElement.style.setProperty('--viz-panel', clear);
+      document.documentElement.style.setProperty('--viz-clear', clear);
+      document.documentElement.style.setProperty('--bg-canvas', clear);
+      const wrap = canvas && canvas.parentElement;
+      if (wrap) {
+        wrap.style.background = clear;
+        wrap.style.backgroundColor = clear;
+      }
+      if (canvas) {
+        canvas.style.background = 'transparent';
+        canvas.style.backgroundColor = 'transparent';
+      }
+      // Hard clear once on flip so light trail does not linger as white letterbox
+      if (flipped && ctx && cssW > 0) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = clear;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+    }
+
+    function artLive() {
+      const s = ART.settings;
+      return {
+        energy: Math.max(0.15, Math.min(1.4, s.energy * (0.55 + state.breeze * 0.9) * (0.7 + state.growth * 0.55))),
+        spread: Math.max(0.2, Math.min(1.5, s.spread * (0.45 + state.bloom * 0.9))),
+        detail: Math.max(0.2, Math.min(1.5, s.detail * (0.5 + state.bloom * 0.75 + state.growth * 0.2))),
+        speed: Math.max(0.3, Math.min(2.4, s.speed * (0.45 + state.breeze * 1.1) * (0.9 + state.growth * 0.2))),
+        hue: s.hue + state.garden * 48 - state.dusk * 12 + state.pitch * 8,
+        fade: Math.max(0.25, Math.min(0.95, s.fade * (0.85 + state.dusk * 0.35) - state.bloom * 0.05))
+      };
+    }
+
+    function moodLabel() {
+      const g = state.garden;
+      if (g < 0.25) return 'SWEET';
+      if (g < 0.5) return 'OPEN';
+      if (g < 0.75) return 'CURIOUS';
+      return 'MYSTERY';
+    }
+
+    function bind(id) {
+      const el = document.getElementById(id);
+      const v = document.getElementById('v-' + id);
+      if (!el || !v) return;
+      el.addEventListener('input', () => {
+        const n = parseFloat(el.value);
+        state[id] = n;
+        v.textContent = n.toFixed(2);
+        if (id === 'garden') badge.textContent = moodLabel();
+        notify(id, n);
+        syncField();
+      });
+    }
+    ['growth', 'breeze', 'bloom', 'garden', 'pitch', 'drift', 'dusk'].forEach(bind);
+
+    // Seed = exact Space pause → brief silence → play with new randomized state
+    // Host routes aether:param-change → setParameter('seed') → DSP.reseedBeautiful()
+    const seedBtn = document.getElementById('seed-btn');
+    if (seedBtn) {
+      seedBtn.addEventListener('click', () => {
+        notify('seed', Date.now() % 100000 / 100000);
+      });
+    }
+    badge.textContent = moodLabel();
+
+    window.addEventListener('message', (e) => {
+      const d = e && e.data;
+      if (!d || typeof d !== 'object') return;
+      if (d.type === 'aether:param-update' && d.paramId != null && state[d.paramId] !== undefined) {
+        const n = Number(d.value);
+        if (!Number.isFinite(n)) return;
+        state[d.paramId] = n;
+        const el = document.getElementById(d.paramId);
+        const v = document.getElementById('v-' + d.paramId);
+        if (el) el.value = String(n);
+        if (v) v.textContent = n.toFixed(2);
+        if (d.paramId === 'garden') badge.textContent = moodLabel();
+        syncField();
+      }
+      if (d.type === 'aether:theme' || d.type === 'aether:theme-change') {
+        if (d.dark === true || d.theme === 'dark') {
+          document.body.classList.add('theme-dark');
+          document.body.classList.remove('theme-light');
+        }
+        if (d.dark === false || d.theme === 'light') {
+          document.body.classList.remove('theme-dark');
+          document.body.classList.add('theme-light');
+        }
+        syncTheme();
+      }
+    });
+
+    function resize() {
+      const wrap = canvas.parentElement;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      cssW = wrap.clientWidth || 1;
+      cssH = wrap.clientHeight || 1;
+      canvas.width = Math.floor(cssW * dpr);
+      canvas.height = Math.floor(cssH * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', resize);
+    if (window.matchMedia) {
+      try {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncTheme);
+      } catch (e) {}
+    }
+    syncTheme();
+    resize();
+
+    function hsl(h, s, l, a) {
+      return 'hsla(' + h + ',' + s + '%,' + l + '%,' + a + ')';
+    }
+
+    function fadeRgb() {
+      // Prefer explicit theme clear colors (never trust html :root --bg-canvas alone)
+      if (themeDark) return [0, 0, 0];
+      return [250, 250, 250];
+    }
+
+    function syncField() {
+      const a = artLive();
+      const wantPetals = Math.round(6 + state.growth * 14 + a.detail * 4);
+      const wantMotes = Math.round(8 + state.breeze * 20 + state.growth * 10);
+      while (petals.length < wantPetals) {
+        petals.push({
+          a: Math.random() * Math.PI * 2,
+          r: 0.15 + Math.random() * 0.55,
+          len: 0.2 + Math.random() * 0.45,
+          w: 0.04 + Math.random() * 0.08,
+          phase: Math.random() * Math.PI * 2,
+          spin: (Math.random() * 2 - 1) * 0.4
+        });
+      }
+      while (petals.length > wantPetals) petals.pop();
+      while (motes.length < wantMotes) {
+        motes.push({
+          x: Math.random(),
+          y: Math.random(),
+          vx: (Math.random() * 2 - 1) * 0.02,
+          vy: (Math.random() * 2 - 1) * 0.015,
+          s: 0.8 + Math.random() * 2.2,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+      while (motes.length > wantMotes) motes.pop();
+      if (!stems.length) {
+        for (let i = 0; i < 5; i++) {
+          stems.push({
+            x: 0.15 + i * 0.18 + (Math.random() * 0.06 - 0.03),
+            lean: (Math.random() * 2 - 1) * 0.08,
+            phase: Math.random() * Math.PI * 2
+          });
+        }
+      }
+    }
+    syncField();
+
+    function draw(now) {
+      syncTheme();
+      const a = artLive();
+      const t = (now - t0) / 1000;
+      const cx = cssW * 0.5;
+      const cy = cssH * 0.52;
+      const R = Math.min(cssW, cssH) * 0.42 * a.spread;
+      const fr = fadeRgb();
+      const fadeA = themeDark ? (0.18 + a.fade * 0.35) : (0.12 + a.fade * 0.22);
+
+      // Theme-following trail (no hardcoded black letterbox)
+      ctx.fillStyle = 'rgba(' + fr[0] + ',' + fr[1] + ',' + fr[2] + ',' + fadeA + ')';
+      ctx.fillRect(0, 0, cssW, cssH);
+
+      // Soft dusk wash — brighter in light mode
+      const wash = ctx.createRadialGradient(cx, cy, R * 0.1, cx, cy, R * 1.4);
+      const washL0 = themeDark ? (28 + state.bloom * 18) : (62 + state.bloom * 16);
+      const washL1 = themeDark ? 18 : 78;
+      wash.addColorStop(0, hsl(a.hue + 40, 45, washL0, 0.18 + state.dusk * 0.12));
+      wash.addColorStop(0.55, hsl(a.hue + 10, 35, washL1, themeDark ? 0.1 : 0.14));
+      wash.addColorStop(1, 'rgba(' + fr[0] + ',' + fr[1] + ',' + fr[2] + ',0)');
+      ctx.fillStyle = wash;
+      ctx.fillRect(0, 0, cssW, cssH);
+
+      // Wind stems
+      for (let i = 0; i < stems.length; i++) {
+        const s = stems[i];
+        const sway = Math.sin(t * a.speed * 1.1 + s.phase) * (0.04 + state.breeze * 0.1);
+        const x0 = s.x * cssW;
+        const y0 = cssH * 0.92;
+        const x1 = x0 + (s.lean + sway) * cssW * 0.35;
+        const y1 = cssH * (0.35 - state.growth * 0.08);
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.quadraticCurveTo(x0 + sway * 40, (y0 + y1) * 0.55, x1, y1);
+        const stemL = themeDark ? 32 : 42;
+        ctx.strokeStyle = hsl(a.hue + 90, 30, stemL, 0.25 + state.growth * 0.2);
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Petal rings (bloom family)
+      for (let i = 0; i < petals.length; i++) {
+        const p = petals[i];
+        const wind = Math.sin(t * a.speed + p.phase) * state.breeze * 0.35;
+        const ang = p.a + t * a.speed * 0.15 * p.spin + wind + state.breeze * 0.08 * Math.sin(t * 0.35 + p.phase);
+        const open = 0.35 + state.bloom * 0.65;
+        const rr = R * p.r * (0.7 + open * 0.45 + Math.sin(t * a.speed * 0.7 + p.phase) * 0.04 * a.energy);
+        const px = cx + Math.cos(ang) * rr;
+        const py = cy + Math.sin(ang) * rr * 0.78;
+        const plen = R * p.len * open * (0.7 + a.detail * 0.35);
+        const pw = R * p.w * (0.8 + a.detail * 0.4);
+
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(ang + Math.PI * 0.5 + wind * 0.5);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(pw, -plen * 0.45, 0, -plen);
+        ctx.quadraticCurveTo(-pw, -plen * 0.45, 0, 0);
+        const alpha = (themeDark ? 0.22 : 0.28) + state.growth * 0.25 + a.energy * 0.12;
+        const petalL = themeDark ? (52 + state.bloom * 18) : (48 + state.bloom * 14);
+        ctx.fillStyle = hsl(a.hue + i * 7 + state.garden * 30, 48 + state.garden * 15, petalL, alpha);
+        ctx.fill();
+        if (a.detail > 0.7) {
+          ctx.strokeStyle = hsl(a.hue + 20, 40, themeDark ? 70 : 35, 0.15);
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // Center bud / bloom
+      const bud = R * (0.12 + state.bloom * 0.16);
+      const budG = ctx.createRadialGradient(cx, cy, 0, cx, cy, bud);
+      budG.addColorStop(0, hsl(a.hue + 55, 60, themeDark ? 72 : 58, 0.55 + state.bloom * 0.25));
+      budG.addColorStop(0.55, hsl(a.hue + 20, 50, themeDark ? 48 : 52, 0.35));
+      budG.addColorStop(1, hsl(a.hue, 40, themeDark ? 30 : 70, 0));
+      ctx.beginPath();
+      ctx.arc(cx, cy, bud, 0, Math.PI * 2);
+      ctx.fillStyle = budG;
+      ctx.fill();
+
+      // Breeze motes / pollen
+      for (let i = 0; i < motes.length; i++) {
+        const m = motes[i];
+        m.x += m.vx * a.speed * (0.4 + state.breeze);
+        m.y += m.vy * a.speed * (0.35 + state.breeze) + Math.sin(t * a.speed + m.phase) * 0.0015;
+        if (m.x < -0.05) m.x = 1.05;
+        if (m.x > 1.05) m.x = -0.05;
+        if (m.y < -0.05) m.y = 1.05;
+        if (m.y > 1.05) m.y = -0.05;
+        const twinkle = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(t * a.speed * 2.2 + m.phase));
+        const spark = state.garden > 0.45 && (i % 5 === 0);
+        ctx.beginPath();
+        ctx.arc(m.x * cssW, m.y * cssH, m.s * (spark ? 1.4 : 1), 0, Math.PI * 2);
+        ctx.fillStyle = hsl(a.hue + (spark ? 80 : 30), spark ? 70 : 40, themeDark ? (spark ? 78 : 68) : (spark ? 42 : 38), 0.25 + twinkle * 0.35 * a.energy);
+        ctx.fill();
+      }
+
+      // Outline circle removed (v1.2) — keep flower animation + theme-aware bg only.
+
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  </script>
+</body>
+</html>

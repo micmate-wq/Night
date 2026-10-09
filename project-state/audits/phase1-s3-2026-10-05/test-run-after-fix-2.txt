@@ -1,0 +1,198 @@
+# S3 correction 4 — AFTER the fix — 2026-10-05T12:44:32Z — node v22.23.2 — HEAD 8718363 feature/weave-v01 (uncommitted S3) — module md5 3e60243fab50fd6366e7b2a512280846
+
+## node tests/test-weave-import.js
+✔ 1. fixture session imports into a valid document equal to the S1-built oracle; master kept and reported
+✔ 2. identical bytes on two tracks become one asset; first writer's name kept
+✔ 3. importing into a document that already holds the bytes adds nothing
+✔ 4. a saved buffer that differs from the selected item is kept as a rendered-buffer override
+✔ 5. equality: (a) byte-equal buffer → sampleEqualsSelectedItem; (b) same name/different bytes → override; (c) corrupted matching key fails
+✔ 6. node: zip with metadata; zip without metadata; JSON fallback is canonical and path-free; neither → track
+✔ 7. live-input, stream, node and motion tracks carry the expected unsupported codes
+✔ 8. malformed sessions fail clearly without mutation
+✔ 9. a bad payload on a later track leaves no partial table and the document unchanged
+✔ 10. limits: preflight refusals hash nothing; growth refusals after dedupe may hash; exact limits pass
+✔ 11. thread mapping by colour token, explicit ctx.threadIds, and S1 refusals surface
+✔ 12. S1 and S2 are reached through their frozen public exports
+✔ 13. mutations to the session, table, document, ctx and limits while pending do not reach the result
+✔ 14. absent z, generatedReturn and captureBpm survive import exactly
+✔ 15. unreferenced payloads are refused by default, or disclosed as incomplete with allowOmissions
+✔ 16. path-only sources fail; live-input/stream ignore a leftover path; no path ever appears in a result
+✔ 17. verifyExisting catches a corrupted untouched entry; the default does not and says so
+✔ 18. malformed motionPath/eq/customNodeParams/playlist-type and empty payload strings are rejected with field and track
+✔ 19. cyclic nested session data and cyclic existing-table data give structured failures; nothing leaks or throws
+✔ 20. sparse arrays are rejected as encoding errors; every successful encoding parses back to the same array contents
+
+20 passed, 0 failed
+exit: 0
+
+## node tests/test-weave-model.js
+✔ fixture is structurally valid and fits compact v0.1
+✔ fixture IDs follow the grammar
+✔ validator reports (never throws) on malformed, null and wrong-container input
+✔ rejects: wrong type, newer schema, malformed weave ID, unknown field, ending
+✔ rejects: asset key syntax, missing and wrong-kind references, unreferenced assets
+✔ rejects: node manifestId/version not matching its bundle; bad param values
+✔ rejects: order and Scene identity problems
+✔ rejects: edges that are missing, duplicated or not adjacent
+✔ rejects: threads (duplicate ID, colour token) and unknown thread keys
+✔ rejects: duplicate slot, slot range, source-kind mixing, override misuse
+✔ rejects: numeric ranges and non-finite values
+✔ rejects: duration (positive, beats only; reserved modes named as reserved)
+✔ rejects: motion points that go backwards or carry unknown fields; unknown unsupported codes
+✔ S2 boundary: S1 does not verify payload bytes or hashes
+✔ optional legacy z / generatedReturn / captureBpm are accepted and kept exactly
+✔ compact capacity is separate from validity
+✔ newId: grammar, injected generator, bad prefix/generator refused
+✔ createWeave: valid, empty, four colour-token threads, no ending
+✔ commands never mutate their input (deep-frozen input works)
+✔ commands refuse invalid input documents and bad arguments without throwing
+✔ addScene: new ID, inserted in order, default edge for the new pair, old edge kept
+✔ addScene merges caller-supplied assets; conflicting content for one ID is refused
+✔ duplicateScene: new ID after the original, references unchanged, edges by pair
+✔ moveScene: all IDs kept, edges re-derived by pair (adjacent pairs keep their edge ID)
+✔ deleteScene: guards, survivor IDs, edges, pruning of assets only that Scene used
+✔ renameScene / setDuration: bounds, reserved modes refused with a clear reason
+✔ sceneFromAetherState: caller-supplied IDs, verbatim motion, kept derived buffer, unsupported codes
+✔ sceneFromAetherState: missing caller IDs and malformed sessions are errors, not throws
+✔ deriveView matches WeaveEngine.onNodeDragEnd formulas; absent slots are empty
+✔ migration: thread IDs must be valid and distinct (two empty tracks cannot collapse into one)
+✔ migration: saved playlist buffer needs a valid override ID or explicit equality proof
+
+31 passed, 0 failed
+exit: 0
+
+## node tests/test-weave-assets.js
+✔ sha256: known vectors through WebCrypto and Node engines
+✔ sha256: typed-array views hash exactly their offset/length, not the backing buffer
+✔ toBytes: rejects non-binary inputs with a clear error
+✔ base64: canonical encode/decode round-trips and matches Node for lengths 0–40
+✔ base64: rejects every non-canonical form
+✔ verifyAssets: the fixture table passes, every payload hashes to its key
+✔ verifyAssets: wrong hash, wrong length and corrupt base64 are each rejected
+✔ verifyAssets: malformed containers and metadata are reported, never thrown
+✔ verifyAssets: empty payloads are refused (S2 policy)
+✔ measureAssets: counts unique stored bytes and base64 text without decoding
+✔ limits: invalid limit objects are rejected before anything else
+✔ limits: exact boundaries pass and one unit over fails, per limit
+    (preflight rejection of a 4 MB payload took 1.3 ms; digest calls: 0)
+✔ limits: an over-budget table is refused before any payload is decoded or hashed
+✔ addAssetBytes: limits are checked from the byte length before hashing or encoding
+✔ addAssetBytes: new bytes produce a verifiable entry and leave the input untouched
+✔ addAssetBytes: identical bytes deduplicate to the existing entry whatever the name
+✔ addAssetBytes: same name with different bytes stays two assets
+✔ addAssetBytes: incompatible kind or bundle identity for identical bytes is rejected
+✔ addAssetBytes: metadata and container validation
+✔ derived override: a rendered buffer with different bytes is kept as its own asset, never merged
+✔ S1 boundary: S1 accepts a structurally valid table with wrong bytes; S2 is what catches it
+✔ review 1: re-adding identical bytes at each exact limit succeeds and charges nothing
+✔ review 2: a matching key is not trusted — the stored payload must equal the new bytes
+✔ review 3: input bytes and metadata changed while the promise is pending do not reach the stored asset
+✔ review 4: an already-over-budget table is refused even for a duplicate, before any hashing
+✔ review 5: entries added to the live table while the promise is pending cannot bypass the limits
+✔ review 6 (duplicate path): live-table changes while hashing do not reach the returned table
+✔ review 7 (new-entry path): live-table changes while hashing do not reach the returned table
+
+28 passed, 0 failed
+exit: 0
+
+## node tests/test-weave-spatial-recall.js
+=== Running Weave Spatial State Capture & Recall Verification ===
+
+Step 1: Positioning T1-T4 distinctly...
+Step 2 & 3: Capturing Scene A with captureCurrentScene()...
+Inspecting captured Scene A spatialState:
+{
+  "T1": {
+    "x": 0.2,
+    "y": 0.9,
+    "z": 0
+  },
+  "T2": {
+    "x": 0.8,
+    "y": 0.2,
+    "z": 0
+  },
+  "T3": {
+    "x": 0.3,
+    "y": 0.4,
+    "z": 0
+  },
+  "T4": {
+    "x": 0.7,
+    "y": 0.7,
+    "z": 0
+  }
+}
+✔ Scene A captured values verified successfully.
+
+Step 4: Moving all four nodes substantially to center (0.5, 0.5)...
+✔ All nodes moved to (0.5, 0.5).
+
+Step 5: Selecting Scene A via selectScene(indexA) — inspect only, nodes must not move...
+✔ Tap = inspect only: selection changed, nodes unchanged.
+
+Step 6 & 7: Recalling Scene A via ADJUST (adjustScene(indexA))...
+✔ ADJUST recalled Scene A accurately; Web Audio state matches node state.
+
+Step 8: Simulating user dragging nodes again...
+✔ Subsequent node manipulation works seamlessly.
+
+Step 9: Capturing second scene (Scene B)...
+✔ Scene B captured.
+
+Step 10: Alternating Scene A / Scene B (5 cycles): ADJUST recalls, tap inspects...
+✔ Deterministic ADJUST recall and inspect-only selection over 5 cycles.
+
+Step 10b: GO NOW with JUMP lands exactly on the next scene...
+✔ JUMP transition verified.
+
+Step 10c: GO NOW with MORPH glides from live positions to the next scene...
+✔ MORPH transition verified (start, midpoint, end).
+
+Step 11: Testing seed scene selection safety...
+✔ Seed scene selection leaves tracks unchanged.
+
+Step 12: Testing Loom scroll viewport and scroll controls...
+✔ Loom scroll viewport and side navigation controls verified successfully.
+
+=== ALL WEAVE SPATIAL RECALL VERIFICATION TESTS PASSED ===
+exit: 0
+
+## node tests/test-ticktok-v2.js
+=== Running Aether Node V2 Patient Zero Verification Suite ===
+
+✔ Test 0 Passed: Silence upon instantiation (no audio leakage)
+✔ Test A Passed: Two nodes from zero share identical musical phase (1 steps verified)
+✔ Test B Passed: Pause/Resume anchors directly to master musical phase without restart
+✔ Test C Passed: Hot insertion joins running musical phase at Step 27 with sample-accurate alignment
+✔ Test D Passed: 10 repeated Pause/Resume cycles produce zero cumulative phase divergence
+✔ Test E Passed: Lifecycle cleanup completely releases resources and halts sequencers
+✔ Test F Passed: Parameter edits while paused remain completely silent
+✔ Test G Passed: Local swing offsets odd subdivisions without drifting subsequent master grid
+✔ Test H Passed: Argumentless start() and fallback clock resolution activate without silence
+
+=== ALL 9 VERIFICATION TESTS PASSED SUCCESSFULLY ===
+exit: 0
+
+## node tests/test-weave-swipe-gesture.js
+=== Running Weave Row Swipe Gesture Verification ===
+
+✔ Initial state verified: 3 scenes, editingIndex = null.
+✔ Scene 4 captured with distinct positions and stable ID: scene-uid-3.
+Testing ADJUST interaction...
+✔ ADJUST recalled spatial coordinates, set editingIndex, and rendered DONE control.
+Testing exit ADJUST with DONE control...
+✔ Exiting ADJUST with DONE returns scene to normal resting visual state.
+Testing canvas node drag completion and snapshot update...
+✔ Live canvas node movements correctly updated the snapshot in place.
+✔ Subsequent adjust restores the newly updated positions.
+Testing deletion guards...
+[Weave] Cannot delete actively playing scene 01
+✔ Actively playing scene deletion safely guarded and blocked.
+Testing scene deletion and stable surviving IDs...
+✔ Non-playing scene deleted cleanly: visible positions renumbered, surviving scene IDs stably preserved.
+Testing HTML markup generation...
+✔ Loom HTML contains swipe wrappers, dynamic adjust/delete action layers, and playhead overlay.
+
+=== ALL WEAVE ROW SWIPE GESTURE TESTS PASSED ===
+exit: 0

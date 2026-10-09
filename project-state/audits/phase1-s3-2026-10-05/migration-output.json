@@ -1,0 +1,384 @@
+{
+  "note": "Migration output of tests/fixtures/aether-v31-tiny.json into an empty Weave (deterministic uuid/now). Data migration only; not a native load. Payload text omitted for readability; the real document validates under S1.",
+  "valid": true,
+  "compact": true,
+  "sceneId": "sc_00000000-0000-4000-8000-000000000006",
+  "report": {
+    "tracks": [
+      {
+        "index": 0,
+        "threadId": "th_00000000-0000-4000-8000-000000000002",
+        "sourceKind": "playlist",
+        "added": [
+          "sha256:d63057c6b23c9a0498300dc7bd17a081c6092d47733b7c4e339a66f9c07ccaba",
+          "sha256:b522adc47b2becae2e0c6b427028c4d5b9fcc390762a3983eb91a9b10d34f367"
+        ],
+        "deduplicated": [
+          {
+            "id": "sha256:b522adc47b2becae2e0c6b427028c4d5b9fcc390762a3983eb91a9b10d34f367",
+            "existingName": "fixture-a660.wav",
+            "field": "sampleData"
+          }
+        ],
+        "bytesAdded": 152,
+        "unsupported": [
+          "motion-free-time"
+        ],
+        "omitted": []
+      },
+      {
+        "index": 1,
+        "threadId": "th_00000000-0000-4000-8000-000000000003",
+        "sourceKind": "node",
+        "added": [
+          "sha256:7fbf14ebd62962a158b788f56b9f785103dab5c4691aab350164b8e4d4a04b6a"
+        ],
+        "deduplicated": [
+          {
+            "id": "sha256:d63057c6b23c9a0498300dc7bd17a081c6092d47733b7c4e339a66f9c07ccaba",
+            "existingName": "fixture-a440.wav",
+            "field": "sampleData"
+          }
+        ],
+        "bytesAdded": 630,
+        "unsupported": [
+          "node-private-state"
+        ],
+        "omitted": [],
+        "bundleMetadataVerified": false
+      },
+      {
+        "index": 2,
+        "threadId": "th_00000000-0000-4000-8000-000000000004",
+        "sourceKind": "live-input",
+        "added": [],
+        "deduplicated": [],
+        "bytesAdded": 0,
+        "unsupported": [
+          "live-input-not-stored"
+        ],
+        "omitted": []
+      },
+      {
+        "index": 3,
+        "threadId": "th_00000000-0000-4000-8000-000000000005",
+        "sourceKind": "empty",
+        "added": [],
+        "deduplicated": [],
+        "bytesAdded": 0,
+        "unsupported": [],
+        "omitted": []
+      }
+    ],
+    "bytesAdded": 782,
+    "assetsAdded": 3,
+    "assetsDeduplicated": 2,
+    "existingVerified": false,
+    "legacyMaster": {
+      "masterVolume": 0.7,
+      "loudnessDb": -3,
+      "imported": false
+    },
+    "completeness": {
+      "status": "complete",
+      "reasons": []
+    },
+    "sceneId": "sc_00000000-0000-4000-8000-000000000006"
+  },
+  "document": {
+    "type": "aether_weave",
+    "schemaVersion": 1,
+    "id": "wv_00000000-0000-4000-8000-000000000001",
+    "name": "Import target",
+    "createdAt": "2026-10-05T12:00:00.000Z",
+    "modifiedAt": "2026-10-05T12:00:00.000Z",
+    "writer": {
+      "app": "Aether Weave v0.1 Lab",
+      "version": "weave-model/1"
+    },
+    "tempo": {
+      "bpm": 120,
+      "beatsPerBar": 4,
+      "source": "host-fixed"
+    },
+    "master": {
+      "volume": 0.8,
+      "loudnessDb": 0
+    },
+    "assets": {
+      "sha256:d63057c6b23c9a0498300dc7bd17a081c6092d47733b7c4e339a66f9c07ccaba": {
+        "kind": "audio",
+        "name": "fixture-a440.wav",
+        "mime": "audio/wav",
+        "bytes": 76,
+        "origin": "original-file",
+        "storage": {
+          "kind": "inline-base64",
+          "data": "<104 base64 chars omitted>"
+        }
+      },
+      "sha256:b522adc47b2becae2e0c6b427028c4d5b9fcc390762a3983eb91a9b10d34f367": {
+        "kind": "audio",
+        "name": "fixture-a660.wav",
+        "mime": "audio/wav",
+        "bytes": 76,
+        "origin": "original-file",
+        "storage": {
+          "kind": "inline-base64",
+          "data": "<104 base64 chars omitted>"
+        }
+      },
+      "sha256:7fbf14ebd62962a158b788f56b9f785103dab5c4691aab350164b8e4d4a04b6a": {
+        "kind": "node-bundle",
+        "name": "Fixture Pulse",
+        "mime": "application/zip",
+        "bytes": 630,
+        "origin": "aethernode-zip",
+        "manifestId": "com.aether.test.fixture-pulse",
+        "version": "0.0.1",
+        "storage": {
+          "kind": "inline-base64",
+          "data": "<840 base64 chars omitted>"
+        }
+      }
+    },
+    "threads": [
+      {
+        "id": "th_00000000-0000-4000-8000-000000000002",
+        "label": "T1",
+        "color": "track-1"
+      },
+      {
+        "id": "th_00000000-0000-4000-8000-000000000003",
+        "label": "T2",
+        "color": "track-2"
+      },
+      {
+        "id": "th_00000000-0000-4000-8000-000000000004",
+        "label": "T3",
+        "color": "track-3"
+      },
+      {
+        "id": "th_00000000-0000-4000-8000-000000000005",
+        "label": "T4",
+        "color": "track-4"
+      }
+    ],
+    "scenes": {
+      "sc_00000000-0000-4000-8000-000000000006": {
+        "id": "sc_00000000-0000-4000-8000-000000000006",
+        "name": "Fixture import",
+        "duration": {
+          "mode": "beats",
+          "beats": 64
+        },
+        "createdAt": "2026-10-05T12:00:00.000Z",
+        "modifiedAt": "2026-10-05T12:00:00.000Z",
+        "provenance": {
+          "kind": "import-aether",
+          "capturedAt": "2026-10-05T12:00:00.000Z",
+          "fileName": "aether-v31-tiny.json"
+        },
+        "completeness": {
+          "status": "complete",
+          "reasons": []
+        },
+        "threadStates": {
+          "th_00000000-0000-4000-8000-000000000002": {
+            "slot": 0,
+            "source": {
+              "kind": "playlist",
+              "playlist": {
+                "items": [
+                  "sha256:d63057c6b23c9a0498300dc7bd17a081c6092d47733b7c4e339a66f9c07ccaba",
+                  "sha256:b522adc47b2becae2e0c6b427028c4d5b9fcc390762a3983eb91a9b10d34f367"
+                ],
+                "index": 1,
+                "shuffle": false,
+                "repeat": true
+              }
+            },
+            "channel": {
+              "gainDb": 0,
+              "eq": {
+                "low": 0,
+                "mid": 0,
+                "high": 0
+              },
+              "mute": false,
+              "solo": false
+            },
+            "spatial": {
+              "x": 0.21,
+              "y": 0.87,
+              "z": 0
+            },
+            "motion": {
+              "points": [
+                {
+                  "t": 0,
+                  "x": 0.21,
+                  "y": 0.87,
+                  "z": 0
+                },
+                {
+                  "t": 0.5,
+                  "x": 0.4,
+                  "y": 0.7
+                },
+                {
+                  "generatedReturn": true,
+                  "t": 1,
+                  "x": 0.21,
+                  "y": 0.87,
+                  "z": 0
+                }
+              ],
+              "timeBase": "seconds-free",
+              "speed": 1,
+              "playing": true
+            },
+            "unsupported": [
+              "motion-free-time"
+            ]
+          },
+          "th_00000000-0000-4000-8000-000000000003": {
+            "slot": 1,
+            "source": {
+              "kind": "node",
+              "node": {
+                "bundleAssetId": "sha256:7fbf14ebd62962a158b788f56b9f785103dab5c4691aab350164b8e4d4a04b6a",
+                "manifestId": "com.aether.test.fixture-pulse",
+                "version": "0.0.1",
+                "params": {
+                  "level": 0.5,
+                  "steps": 4
+                },
+                "tapeAssetId": "sha256:d63057c6b23c9a0498300dc7bd17a081c6092d47733b7c4e339a66f9c07ccaba"
+              }
+            },
+            "channel": {
+              "gainDb": -3,
+              "eq": {
+                "low": 0,
+                "mid": 2,
+                "high": -1
+              },
+              "mute": false,
+              "solo": false
+            },
+            "spatial": {
+              "x": 0.25,
+              "y": 0.5,
+              "z": 0
+            },
+            "motion": null,
+            "unsupported": [
+              "node-private-state"
+            ]
+          },
+          "th_00000000-0000-4000-8000-000000000004": {
+            "slot": 2,
+            "source": {
+              "kind": "live-input",
+              "external": {}
+            },
+            "channel": {
+              "gainDb": 0,
+              "eq": {
+                "low": 0,
+                "mid": 0,
+                "high": 0
+              },
+              "mute": false,
+              "solo": true
+            },
+            "spatial": {
+              "x": 0.5,
+              "y": 0.5
+            },
+            "motion": null,
+            "unsupported": [
+              "live-input-not-stored"
+            ]
+          },
+          "th_00000000-0000-4000-8000-000000000005": {
+            "slot": 3,
+            "source": {
+              "kind": "empty"
+            },
+            "channel": {
+              "gainDb": 0,
+              "eq": {
+                "low": 0,
+                "mid": 0,
+                "high": 0
+              },
+              "mute": true,
+              "solo": false
+            },
+            "spatial": {
+              "x": 0.75,
+              "y": 0.5,
+              "z": 0
+            },
+            "motion": null,
+            "unsupported": []
+          }
+        }
+      }
+    },
+    "order": [
+      "sc_00000000-0000-4000-8000-000000000006"
+    ],
+    "edges": [],
+    "ending": null
+  },
+  "conflictExample": {
+    "code": "conflict",
+    "error": "Track 2: 1 embedded payload(s) would not be referenced by its node source (playlist \"left-behind.wav\"); refusing rather than discarding them. Pass allowOmissions to import without them.",
+    "omitted": [
+      {
+        "field": "playlist",
+        "name": "left-behind.wav",
+        "projectedBytes": 76
+      }
+    ]
+  },
+  "allowOmissionsExample": {
+    "completeness": {
+      "status": "incomplete",
+      "reasons": [
+        "track 2: playlist \"left-behind.wav\" omitted (node source takes precedence)"
+      ]
+    },
+    "tracks": [
+      {
+        "index": 0,
+        "sourceKind": "playlist",
+        "omitted": []
+      },
+      {
+        "index": 1,
+        "sourceKind": "node",
+        "omitted": [
+          {
+            "field": "playlist",
+            "name": "left-behind.wav",
+            "projectedBytes": 76
+          }
+        ]
+      },
+      {
+        "index": 2,
+        "sourceKind": "live-input",
+        "omitted": []
+      },
+      {
+        "index": 3,
+        "sourceKind": "empty",
+        "omitted": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/refs/heads/dev/crates/tauri-config-schema/schema.json",
+  "productName": "Aether Journey v1.3 Lab",
+  "version": "1.3.0",
+  "identifier": "com.aether.desktop.journey-v1-3",
+  "build": {
+    "beforeBuildCommand": "cd \"$(git rev-parse --show-toplevel)/desktop\" && mkdir -p dist/dsp-wasm dist/fonts && cp index.html *.js *.svg *.css dist/ && cp fonts/*.ttf dist/fonts/ && cp -R dsp-wasm/pkg dist/dsp-wasm/",
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:3472/desktop/index.html",
+    "beforeDevCommand": "R=\"$(git rev-parse --show-toplevel)\" && python3 \"$R/desktop/dev-server.py\" 3472 \"$R\""
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "title": "Aether Journey v1.3 Lab",
+        "width": 1440,
+        "height": 900,
+        "resizable": true,
+        "fullscreen": false,
+        "dragDropEnabled": false,
+        "maximized": false,
+        "maximizable": true,
+        "center": true,
+        "minWidth": 960,
+        "minHeight": 600
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [
+      "../../nodes/**/*",
+      "../../default_library/**/*"
+    ],
+    "macOS": {
+      "infoPlist": "Info.plist"
+    }
+  }
+}

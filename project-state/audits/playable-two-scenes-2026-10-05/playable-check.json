@@ -1,0 +1,1253 @@
+{
+  "checks": [
+    {
+      "name": "demo set shown before any capture, nothing applied",
+      "ok": true
+    },
+    {
+      "name": "State 1 captured",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "sceneId": "sc_0d9f55da-e440-40bf-8e9c-a89ca8efd70f",
+        "captureId": 1,
+        "index": 0,
+        "pruned": []
+      }
+    },
+    {
+      "name": "State 2 captured",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "sceneId": "sc_1beaa434-2a3c-46cc-80c1-0f3f47f14acf",
+        "captureId": 2,
+        "index": 1,
+        "pruned": []
+      }
+    },
+    {
+      "name": "two real Scenes, demo gone",
+      "ok": true
+    },
+    {
+      "name": "Scene lengths snapped to 1 bar",
+      "ok": true
+    },
+    {
+      "name": "Space starts the transport",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 0.14165000000000008,
+        "fade": 0.14165000000000008,
+        "glide": false,
+        "master": 0.107,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.227,
+            "y": 0.773,
+            "z": 0.9,
+            "gain": -9,
+            "buf": "A",
+            "motion": true,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 0,
+            "gain": 0,
+            "buf": "B",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Play puts T1 at State 1 (near 0.2,0.8: its loop is already running), gain -9, loop running, T2 muted with sound B",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 0.14165000000000008,
+        "fade": 0.14165000000000008,
+        "glide": false,
+        "master": 0.107,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.227,
+            "y": 0.773,
+            "z": 0.9,
+            "gain": -9,
+            "buf": "A",
+            "motion": true,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 0,
+            "gain": 0,
+            "buf": "B",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "entrance fade in progress (master below slider)",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 0.14165000000000008,
+        "fade": 0.14165000000000008,
+        "glide": false,
+        "master": 0.107,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.227,
+            "y": 0.773,
+            "z": 0.9,
+            "gain": -9,
+            "buf": "A",
+            "motion": true,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 0,
+            "gain": 0,
+            "buf": "B",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "JUMP reached State 2: T1 at (0.85,0.35,30) gain 0 no loop; T2 unmuted at (0.7,0.7,10)",
+      "ok": true,
+      "detail": {
+        "idx": 1,
+        "bar": 0.2999500000000006,
+        "fade": 0.7000499999999994,
+        "glide": false,
+        "master": 0.57,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.85,
+            "y": 0.35,
+            "z": 30,
+            "gain": 0,
+            "buf": "A",
+            "motion": false,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.7,
+            "y": 0.7,
+            "z": 10,
+            "gain": 0,
+            "buf": "C",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "changed sound switched in for T2 (C) and playing",
+      "ok": true,
+      "detail": {
+        "idx": 1,
+        "bar": 0.2999500000000006,
+        "fade": 0.7000499999999994,
+        "glide": false,
+        "master": 0.57,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.85,
+            "y": 0.35,
+            "z": 30,
+            "gain": 0,
+            "buf": "A",
+            "motion": false,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.7,
+            "y": 0.7,
+            "z": 10,
+            "gain": 0,
+            "buf": "C",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "wrapped back to State 1 with sound B again, loop restarted",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 0.29994999999999966,
+        "fade": 0.29994999999999966,
+        "glide": false,
+        "master": 0.233,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.258,
+            "y": 0.742,
+            "z": 1.9,
+            "gain": -9,
+            "buf": "A",
+            "motion": true,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 0,
+            "gain": 0,
+            "buf": "B",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Stop: transport off, arrangement rewound, nothing moves",
+      "ok": true,
+      "detail": [
+        {
+          "idx": 0,
+          "bar": 0,
+          "fade": 1,
+          "glide": false,
+          "master": 0.8,
+          "playing": false,
+          "t": [
+            {
+              "x": 0.26,
+              "y": 0.74,
+              "z": 2,
+              "gain": -9,
+              "buf": "A",
+              "motion": true,
+              "path": 2,
+              "src": false,
+              "muted": false
+            },
+            {
+              "x": 0.5,
+              "y": 0.3,
+              "z": 0,
+              "gain": 0,
+              "buf": "B",
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": true
+            },
+            {
+              "x": 0.25,
+              "y": 0.5,
+              "z": 0,
+              "gain": 0,
+              "buf": null,
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": false
+            },
+            {
+              "x": 0.75,
+              "y": 0.5,
+              "z": 0,
+              "gain": 0,
+              "buf": null,
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": false
+            }
+          ]
+        },
+        {
+          "idx": 0,
+          "bar": 0,
+          "fade": 1,
+          "glide": false,
+          "master": 0.8,
+          "playing": false,
+          "t": [
+            {
+              "x": 0.26,
+              "y": 0.74,
+              "z": 2,
+              "gain": -9,
+              "buf": "A",
+              "motion": true,
+              "path": 2,
+              "src": false,
+              "muted": false
+            },
+            {
+              "x": 0.5,
+              "y": 0.3,
+              "z": 0,
+              "gain": 0,
+              "buf": "B",
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": true
+            },
+            {
+              "x": 0.25,
+              "y": 0.5,
+              "z": 0,
+              "gain": 0,
+              "buf": null,
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": false
+            },
+            {
+              "x": 0.75,
+              "y": 0.5,
+              "z": 0,
+              "gain": 0,
+              "buf": null,
+              "motion": false,
+              "path": 0,
+              "src": false,
+              "muted": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "repeat without rebuilding: Play from stop recalls State 1 again",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 0.11670000000000028,
+        "fade": 0.11670000000000028,
+        "glide": false,
+        "master": 0.086,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.22,
+            "y": 0.78,
+            "z": 0.7,
+            "gain": -9,
+            "buf": "A",
+            "motion": true,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 0,
+            "gain": 0,
+            "buf": "B",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "MORPH mid-glide: T1 between the states, gain between -9 and 0, loop frozen, T2 already on sound C",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 1.5249500000000005,
+        "fade": 1,
+        "glide": true,
+        "master": 0.8,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.562,
+            "y": 0.543,
+            "z": 16.4,
+            "gain": -4.3,
+            "buf": "A",
+            "motion": false,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.604,
+            "y": 0.508,
+            "z": 5.2,
+            "gain": 0,
+            "buf": "C",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "MORPH arrived at State 2 exactly",
+      "ok": true,
+      "detail": {
+        "idx": 1,
+        "bar": 0.1749,
+        "fade": 1,
+        "glide": false,
+        "master": 0.8,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.85,
+            "y": 0.35,
+            "z": 30,
+            "gain": 0,
+            "buf": "A",
+            "motion": false,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.7,
+            "y": 0.7,
+            "z": 10,
+            "gain": 0,
+            "buf": "C",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "FADE: master level dipped near silence and came back",
+      "ok": true,
+      "detail": {
+        "minFade": 0.01649999999999867,
+        "maxFade": 1
+      }
+    },
+    {
+      "name": "FADE: scenes still alternate and states recalled (positions change with the index)",
+      "ok": true,
+      "detail": [
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          1
+        ],
+        [
+          1,
+          0.85,
+          0.9500999999999986
+        ],
+        [
+          1,
+          0.85,
+          0.9001499999999989
+        ],
+        [
+          1,
+          0.85,
+          0.8500999999999987
+        ],
+        [
+          1,
+          0.85,
+          0.7917999999999994
+        ],
+        [
+          1,
+          0.85,
+          0.7417999999999996
+        ],
+        [
+          1,
+          0.85,
+          0.6834499999999994
+        ],
+        [
+          1,
+          0.85,
+          0.6334499999999996
+        ],
+        [
+          1,
+          0.85,
+          0.5834499999999998
+        ],
+        [
+          1,
+          0.85,
+          0.5251499999999998
+        ],
+        [
+          1,
+          0.85,
+          0.47509999999999986
+        ],
+        [
+          1,
+          0.85,
+          0.41684999999999994
+        ],
+        [
+          1,
+          0.85,
+          0.3585000000000007
+        ],
+        [
+          1,
+          0.85,
+          0.3001500000000006
+        ],
+        [
+          1,
+          0.85,
+          0.25015000000000076
+        ],
+        [
+          1,
+          0.85,
+          0.1918000000000013
+        ],
+        [
+          1,
+          0.85,
+          0.1418500000000007
+        ],
+        [
+          1,
+          0.85,
+          0.09180000000000144
+        ],
+        [
+          1,
+          0.85,
+          0.03345000000000131
+        ],
+        [
+          0,
+          0.203,
+          0.01649999999999867
+        ],
+        [
+          0,
+          0.213,
+          0.07484999999999903
+        ],
+        [
+          0,
+          0.223,
+          0.12484999999999905
+        ],
+        [
+          0,
+          0.235,
+          0.18314999999999926
+        ],
+        [
+          0,
+          0.245,
+          0.2331499999999993
+        ],
+        [
+          0,
+          0.257,
+          0.2914999999999988
+        ],
+        [
+          0,
+          0.267,
+          0.34149999999999886
+        ],
+        [
+          0,
+          0.277,
+          0.3914999999999989
+        ],
+        [
+          0,
+          0.287,
+          0.44144999999999873
+        ],
+        [
+          0,
+          0.298,
+          0.4998499999999993
+        ],
+        [
+          0,
+          0.308,
+          0.5498499999999984
+        ],
+        [
+          0,
+          0.32,
+          0.6081499999999997
+        ],
+        [
+          0,
+          0.33,
+          0.65815
+        ],
+        [
+          0,
+          0.34,
+          0.7081500000000001
+        ]
+      ]
+    },
+    {
+      "name": "FADE: master gain tracks slider x fade (30 ms ramp lag)",
+      "ok": true,
+      "detail": [
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          1,
+          0.8
+        ],
+        [
+          0.9500999999999986,
+          0.77
+        ],
+        [
+          0.9001499999999989,
+          0.726
+        ],
+        [
+          0.8500999999999987,
+          0.685
+        ],
+        [
+          0.7917999999999994,
+          0.642
+        ],
+        [
+          0.7417999999999996,
+          0.599
+        ],
+        [
+          0.6834499999999994,
+          0.554
+        ],
+        [
+          0.6334499999999996,
+          0.514
+        ],
+        [
+          0.5834499999999998,
+          0.474
+        ],
+        [
+          0.5251499999999998,
+          0.43
+        ],
+        [
+          0.47509999999999986,
+          0.385
+        ],
+        [
+          0.41684999999999994,
+          0.341
+        ],
+        [
+          0.3585000000000007,
+          0.296
+        ],
+        [
+          0.3001500000000006,
+          0.25
+        ],
+        [
+          0.25015000000000076,
+          0.205
+        ],
+        [
+          0.1918000000000013,
+          0.162
+        ],
+        [
+          0.1418500000000007,
+          0.121
+        ],
+        [
+          0.09180000000000144,
+          0.081
+        ],
+        [
+          0.03345000000000131,
+          0.035
+        ],
+        [
+          0.01649999999999867,
+          0.004
+        ],
+        [
+          0.07484999999999903,
+          0.055
+        ],
+        [
+          0.12484999999999905,
+          0.096
+        ],
+        [
+          0.18314999999999926,
+          0.138
+        ],
+        [
+          0.2331499999999993,
+          0.179
+        ],
+        [
+          0.2914999999999988,
+          0.222
+        ],
+        [
+          0.34149999999999886,
+          0.266
+        ],
+        [
+          0.3914999999999989,
+          0.306
+        ],
+        [
+          0.44144999999999873,
+          0.347
+        ],
+        [
+          0.4998499999999993,
+          0.39
+        ],
+        [
+          0.5498499999999984,
+          0.435
+        ],
+        [
+          0.6081499999999997,
+          0.479
+        ],
+        [
+          0.65815,
+          0.52
+        ],
+        [
+          0.7081500000000001,
+          0.562
+        ]
+      ]
+    },
+    {
+      "name": "Space pauses with a focused button",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 0.7747999999999999,
+        "fade": 0.7747999999999999,
+        "glide": false,
+        "master": 0.62,
+        "playing": false,
+        "t": [
+          {
+            "x": 0.204,
+            "y": 0.796,
+            "z": 0.1,
+            "gain": -9,
+            "buf": "A",
+            "motion": true,
+            "path": 2,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 0,
+            "gain": 0,
+            "buf": "B",
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Space resumes",
+      "ok": true,
+      "detail": {
+        "idx": 0,
+        "bar": 0.8498000000000003,
+        "fade": 0.8498000000000003,
+        "glide": false,
+        "master": 0.676,
+        "playing": true,
+        "t": [
+          {
+            "x": 0.218,
+            "y": 0.782,
+            "z": 0.6,
+            "gain": -9,
+            "buf": "A",
+            "motion": true,
+            "path": 2,
+            "src": true,
+            "muted": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 0,
+            "gain": 0,
+            "buf": "B",
+            "motion": false,
+            "path": 0,
+            "src": true,
+            "muted": true
+          },
+          {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          },
+          {
+            "x": 0.75,
+            "y": 0.5,
+            "z": 0,
+            "gain": 0,
+            "buf": null,
+            "motion": false,
+            "path": 0,
+            "src": false,
+            "muted": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "errs": [
+    "console: WebSocket connection to 'ws://localhost:8765/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "console: Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+    "console: WebSocket connection to 'ws://localhost:8765/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+    "console: WebSocket connection to 'ws://localhost:8765/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED"
+  ]
+}

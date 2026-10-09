@@ -1,0 +1,25 @@
+CAUGHT  compose onto the document captured at press instead of the latest one — test-weave-session: 15 passed, 3 failed — failing: 5. deletion during hashing is preserved, 6. an ADJUST drag-end made during hashing survives the capture commit, 7. a failed earlier capture does not block a later successful one; press order kept
+CAUGHT  skip the pre-commit recheck — test-weave-session: 16 passed, 2 failed — failing: 4. source change after encoding (before commit) fails the capture, 8. stale epoch
+CAUGHT  recheck ignores the buffer reference — test-weave-session: 17 passed, 1 failed — failing: 4. source change after encoding (before commit) fails the capture
+CAUGHT  recheck ignores the session epoch — test-weave-session: 17 passed, 1 failed — failing: 8. stale epoch
+CAUGHT  bind slots even when the recheck failed — test-weave-session: 17 passed, 1 failed — failing: 4. source change after encoding (before commit) fails the capture
+CAUGHT  origin proof from the live origin instead of the press copy — test-weave-session: 17 passed, 1 failed — failing: 3. origin proof uses press values only
+CAUGHT  drag-end does not require binding.sceneId to equal the edited Scene — test-weave-session: 16 passed, 2 failed — failing: 13. ADJUST (provisional D5), 15. live-input and stream replacement
+CAUGHT  glide gate evaluated only at glide start (not per frame) — test-weave-session: 15 passed, 3 failed — failing: 10. per-frame glide gating, 12. delayed Preview, 15. live-input and stream replacement
+CAUGHT  delayed Preview ignores its token — test-weave-session: 17 passed, 1 failed — failing: 12. delayed Preview
+CAUGHT  releasing one suspension token releases all — test-weave-session: 17 passed, 1 failed — failing: 14. suspension and detach
+CAUGHT  demo Scenes become adjustable — test-weave-session: 17 passed, 1 failed — failing: 11. demo-only
+CAUGHT  a failed capture blocks later captures — test-weave-session: crash — failing: 4. source change after encoding (before commit) fails the capture
+CAUGHT  capture provenance labelled as an import — test-weave-session: 17 passed, 1 failed — failing: 2. capture happy path
+CAUGHT  detach even when nothing was replaced — test-weave-session: 17 passed, 1 failed — failing: 14. suspension and detach
+CAUGHT  bump the revision inside cleanupSources — test-weave-host: 8 passed, 4 failed — failing: H2. clearSource (real) bumps once and clears the origin; cleanupSources itself does not bump, H3. connectLiveInput (real) replaces the source, H6. loadDemoStems (real) marks every track replaced with a synthetic origin, H9. real _applySessionCore
+CAUGHT  connectLiveInput no longer marks the replacement — test-weave-host: 11 passed, 1 failed — failing: H3. connectLiveInput (real) replaces the source
+CAUGHT  loadStreamUrl no longer marks the replacement — test-weave-host: 11 passed, 1 failed — failing: H4. loadStreamUrl (real) replaces the source
+CAUGHT  decoded-item origin records the wrong file — test-weave-host: 11 passed, 1 failed — failing: H5. _loadAudioFile (real) sets a decoded-item origin bound to this revision, buffer and file; a cancelled load sets nothing
+CAUGHT  _applySession wrapper reports replaced:true even when the core threw — test-weave-host: 10 passed, 2 failed — failing: H8. _applySession wrapper, H9. real _applySessionCore
+CAUGHT  rebuildAudioGraph wrapper does not release on error — test-weave-host: crash
+CAUGHT  rebuilt buffers keep a decoded-item origin — test-weave-host: 11 passed, 1 failed — failing: H10. rebuildAudioGraph wrapper + real core
+CAUGHT  restored session buffers claim no origin — test-weave-host: 11 passed, 1 failed — failing: H9. real _applySessionCore
+CAUGHT  synthetic demo stems not marked replaced — test-weave-host: 11 passed, 1 failed — failing: H6. loadDemoStems (real) marks every track replaced with a synthetic origin
+
+23 sabotage cases run, 23 caught, 0 missed

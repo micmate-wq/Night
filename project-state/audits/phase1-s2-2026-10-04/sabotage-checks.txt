@@ -1,0 +1,35 @@
+# S2 sabotage checks — 4 October 2026 (Claude), Linux VM on Matt's Mac, node v22.23.2
+# Each line: one deliberate break applied to a scratch copy of desktop/weave-assets.js
+# (outside the repo), then `node tests/test-weave-assets.js`. Baseline: 21 passed, 0 failed.
+
+no canonical trailing-bit check            -> 20 passed, 1 failed
+hash whole backing buffer (ignore offset)  -> 19 passed, 2 failed
+decode before limit/preflight gate         -> 20 passed, 1 failed
+no kind conflict check on dedupe           -> 20 passed, 1 failed
+empty bytes accepted                       -> 20 passed, 1 failed
+no hash/key comparison                     -> 19 passed, 2 failed
+no declared-length check                   -> 19 passed, 2 failed
+mutating input table in addAssetBytes      -> 18 passed, 3 failed
+
+The repository copy was not modified by these checks.
+
+# After Codex review corrections (same method). Baseline: 24 passed, 0 failed.
+
+trust key, skip stored-byte comparison     -> 23 passed, 1 failed
+no byte snapshot across await              -> 23 passed, 1 failed
+no metadata snapshot across await          -> 23 passed, 1 failed
+charge duplicates against aggregate limits -> 23 passed, 1 failed
+skip growth check after hash for new bytes -> 23 passed, 1 failed
+
+# After Codex's second review (aggregate-limit gap), same method. Baseline: 26 passed, 0 failed.
+
+no over-budget-table refusal (bytes)       -> 25 passed, 1 failed
+no over-budget-table refusal (count)       -> 25 passed, 1 failed
+output copied from live table after await  -> 25 passed, 1 failed
+dedupe result read from live entry         -> 25 passed, 1 failed
+
+# After Codex's third review (no live references in results), same method. Baseline: 28 passed, 0 failed.
+
+no entry snapshot (live entry objects)     -> 25 passed, 3 failed
+storage object not copied                  -> 25 passed, 3 failed
+dedupe returns live caller table           -> 25 passed, 3 failed

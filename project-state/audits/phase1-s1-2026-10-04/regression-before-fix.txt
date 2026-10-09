@@ -1,0 +1,60 @@
+# Regression tests BEFORE the fix — 2026-10-04T21:56:43Z
+# desktop/weave-model.js unchanged from the S1 review copy (sha256 2cc413c6255141b175b3a2040fbd4e807c63d421fa83d5cc0cceb21eb5b2cf40); tests/test-weave-model.js has the two new regression tests
+$ node tests/test-weave-model.js
+✔ fixture is structurally valid and fits compact v0.1
+✔ fixture IDs follow the grammar
+✔ validator reports (never throws) on malformed, null and wrong-container input
+✔ rejects: wrong type, newer schema, malformed weave ID, unknown field, ending
+✔ rejects: asset key syntax, missing and wrong-kind references, unreferenced assets
+✔ rejects: node manifestId/version not matching its bundle; bad param values
+✔ rejects: order and Scene identity problems
+✔ rejects: edges that are missing, duplicated or not adjacent
+✔ rejects: threads (duplicate ID, colour token) and unknown thread keys
+✔ rejects: duplicate slot, slot range, source-kind mixing, override misuse
+✔ rejects: numeric ranges and non-finite values
+✔ rejects: duration (positive, beats only; reserved modes named as reserved)
+✔ rejects: motion points that go backwards or carry unknown fields; unknown unsupported codes
+✔ S2 boundary: S1 does not verify payload bytes or hashes
+✔ optional legacy z / generatedReturn / captureBpm are accepted and kept exactly
+✔ compact capacity is separate from validity
+✔ newId: grammar, injected generator, bad prefix/generator refused
+✔ createWeave: valid, empty, four colour-token threads, no ending
+✔ commands never mutate their input (deep-frozen input works)
+✔ commands refuse invalid input documents and bad arguments without throwing
+✔ addScene: new ID, inserted in order, default edge for the new pair, old edge kept
+✔ addScene merges caller-supplied assets; conflicting content for one ID is refused
+✔ duplicateScene: new ID after the original, references unchanged, edges by pair
+✔ moveScene: all IDs kept, edges re-derived by pair (adjacent pairs keep their edge ID)
+✔ deleteScene: guards, survivor IDs, edges, pruning of assets only that Scene used
+✔ renameScene / setDuration: bounds, reserved modes refused with a clear reason
+✔ sceneFromAetherState: caller-supplied IDs, verbatim motion, kept derived buffer, unsupported codes
+✔ sceneFromAetherState: missing caller IDs and malformed sessions are errors, not throws
+✔ deriveView matches WeaveEngine.onNodeDragEnd formulas; absent slots are empty
+    - duplicate ID for tracks 1 and 2: expected ok=false, got {"ok":true,"states":1}
+    - duplicate ID for tracks 1 and 4: expected ok=false, got {"ok":true,"states":3}
+    - malformed: th_123: expected ok=false, got {"ok":true,"states":1}
+    - malformed: uppercase: expected ok=false, got {"ok":true,"states":1}
+    - malformed: scene prefix: expected ok=false, got {"ok":true,"states":1}
+    - malformed: empty string: expected ok=false, got {"ok":true,"states":1}
+✘ migration: thread IDs must be valid and distinct (two empty tracks cannot collapse into one)
+    AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+    + actual - expected
+
+    - override null: expected ok=false, got {"ok":true,"states":1}
+    - override false: expected ok=false, got {"ok":true,"states":1}
+    - override 0: expected ok=false, got {"ok":true,"states":1}
+    - override number: expected ok=false, got {"ok":true,"states":1}
+    - override empty string: expected ok=false, got {"ok":true,"states":1}
+    - override short hash: expected ok=false, got {"ok":true,"states":1}
+    - override uppercase hash: expected ok=false, got {"ok":true,"states":1}
+    - override object: expected ok=false, got {"ok":true,"states":1}
+    - override null + equality true (malformed override still rejected): expected ok=false, got {"ok":true,"states":1}
+    - valid override + equality true (contradictory): expected ok=false, got {"ok":true,"states":1}
+    - override supplied but track has no saved buffer: expected ok=false, got {"ok":true,"states":1}
+✘ migration: saved playlist buffer needs a valid override ID or explicit equality proof
+    AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+    + actual - expected
+
+
+29 passed, 2 failed
+[exit 1]

@@ -1,0 +1,37 @@
+# Test run after fix — 2026-10-05 18:09:43 — node v22.23.2 — Mac, S4 working tree + Claude drag-visibility/selection fix
+== node tests/test-weave-session.js
+✔ 24. held card stays visible and no panel text selection (Matt native report): reordering row lifts its overflow clip above neighbours; panel refuses selectstart except in editable fields
+
+24 passed, 0 failed
+== node tests/test-weave-host.js
+✔ H12. script order: S1, S2, S3 are loaded before weave.js; no other markup changed
+
+13 passed, 0 failed
+== node tests/test-weave-spatial-recall.js
+✔ Loom scroll viewport and side navigation controls verified successfully.
+
+=== ALL WEAVE SPATIAL RECALL VERIFICATION TESTS PASSED ===
+== node tests/test-weave-swipe-gesture.js
+✔ Loom HTML contains swipe wrappers, dynamic adjust/delete action layers, and playhead overlay.
+
+=== ALL WEAVE ROW SWIPE GESTURE TESTS PASSED ===
+== node tests/test-weave-model.js
+✔ migration: saved playlist buffer needs a valid override ID or explicit equality proof
+
+31 passed, 0 failed
+== node tests/test-weave-assets.js
+✔ review 7 (new-entry path): live-table changes while hashing do not reach the returned table
+
+28 passed, 0 failed
+== node tests/test-weave-import.js
+✔ 20. sparse arrays are rejected as encoding errors; every successful encoding parses back to the same array contents
+
+20 passed, 0 failed
+tests/test-ticktok-v2.js
+tests/test-weave-assets.js
+tests/test-weave-host.js
+tests/test-weave-import.js
+tests/test-weave-model.js
+tests/test-weave-session.js
+tests/test-weave-spatial-recall.js
+tests/test-weave-swipe-gesture.js

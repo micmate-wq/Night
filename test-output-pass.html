@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Aether Shader Controls - Test Output Pass</title>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
+    }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #090c10;
+      --panel: rgba(18, 24, 34, 0.88);
+      --border: #263345;
+      --accent: #00ffc8;
+      --text: #e2e8f0;
+      --muted: #8394a7;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+    #control-panel {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 310px;
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 100;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .panel-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .control-val {
+      color: var(--text);
+      font-family: monospace;
+    }
+    select, input[type="range"], input[type="color"] {
+      width: 100%;
+      outline: none;
+    }
+    select {
+      background: #111722;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      height: 4px;
+      background: #1e2837;
+      border-radius: 2px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 6px var(--accent);
+    }
+    .color-picker-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: none;
+      width: 36px;
+      height: 28px;
+      border-radius: 6px;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type="color"]::-webkit-color-swatch {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    #status-badge {
+      position: absolute;
+      bottom: 18px;
+      left: 18px;
+      padding: 8px 14px;
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--accent);
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="control-panel">
+    <div class="panel-header">
+      <span class="panel-title">Shader Controls</span>
+      <span id="fps-counter" style="font-size: 10px; color: var(--muted); font-family: monospace;">60 FPS</span>
+    </div>
+
+    <!-- 1. Shape -->
+    <div class="control-row">
+      <div class="control-label">
+        <span>Shape</span>
+      </div>
+      <select id="ctrl-shape">
+        <option value="0">Circle / Orb</option>
+        <option value="1">Star / Polygon</option>
+        <option value="2">Ring / Torus</option>
+        <option value="3" selected>Mandala / Flower</option>
+        <option value="4">Crystal / Box</option>
+      </select>
+    </div>
+
+    <!-- 2. Outline -->
+    <div class="control-row">
+      <div class="control-label">
+        <span>Outline</span>
+        <span class="control-val" id="val-outline">0.50</span>
+      </div>
+      <input type="range" id="ctrl-outline" min="0" max="1" step="0.01" value="0.50">
+    </div>
+
+    <!-- 3. Inner Colour -->
+    <div class="control-row">
+      <div class="control-label">
+        <span>Inner Colour</span>
+        <span class="control-val" id="val-innerColor">#00ffc8</span>
+      </div>
+      <div class="color-picker-wrap">
+        <input type="color" id="ctrl-innerColor" value="#00ffc8">
+      </div>
+    </div>
+
+    <!-- 4. Glow -->
+    <div class="control-row">
+      <div class="control-label">
+        <span>Glow</span>
+        <span class="control-val" id="val-glow">1.40</span>
+      </div>
+      <input type="range" id="ctrl-glow" min="0" max="3" step="0.05" value="1.40">
+    </div>
+
+    <!-- 5. Complexity -->
+    <div class="control-row">
+      <div class="control-label">
+        <span>Complexity</span>
+        <span class="control-val" id="val-complexity">4.0</span>
+      </div>
+      <input type="range" id="ctrl-complexity" min="1" max="8" step="0.1" value="4.0">
+    </div>
+
+    <!-- 6. Symmetry -->
+    <div class="control-row">
+      <div class="control-label">
+        <span>Symmetry</span>
+        <span class="control-val" id="val-symmetry">6</span>
+      </div>
+      <input type="range" id="ctrl-symmetry" min="1" max="12" step="1" value="6">
+    </div>
+
+    <!-- 7. Warp -->
+    <div class="control-row">
+      <div class="control-label">
+        <span>Warp</span>
+        <span class="control-val" id="val-warp">0.35</span>
+      </div>
+      <input type="range" id="ctrl-warp" min="0" max="1" step="0.01" value="0.35">
+    </div>
+  </div>
+
+  <div id="status-badge">⚡ output-pass.glsl Active</div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+    // 1. Fetch GLSL Fragment Shader
+    const shaderRes = await fetch('./output-pass.glsl?t=' + Date.now());
+    const fragmentShaderCode = await shaderRes.text();
+
+    // 2. Three.js Scene & Renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    document.body.appendChild(renderer.domElement);
+
+    // Helper: Hex color to THREE.Color
+    function hexToRgb(hex) {
+      const c = new THREE.Color(hex);
+      return new THREE.Vector3(c.r, c.g, c.b);
+    }
+
+    // 3. Procedural Shader Material with Uniforms
+    const uniforms = {
+      uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      uTime: { value: 0 },
+      uShape: { value: parseInt(document.getElementById('ctrl-shape').value, 10) },
+      uOutline: { value: parseFloat(document.getElementById('ctrl-outline').value) },
+      uInnerColor: { value: hexToRgb(document.getElementById('ctrl-innerColor').value) },
+      uGlow: { value: parseFloat(document.getElementById('ctrl-glow').value) },
+      uComplexity: { value: parseFloat(document.getElementById('ctrl-complexity').value) },
+      uSymmetry: { value: parseFloat(document.getElementById('ctrl-symmetry').value) },
+      uWarp: { value: parseFloat(document.getElementById('ctrl-warp').value) }
+    };
+
+    const vertexShader = `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position, 1.0);
+      }
+    `;
+
+    const material = new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader,
+      fragmentShader: fragmentShaderCode,
+      depthTest: false,
+      depthWrite: false
+    });
+
+    const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+    scene.add(quad);
+
+    // 4. Post-Processing Pipeline (Bloom + Output Tone Mapping)
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      1.3,  // strength
+      0.35, // radius
+      0.15  // threshold
+    );
+    composer.addPass(bloomPass);
+
+    const outputPass = new OutputPass();
+    composer.addPass(outputPass);
+
+    // 5. Connect UI Controls
+    function bindControl(id, valId, uniformKey, parser, formatter) {
+      const el = document.getElementById(id);
+      const valEl = document.getElementById(valId);
+      el.addEventListener('input', (e) => {
+        const val = parser(e.target.value);
+        uniforms[uniformKey].value = val;
+        if (valEl) valEl.textContent = formatter ? formatter(e.target.value) : e.target.value;
+      });
+    }
+
+    bindControl('ctrl-shape', null, 'uShape', (v) => parseInt(v, 10));
+    bindControl('ctrl-outline', 'val-outline', 'uOutline', parseFloat, (v) => Number(v).toFixed(2));
+    bindControl('ctrl-innerColor', 'val-innerColor', 'uInnerColor', hexToRgb);
+    bindControl('ctrl-glow', 'val-glow', 'uGlow', parseFloat, (v) => Number(v).toFixed(2));
+    bindControl('ctrl-complexity', 'val-complexity', 'uComplexity', parseFloat, (v) => Number(v).toFixed(1));
+    bindControl('ctrl-symmetry', 'val-symmetry', 'uSymmetry', parseFloat, (v) => String(parseInt(v, 10)));
+    bindControl('ctrl-warp', 'val-warp', 'uWarp', parseFloat, (v) => Number(v).toFixed(2));
+
+    // Dynamic glow also scales bloom strength
+    document.getElementById('ctrl-glow').addEventListener('input', (e) => {
+      bloomPass.strength = Math.max(0.2, parseFloat(e.target.value) * 0.9);
+    });
+
+    // 6. Animation Loop
+    let lastTime = performance.now();
+    let frameCount = 0;
+    const fpsEl = document.getElementById('fps-counter');
+
+    function animate(time) {
+      requestAnimationFrame(animate);
+      uniforms.uTime.value = time * 0.001;
+      composer.render();
+
+      frameCount++;
+      if (time - lastTime >= 1000) {
+        fpsEl.textContent = `${frameCount} FPS`;
+        frameCount = 0;
+        lastTime = time;
+      }
+    }
+    requestAnimationFrame(animate);
+
+    // 7. Resize Handling
+    window.addEventListener('resize', () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      renderer.setSize(w, h);
+      composer.setSize(w, h);
+      uniforms.uResolution.value.set(w, h);
+      bloomPass.resolution.set(w, h);
+    });
+
+    console.log('Shader and all 7 controls loaded successfully.');
+  </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+{
+  "id": "com.aether.node.bloom",
+  "name": "Bloom",
+  "version": "1.2.5",
+  "author": "Aether",
+  "description": "Gift for Lera \u2014 cheerful growthy ambient generator. Soft harmonic pad + gentle grains that evolve like a garden in breeze. Self-voicing; leave it running.",
+  "category": "Texture / Generator",
+  "inputs": 0,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "growth",
+      "name": "Growth",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.55,
+      "unit": "norm"
+    },
+    {
+      "id": "breeze",
+      "name": "Breeze",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.45,
+      "unit": "norm"
+    },
+    {
+      "id": "bloom",
+      "name": "Bloom",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.62,
+      "unit": "norm"
+    },
+    {
+      "id": "garden",
+      "name": "Garden",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.28,
+      "unit": "norm"
+    },
+    {
+      "id": "pitch",
+      "name": "Pitch",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.5,
+      "unit": "norm"
+    },
+    {
+      "id": "drift",
+      "name": "Drift",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.5,
+      "unit": "norm"
+    },
+    {
+      "id": "dusk",
+      "name": "Dusk / Dawn",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.42,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": {
+    "type": "art",
+    "settings": {
+      "family": "bloom",
+      "energy": 0.71,
+      "spread": 0.87,
+      "detail": 0.88,
+      "speed": 1.26,
+      "hue": -71,
+      "fade": 0.75
+    }
+  },
+  "art": {
+    "type": "art",
+    "settings": {
+      "family": "bloom",
+      "energy": 0.71,
+      "spread": 0.87,
+      "detail": 0.88,
+      "speed": 1.26,
+      "hue": -71,
+      "fade": 0.75
+    }
+  }
+}

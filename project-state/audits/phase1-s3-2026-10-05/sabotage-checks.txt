@@ -1,0 +1,18 @@
+CAUGHT  skip dedupe accounting (count duplicates as added) — 13 passed, 4 failed — failing: 1. fixture session imports into a valid document equal to the S1-built oracle; master kept and reported, 2. identical bytes on two tracks become one asset; first writer's name kept, 3. importing into a document that already holds the bytes adds nothing, 10. limits
+CAUGHT  equality from a name match instead of S2's byte comparison — 16 passed, 1 failed — failing: 5. equality
+CAUGHT  drop all-or-nothing on failure (partial table returned) — 12 passed, 5 failed — failing: 5. equality, 8. malformed sessions fail clearly without mutation, 9. a bad payload on a later track leaves no partial table and the document unchanged, 10. limits, 13. mutations to the session, table, document, ctx and limits while pending do not reach the result
+CAUGHT  lose unsupported codes — 15 passed, 2 failed — failing: 1. fixture session imports into a valid document equal to the S1-built oracle; master kept and reported, 7. live-input, stream, node and motion tracks carry the expected unsupported codes
+CAUGHT  keep file_path in the JSON fallback — 16 passed, 1 failed — failing: 6. node
+CAUGHT  store an omitted payload — 16 passed, 1 failed — failing: 15. unreferenced payloads are refused by default, or disclosed as incomplete with allowOmissions
+CAUGHT  apply the legacy master to the document — 16 passed, 1 failed — failing: 1. fixture session imports into a valid document equal to the S1-built oracle; master kept and reported
+CAUGHT  read the live session after the await — 16 passed, 1 failed — failing: 13. mutations to the session, table, document, ctx and limits while pending do not reach the result
+CAUGHT  snapshot the asset table by reference, not by copy — 16 passed, 1 failed — failing: 13. mutations to the session, table, document, ctx and limits while pending do not reach the result
+CAUGHT  use the caller's document instead of the clone — 16 passed, 1 failed — failing: 13. mutations to the session, table, document, ctx and limits while pending do not reach the result
+CAUGHT  drop the certain-growth preflight — 16 passed, 1 failed — failing: 10. limits
+CAUGHT  let a path-only source become an empty track — 16 passed, 1 failed — failing: 16. path-only sources fail; live-input/stream ignore a leftover path; no path ever appears in a result
+CAUGHT  accept a zip without manifest metadata by inventing it — 16 passed, 1 failed — failing: 6. node
+CAUGHT  report existing assets as verified without verifying — 14 passed, 3 failed — failing: 1. fixture session imports into a valid document equal to the S1-built oracle; master kept and reported, 3. importing into a document that already holds the bytes adds nothing, 17. verifyExisting catches a corrupted untouched entry; the default does not and says so
+CAUGHT  stage every limit failure as preflight — 16 passed, 1 failed — failing: 10. limits
+CAUGHT  treat live-input leftover filePath as path-only — 16 passed, 1 failed — failing: 16. path-only sources fail; live-input/stream ignore a leftover path; no path ever appears in a result
+
+16 sabotage cases, 16 caught, 0 missed

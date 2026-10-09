@@ -1,0 +1,10 @@
+✘ 10. arrangement playback takes the nodes over (5 Oct, Matt): a slot playing another sound is switched to t
+✘ 14. suspension and detach: writes blocked while suspended; successful/partial loads detach; failed preflig
+✘ 15. live-input and stream replacement: GO NEXT to a Scene with samples prepares and switches those slots (
+✘ 24. held card stays visible and no panel text selection (Matt native report): reordering row lifts its ove
+✘ 28. INSERT IN WEAVE + prepare-then-launch: an inserted Scene with a different instrument is PREPARED while
+✘ 30. GO NEXT / double-click are quantized launches on the host bar grid: nothing changes until the next bar
+✘ 31. (Codex r6 P1) Stop/Pause own the outgoing crossfade source: after a crossfade starts, Stop ends the ol
+✘ 32. (Codex r6 P1) a pending decode or preparation never overwrites the instrument after WEAVE OFF, a cance
+✘ 33. (Codex r6 P2) a captured empty slot recalls silence: the previous sound is stopped and unloaded (fadin
+24 passed, 9 failed

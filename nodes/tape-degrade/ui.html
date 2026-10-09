@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tape Degrade</title>
+  <style>
+    :root {
+      --bg: var(--bg-main, #FFFFFF);
+      --card: var(--bg-card, #F4F4F4);
+      --canvas-bg: var(--bg-canvas, var(--bg-main, #FFFFFF));
+      --accent: var(--track-color, #fd9b76);
+      --text: var(--text-main, #000000);
+      --muted: var(--text-muted, #666666);
+      --border: var(--border-light, #CCCCCC);
+      --font-h: var(--font-heading, 'Space Grotesk', sans-serif);
+      --font-m: var(--font-mono, 'JetBrains Mono', monospace);
+    }
+    body.theme-dark {
+      --bg: var(--bg-main, #0A0A0A);
+      --card: var(--bg-card, #141414);
+      --canvas-bg: var(--bg-canvas, #000000);
+      --text: var(--text-main, #FFFFFF);
+      --muted: var(--text-muted, #888888);
+      --border: var(--border-light, #333333);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-h);
+      font-size: 11px;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .title {
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    .badge {
+      font-family: var(--font-m);
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: rgba(253, 155, 118, 0.15);
+      color: #fd9b76;
+      border: 1px solid rgba(253, 155, 118, 0.3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .viewport-wrap {
+      margin: 10px 14px 0;
+      height: 140px;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      background: var(--canvas-bg);
+      border-radius: 4px;
+    }
+    #three-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: transparent;
+    }
+    .grid {
+      padding: 12px 14px 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 16px;
+      flex: 1;
+      overflow-y: auto;
+      background: var(--bg);
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .val {
+      font-family: var(--font-m);
+      color: var(--text);
+    }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #fd9b76;
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(253, 155, 118, 0.6);
+      border: 1px solid var(--text);
+    }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.165.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <header>
+    <div class="title-group">
+      <div class="title">Tape Degrade</div>
+      <div class="badge">Insert Lo-Fi</div>
+    </div>
+    <div class="badge" id="status-badge">TAPE WARMTH</div>
+  </header>
+
+  <div class="viewport-wrap">
+    <canvas id="three-canvas"></canvas>
+  </div>
+
+  <div class="grid">
+    <label>
+      <div class="row"><span>Wobble</span><span class="val" id="v-wobble">0.35</span></div>
+      <input id="wobble" type="range" min="0" max="1" step="0.01" value="0.35">
+    </label>
+    <label>
+      <div class="row"><span>Damage</span><span class="val" id="v-damage">0.25</span></div>
+      <input id="damage" type="range" min="0" max="1" step="0.01" value="0.25">
+    </label>
+    <label>
+      <div class="row"><span>Noise</span><span class="val" id="v-noise">0.15</span></div>
+      <input id="noise" type="range" min="0" max="1" step="0.01" value="0.15">
+    </label>
+    <label>
+      <div class="row"><span>Compression</span><span class="val" id="v-compression">0.30</span></div>
+      <input id="compression" type="range" min="0" max="1" step="0.01" value="0.30">
+    </label>
+    <label>
+      <div class="row"><span>Wear</span><span class="val" id="v-wear">0.30</span></div>
+      <input id="wear" type="range" min="0" max="1" step="0.01" value="0.30">
+    </label>
+    <label>
+      <div class="row"><span>Mix</span><span class="val" id="v-mix">1.00</span></div>
+      <input id="mix" type="range" min="0" max="1" step="0.01" value="1.00">
+    </label>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+
+    const state = {
+      wobble: 0.35,
+      damage: 0.25,
+      noise: 0.15,
+      compression: 0.30,
+      wear: 0.30,
+      mix: 1.00
+    };
+
+    const statusBadge = document.getElementById('status-badge');
+    const canvas = document.getElementById('three-canvas');
+    const container = canvas.parentElement;
+
+    function notify(id, value) {
+      window.parent.postMessage({ type: 'aether:param-change', paramId: id, value: value }, '*');
+    }
+
+    function fmt(n) { return Number(n).toFixed(2); }
+
+    function paintLabels() {
+      document.getElementById('v-wobble').textContent = fmt(state.wobble);
+      document.getElementById('v-damage').textContent = fmt(state.damage);
+      document.getElementById('v-noise').textContent = fmt(state.noise);
+      document.getElementById('v-compression').textContent = fmt(state.compression);
+      document.getElementById('v-wear').textContent = fmt(state.wear);
+      document.getElementById('v-mix').textContent = fmt(state.mix);
+
+      if (state.damage > 0.7 || state.wear > 0.7) {
+        statusBadge.textContent = 'HEAVY CRINKLE';
+      } else if (state.wobble > 0.6) {
+        statusBadge.textContent = 'WOW & FLUTTER';
+      } else if (state.compression > 0.7) {
+        statusBadge.textContent = 'MAGNETIC SAT';
+      } else {
+        statusBadge.textContent = 'TAPE WARMTH';
+      }
+    }
+
+    function bind(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', () => {
+        const val = parseFloat(el.value);
+        state[id] = val;
+        paintLabels();
+        notify(id, val);
+      });
+    }
+
+    ['wobble', 'damage', 'noise', 'compression', 'wear', 'mix'].forEach(bind);
+    paintLabels();
+
+    // ----------------------------------------------------
+    // Three.js Scene Setup & User Animation Implementation
+    // ----------------------------------------------------
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 3.2, 7.8);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      alpha: true,
+      antialias: true
+    });
+    renderer.setClearColor(0x000000, 0);
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+
+    // --- Behavior B: The Pulse-Wave ---
+    const pulseSegments = 360;
+    const pulseRibbonGeo = new THREE.BufferGeometry();
+    const pulsePositions = new Float32Array(pulseSegments * 2 * 3);
+    const pulseIndices = [];
+    for (let i = 0; i < pulseSegments; i++) {
+      const next = (i + 1) % pulseSegments;
+      pulseIndices.push(i * 2, i * 2 + 1, next * 2, i * 2 + 1, next * 2 + 1, next * 2);
+    }
+    pulseRibbonGeo.setIndex(pulseIndices);
+    pulseRibbonGeo.setAttribute('position', new THREE.BufferAttribute(pulsePositions, 3));
+
+    const isThemeDark = document.body.classList.contains('theme-dark');
+    const pulseMat = new THREE.MeshBasicMaterial({
+      color: 0xfd9b76,
+      wireframe: false,
+      transparent: true,
+      opacity: 0.88,
+      side: THREE.DoubleSide,
+      blending: isThemeDark ? THREE.AdditiveBlending : THREE.NormalBlending,
+      depthTest: true,
+      depthWrite: false
+    });
+
+    const pulseMesh = new THREE.Mesh(pulseRibbonGeo, pulseMat);
+    // Apply specified tilt: -30°
+    pulseMesh.rotation.x = -Math.PI / 6;
+    scene.add(pulseMesh);
+
+    // 3 Tape reel spokes
+    const spokeGeo = new THREE.BufferGeometry();
+    const spokePositions = new Float32Array(3 * 2 * 3);
+    spokeGeo.setAttribute('position', new THREE.BufferAttribute(spokePositions, 3));
+    const spokeMat = new THREE.LineBasicMaterial({
+      color: 0xfd9b76,
+      transparent: true,
+      opacity: 0.45,
+      blending: isThemeDark ? THREE.AdditiveBlending : THREE.NormalBlending
+    });
+    const spokeLines = new THREE.LineSegments(spokeGeo, spokeMat);
+    spokeLines.rotation.x = -Math.PI / 6;
+    scene.add(spokeLines);
+
+    function updatePulseWave(time, delta, activity = 0.50, timbre = 0.50, isSynth = true) {
+      const positions = pulseRibbonGeo.attributes.position.array;
+      const cycleFreq = 0.45 + activity * 0.55;
+      const expansion = Math.sin(time * cycleFreq) * (0.15 + 0.55 * activity);
+      const baseR = 3.6 * 0.92 + expansion;
+      const halfThick = 0.05 + timbre * 0.20;
+
+      for (let i = 0; i < pulseSegments; i++) {
+        const theta = (i / pulseSegments) * Math.PI * 2;
+        // Smooth loose tape billowing and chewing — low-order gentle harmonics, zero sharp spikes
+        const looseWave = Math.sin(theta * 2.0 - time * 0.8) * (0.08 + 0.18 * timbre);
+        const chewSag = Math.sin(theta * 3.0 + time * 0.6) * Math.cos(theta * 1.0 - time * 0.3) * (0.18 * (0.35 + state.wobble * 1.5));
+        const tapeFold = Math.cos(theta * 4.0 - time * 0.5) * (state.damage * 0.22 + state.wear * 0.14);
+        const rInner = baseR - halfThick + looseWave + chewSag + tapeFold;
+        const rOuter = baseR + halfThick + looseWave + chewSag + tapeFold;
+
+        positions[i * 6] = Math.cos(theta) * rInner;
+        positions[i * 6 + 1] = Math.sin(theta * 2.0) * (0.04 * activity);
+        positions[i * 6 + 2] = Math.sin(theta) * rInner;
+
+        positions[i * 6 + 3] = Math.cos(theta) * rOuter;
+        positions[i * 6 + 4] = Math.sin(theta * 2.0) * (0.04 * activity);
+        positions[i * 6 + 5] = Math.sin(theta) * rOuter;
+      }
+      pulseRibbonGeo.attributes.position.needsUpdate = true;
+    }
+
+    function handleResize() {
+      const w = container.clientWidth || 300;
+      const h = container.clientHeight || 140;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h, false);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    let clockTime = 0;
+    let lastStamp = performance.now();
+
+    function animate(stamp) {
+      requestAnimationFrame(animate);
+      const delta = Math.min(0.1, (stamp - lastStamp) / 1000);
+      lastStamp = stamp;
+
+      // Slower timebase for relaxed analog tape float
+      const speed = 0.16 * (0.5 + state.wobble * 0.8);
+      clockTime += delta * speed;
+
+      const currentDark = document.body.classList.contains('theme-dark');
+      const targetBlending = currentDark ? THREE.AdditiveBlending : THREE.NormalBlending;
+      if (pulseMat.blending !== targetBlending) {
+        pulseMat.blending = targetBlending;
+        pulseMat.needsUpdate = true;
+        spokeMat.blending = targetBlending;
+        spokeMat.needsUpdate = true;
+      }
+
+      // Map tape degradation parameters to pulse wave behavior:
+      const activity = 0.15 + state.compression * 0.55 + state.damage * 0.30;
+      const timbre = 0.15 + state.wear * 0.55 + state.noise * 0.30;
+
+      updatePulseWave(clockTime, delta, activity, timbre, true);
+
+      // Update 3 rotating reel spokes at cassette tape speed (~45 RPM / 0.75 rev/s)
+      const spokeArr = spokeGeo.attributes.position.array;
+      const realSec = stamp * 0.001;
+      const reelAngle = realSec * (4.6 + state.wobble * 0.9) + Math.sin(realSec * 3.0) * (state.wobble * 0.12);
+      for (let s = 0; s < 3; s++) {
+        const spokeA = reelAngle + (s * Math.PI * 2 / 3);
+        const cosA = Math.cos(spokeA);
+        const sinA = Math.sin(spokeA);
+        const inR = 2.4;
+        const outR = 3.6 * 0.92;
+        spokeArr[s * 6] = cosA * inR;
+        spokeArr[s * 6 + 1] = 0;
+        spokeArr[s * 6 + 2] = sinA * inR;
+        spokeArr[s * 6 + 3] = cosA * outR;
+        spokeArr[s * 6 + 4] = 0;
+        spokeArr[s * 6 + 5] = sinA * outR;
+      }
+      spokeGeo.attributes.position.needsUpdate = true;
+
+      // Orbital precession: 0.9x
+      pulseMesh.rotation.z += delta * 0.15 * (0.9);
+      spokeLines.rotation.z = pulseMesh.rotation.z;
+
+      renderer.render(scene, camera);
+    }
+    requestAnimationFrame(animate);
+
+    // Host inbound parameter synchronization
+    window.addEventListener('message', (event) => {
+      if (!event.data || event.data.type !== 'aether:param-update') return;
+      const { paramId, value } = event.data;
+      if (state[paramId] === undefined) return;
+      state[paramId] = parseFloat(value);
+      const el = document.getElementById(paramId);
+      if (el) el.value = value;
+      paintLabels();
+    });
+  </script>
+</body>
+</html>

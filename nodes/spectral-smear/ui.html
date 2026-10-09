@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spectral Smear</title>
+  <style id="aether-theme-sync">
+    :root {
+      --aether-panel: #181818;
+      --aether-accent: var(--track-color, #a855f7);
+      --aether-border: rgba(255, 255, 255, 0.12);
+      --aether-text: #f0f0f0;
+      --aether-text-dim: #888888;
+      --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
+      --font-heading: 'Space Grotesk', sans-serif;
+    }
+  </style>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background: var(--aether-panel, #181818);
+      color: var(--aether-text, #f0f0f0);
+      font-family: var(--font-heading, sans-serif);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--aether-border, rgba(255, 255, 255, 0.12));
+      background: rgba(0, 0, 0, 0.25);
+      flex-shrink: 0;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--aether-accent, #a855f7);
+    }
+
+    .badge-insert {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 2px;
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid var(--aether-accent, rgba(168, 85, 247, 0.4));
+      color: var(--aether-accent, #a855f7);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      padding: 2px 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--aether-border, rgba(255, 255, 255, 0.12));
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--aether-text-dim, #888);
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--aether-accent, #a855f7);
+      box-shadow: 0 0 6px var(--aether-accent, #a855f7);
+    }
+
+    .canvas-container {
+      flex: 1;
+      position: relative;
+      background: #0d0d0f;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .canvas-hint {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      color: var(--aether-text-dim, #888);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .controls-panel {
+      padding: 12px 16px;
+      border-top: 1px solid var(--aether-border, rgba(255, 255, 255, 0.12));
+      background: rgba(0, 0, 0, 0.25);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .control-label {
+      color: var(--aether-text-dim, #888);
+    }
+
+    .control-val {
+      color: var(--aether-accent, #a855f7);
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--aether-accent, #a855f7);
+      cursor: pointer;
+      box-shadow: 0 0 8px var(--aether-accent, #a855f7);
+      transition: transform 0.1s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--aether-accent, #a855f7);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 8px var(--aether-accent, #a855f7);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-row">
+      <span class="title">Spectral Smear</span>
+      <span class="badge-insert">INSERT EFFECT</span>
+    </div>
+    <div class="status-badge">
+      <span class="status-dot"></span>
+      <span>PROCESSING</span>
+    </div>
+  </header>
+
+  <div class="canvas-container" id="container">
+    <div class="canvas-hint">Fluid Spectral Heat-Map / Magnitude Wash</div>
+    <canvas id="heatmap"></canvas>
+  </div>
+
+  <div class="controls-panel">
+    <div class="control-group">
+      <div class="control-header">
+        <span class="control-label">Dry / Wet</span>
+        <span class="control-val" id="val-drywet">50%</span>
+      </div>
+      <input type="range" id="param-drywet" min="0.00" max="1.00" step="0.01" value="0.50">
+    </div>
+
+    <div class="control-group">
+      <div class="control-header">
+        <span class="control-label">Smear Amount</span>
+        <span class="control-val" id="val-smear">60%</span>
+      </div>
+      <input type="range" id="param-smear" min="0.10" max="1.00" step="0.01" value="0.60">
+    </div>
+  </div>
+
+  <script>
+    const params = {
+      dry_wet: 0.50,
+      smear_length: 0.60
+    };
+
+    const canvas = document.getElementById('heatmap');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('container');
+
+    let width = 0;
+    let height = 0;
+
+    function resize() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      if (w > 20 && h > 20) {
+        width = w;
+        height = h;
+        canvas.width = width * (window.devicePixelRatio || 1);
+        canvas.height = height * (window.devicePixelRatio || 1);
+        ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+      }
+    }
+    window.addEventListener('resize', resize);
+
+    function getAccentColor() {
+      const style = getComputedStyle(document.documentElement);
+      return style.getPropertyValue('--aether-accent').trim() || 
+             style.getPropertyValue('--track-color').trim() || '#a855f7';
+    }
+
+    // Fluid Heat-Map Blobs
+    const NUM_BLOBS = 6;
+    const blobs = [];
+    for (let i = 0; i < NUM_BLOBS; i++) {
+      blobs.push({
+        x: Math.random(),
+        y: Math.random(),
+        vx: (Math.random() - 0.5) * 0.003,
+        vy: (Math.random() - 0.5) * 0.003,
+        radius: 0.25 + Math.random() * 0.35,
+        hueOffset: (i / NUM_BLOBS) * 140
+      });
+    }
+
+    function emitParam(paramId, value) {
+      params[paramId] = value;
+      window.parent.postMessage({ type: 'PARAMETER_CHANGE', id: paramId, value: value }, '*');
+      window.parent.postMessage({ type: 'aether:param-change', paramId: paramId, value: value }, '*');
+    }
+
+    // Heat-Map Visualizer Render Loop
+    function render(time) {
+      if (width < 30 || height < 30) {
+        resize();
+        requestAnimationFrame(render);
+        return;
+      }
+
+      const smear = params.smear_length;
+      const wet = params.dry_wet;
+
+      // Slow fading trail to create the spectral bleed effect
+      ctx.fillStyle = 'rgba(13, 13, 15, 0.08)';
+      ctx.fillRect(0, 0, width, height);
+
+      // Composite mode for organic fluid color blending
+      ctx.globalCompositeOperation = 'screen';
+
+      const tSec = time * 0.001;
+
+      blobs.forEach((b, idx) => {
+        b.x += b.vx * (1.0 + smear * 1.5);
+        b.y += b.vy * (1.0 + smear * 1.5);
+
+        if (b.x < 0.1) { b.x = 0.1; b.vx = Math.abs(b.vx); }
+        if (b.x > 0.9) { b.x = 0.9; b.vx = -Math.abs(b.vx); }
+        if (b.y < 0.1) { b.y = 0.1; b.vy = Math.abs(b.vy); }
+        if (b.y > 0.9) { b.y = 0.9; b.vy = -Math.abs(b.vy); }
+
+        const px = b.x * width + Math.sin(tSec * 0.8 + idx * 1.5) * 20;
+        const py = b.y * height + Math.cos(tSec * 0.7 + idx * 1.2) * 20;
+        const rad = b.radius * Math.min(width, height) * (0.8 + smear * 0.6);
+
+        // Dynamic spectral heat-map gradient
+        const grad = ctx.createRadialGradient(px, py, 2, px, py, rad);
+        const baseHue = (260 + b.hueOffset + Math.sin(tSec * 0.2) * 40) % 360;
+        
+        grad.addColorStop(0, `hsla(${baseHue}, 90%, 65%, ${0.35 * wet + 0.15})`);
+        grad.addColorStop(0.4, `hsla(${(baseHue + 40) % 360}, 85%, 50%, ${0.22 * wet + 0.08})`);
+        grad.addColorStop(0.8, `hsla(${(baseHue + 80) % 360}, 80%, 35%, ${0.08 * wet + 0.02})`);
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(px, py, rad, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.globalCompositeOperation = 'source-over';
+
+      // Subtle FFT frequency bins grid lines
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.lineWidth = 1;
+      const numLines = 8;
+      for (let l = 1; l < numLines; l++) {
+        const lx = (l / numLines) * width;
+        ctx.beginPath();
+        ctx.moveTo(lx, 0);
+        ctx.lineTo(lx, height);
+        ctx.stroke();
+      }
+
+      requestAnimationFrame(render);
+    }
+
+    setTimeout(() => {
+      resize();
+      requestAnimationFrame(render);
+    }, 40);
+
+    // Controls
+    const drywetSlider = document.getElementById('param-drywet');
+    const drywetVal = document.getElementById('val-drywet');
+    const smearSlider = document.getElementById('param-smear');
+    const smearVal = document.getElementById('val-smear');
+
+    drywetSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      drywetVal.textContent = `${Math.round(val * 100)}%`;
+      emitParam('dry_wet', val);
+    });
+
+    smearSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      smearVal.textContent = `${Math.round(val * 100)}%`;
+      emitParam('smear_length', val);
+    });
+
+    // Inbound host synchronization
+    window.addEventListener('message', (event) => {
+      if (!event.data) return;
+      const { type, paramId, id, value } = event.data;
+      const targetId = paramId || id;
+
+      if ((type === 'aether:param-update' || type === 'PARAMETER_UPDATE') && targetId) {
+        const num = parseFloat(value);
+        if (targetId === 'dry_wet' && !isNaN(num)) {
+          params.dry_wet = num;
+          drywetSlider.value = num;
+          drywetVal.textContent = `${Math.round(num * 100)}%`;
+        } else if (targetId === 'smear_length' && !isNaN(num)) {
+          params.smear_length = num;
+          smearSlider.value = num;
+          smearVal.textContent = `${Math.round(num * 100)}%`;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

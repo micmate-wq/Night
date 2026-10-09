@@ -1,0 +1,11 @@
+node_modules/
+src-tauri/target/
+desktop/src-tauri/target/
+desktop/dsp-wasm/target/
+target/
+.DS_Store
+Aether 4.0 UI/
+desktop/dist/
+
+
+/Aether Journey v1.2 Lab.app/

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Granular Cloud · viz</title>
+<!-- AetherNode viz (host inspector). The host draws the window, header and
+     controls from manifest.json; this page only animates the viz band.
+     In:  aether:param-update {paramId, value}, aether:voice-trigger
+     Out: aether:motion {x, y} in -1..1, which the host borrows for the slider thumbs. -->
+<style>
+  :root { --track-color: #FC4037; }
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+  canvas { display: block; width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<canvas id="viz"></canvas>
+<script>
+  const canvas = document.getElementById('viz');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0;
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', resize); resize();
+  const COLOR = () => getComputedStyle(document.documentElement).getPropertyValue('--track-color').trim() || '#FC4037';
+  const INK = '#141414';
+  let lastMotion = 0;
+  function sendMotion(x, y, now) {
+    if (now - lastMotion < 33) return;
+    lastMotion = now;
+    try { window.parent.postMessage({ type: 'aether:motion', x: Math.max(-1, Math.min(1, x)), y: Math.max(-1, Math.min(1, y)) }, '*'); } catch (_) {}
+  }
+  // Granular Cloud: grains drift across the band. Density sets the spawn rate,
+  // grain size the dot size and life, spray the spread, reverse chance the
+  // share drifting backwards, freeze holds the cloud still.
+  const state = { density: 18, grainSize: 0.22, spray: 0.45, pitchShift: 0, harmony: 0,
+                  reverseChance: 0, texture: 0, feedback: 0.55, freeze: 0, mix: 1 };
+  let grains = [], acc = 0, prev = performance.now(), centre = 0.5, driftX = 0, driftY = 0;
+  function frame(now) {
+    const dt = Math.min(0.05, (now - prev) / 1000); prev = now;
+    const frozen = state.freeze >= 0.5;
+    if (!frozen) {
+      acc += dt * Math.min(60, state.density);
+      centre += (Math.random() - 0.5) * dt * 0.6;
+      centre = Math.max(0.15, Math.min(0.85, centre));
+      while (acc >= 1) {
+        acc -= 1;
+        const rev = Math.random() * 100 < state.reverseChance;
+        const pluck = state.texture >= 0.5;
+        const life = pluck ? 0.25 + state.grainSize * 0.8 : 0.6 + state.grainSize * 3;
+        const vx = (rev ? -1 : 1) * (8 + Math.random() * 14);
+        const vy = -(2 + state.pitchShift * 0.25) - Math.random() * 4;
+        grains.push({ x: (centre + (Math.random() - 0.5) * (0.1 + state.spray * 0.9)) * W,
+                      y: H * (0.25 + Math.random() * 0.5), vx, vy, age: 0, life,
+                      r: (pluck ? 1.2 : 1.6) + state.grainSize * 5 });
+        driftX += vx * 0.02; driftY += vy * 0.04;
+      }
+    }
+    driftX *= 0.9; driftY *= 0.9;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = COLOR();
+    grains = grains.filter(g => {
+      if (!frozen) { g.age += dt; g.x += g.vx * dt; g.y += g.vy * dt; }
+      const k = 1 - g.age / g.life;
+      if (k <= 0) return false;
+      ctx.beginPath(); ctx.arc(g.x, g.y, Math.max(0.6, g.r * (0.5 + 0.5 * k)), 0, Math.PI * 2); ctx.fill();
+      return true;
+    });
+    sendMotion(driftX * 0.5 + Math.sin(now / 900) * 0.3, driftY * 0.5 + Math.cos(now / 1300) * 0.3, now);
+    requestAnimationFrame(frame);
+  }
+  window.onTrigger = null;
+  window.addEventListener('message', (event) => {
+    const d = event.data;
+    if (!d || typeof d !== 'object') return;
+    if (d.type === 'aether:param-update' || d.type === 'PARAMETER_CHANGE') {
+      const id = d.paramId || d.id;
+      if (id in state) state[id] = Number(d.value);
+    } else if (d.type === 'aether:voice-trigger' && typeof onTrigger === 'function') {
+      onTrigger(d);
+    }
+  });
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

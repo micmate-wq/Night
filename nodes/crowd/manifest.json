@@ -1,0 +1,71 @@
+{
+  "id": "com.aether.node.crowd",
+  "name": "Crowd",
+  "version": "1.2.0",
+  "author": "Aether",
+  "description": "Voice-field generator. Crowd gathers a shuffled atlas catalog (palette + careful extras), drips 1\u20132 new samples every 8\u201315s into a capped pool, and spawns at random. Density up to 30 overlapping. Chatter remaps spawn fade-in (0≈2s soft → 1≈snappy) while keeping interval/win; focus/wander/granular/distance unchanged.",
+  "category": "Texture / Generator",
+  "inputs": 0,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "density",
+      "name": "Density",
+      "type": "float",
+      "min": 5,
+      "max": 30,
+      "default": 8,
+      "unit": "voices"
+    },
+    {
+      "id": "focus",
+      "name": "Focus",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.35,
+      "unit": "norm"
+    },
+    {
+      "id": "distance",
+      "name": "Distance",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.55,
+      "unit": "norm"
+    },
+    {
+      "id": "granular",
+      "name": "Granular",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.15,
+      "unit": "norm"
+    },
+    {
+      "id": "chatter",
+      "name": "Chatter",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.4,
+      "unit": "norm"
+    },
+    {
+      "id": "wander",
+      "name": "Wander",
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 0.3,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": "glow_random"
+}

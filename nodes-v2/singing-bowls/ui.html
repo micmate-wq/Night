@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Singing Bowls · viz</title>
+<!-- AetherNode viz (host inspector). The host draws the window, header and
+     controls from manifest.json; this page only animates the viz band.
+     In:  aether:param-update {paramId, value}, aether:voice-trigger
+     Out: aether:motion {x, y} in -1..1, which the host borrows for the slider thumbs. -->
+<style>
+  :root { --track-color: #FC4037; }
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+  canvas { display: block; width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<canvas id="viz"></canvas>
+<script>
+  const canvas = document.getElementById('viz');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0;
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', resize); resize();
+  const COLOR = () => getComputedStyle(document.documentElement).getPropertyValue('--track-color').trim() || '#FC4037';
+  const INK = '#141414';
+  let lastMotion = 0;
+  function sendMotion(x, y, now) {
+    if (now - lastMotion < 33) return;
+    lastMotion = now;
+    try { window.parent.postMessage({ type: 'aether:motion', x: Math.max(-1, Math.min(1, x)), y: Math.max(-1, Math.min(1, y)) }, '*'); } catch (_) {}
+  }
+  // Singing Bowls: five bowls; each strike sends out a ring. Activity sets how
+  // often they ring, resonance how long, beating mix how much the ring wavers,
+  // each bowl's tone how bright (thick) its ring is, root pitch the bowl size.
+  const state = { rootPitch: 120, activity: 0.5, resonance: 0.7, beatingMix: 0.6,
+                  tone_1: 0.8, tone_2: 0.8, tone_3: 0.8, tone_4: 0.8, tone_5: 0.8 };
+  let rings = [], prev = performance.now(), nextStrike = 0, lastHost = -1e9, bobX = 0, bobY = 0;
+  function strike(k, now) {
+    rings.push({ k, t0: now });
+    bobX += (k - 2) * 0.25; bobY -= 0.6;
+  }
+  function onTrigger(d) {
+    const now = performance.now();
+    if (typeof d.voiceIndex === 'number') { lastHost = now; strike(d.voiceIndex % 5, now); }
+  }
+  function frame(now) {
+    prev = now;
+    // Self-strike only when the host isn't sending real triggers.
+    if (now - lastHost > 4000 && now > nextStrike) {
+      strike(Math.floor(Math.random() * 5), now);
+      nextStrike = now + (600 + (1 - state.activity) * 3400) * (0.5 + Math.random());
+    }
+    bobX *= 0.96; bobY *= 0.96;
+    ctx.clearRect(0, 0, W, H);
+    const col = COLOR();
+    const size = Math.min(H * 0.32, W / 14) * (1.25 - (state.rootPitch - 60) / 240 * 0.5);
+    const xs = [0, 1, 2, 3, 4].map(i => W * (0.14 + i * 0.18));
+    const life = 1200 + state.resonance * 4800;
+    rings = rings.filter(r => now - r.t0 < life);
+    ctx.lineWidth = 1;
+    xs.forEach((x, i) => {
+      ctx.strokeStyle = '#c8c8c4';
+      ctx.beginPath(); ctx.arc(x, H / 2, size, 0, Math.PI * 2); ctx.stroke();
+    });
+    ctx.strokeStyle = col;
+    rings.forEach(r => {
+      const age = (now - r.t0) / life;
+      const tone = state['tone_' + (r.k + 1)];
+      const waver = Math.sin(now / 90 + r.k) * state.beatingMix * 2;
+      ctx.lineWidth = Math.max(0.5, (1 + tone * 3) * (1 - age));
+      ctx.beginPath(); ctx.arc(xs[r.k], H / 2, size + age * H * 0.45 + waver, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = col;
+      if (age < 0.15) { ctx.beginPath(); ctx.arc(xs[r.k], H / 2, size * 0.35, 0, Math.PI * 2); ctx.fill(); }
+    });
+    sendMotion(bobX + Math.sin(now / 1500) * 0.2, bobY + Math.sin(now / 700) * state.beatingMix * 0.3, now);
+    requestAnimationFrame(frame);
+  }
+  window.addEventListener('message', (event) => {
+    const d = event.data;
+    if (!d || typeof d !== 'object') return;
+    if (d.type === 'aether:param-update' || d.type === 'PARAMETER_CHANGE') {
+      const id = d.paramId || d.id;
+      if (id in state) state[id] = Number(d.value);
+    } else if (d.type === 'aether:voice-trigger' && typeof onTrigger === 'function') {
+      onTrigger(d);
+    }
+  });
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

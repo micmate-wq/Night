@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Sticky Pad</title>
+<style>
+  :root { --bg: #111; --ink: #FFE637; --fg: #0A0A0A; --muted: #888; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: #eee; font-family: "Space Grotesk", "Inter", system-ui, sans-serif; }
+  body { padding: 12px 14px 16px; }
+  h1 { margin: 0 0 4px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); }
+  .sub { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+  .face-preview {
+    width: 100%; aspect-ratio: 1; max-width: 220px; margin: 0 auto 16px;
+    border-radius: 50%; background: #FFE637; color: #0A0A0A;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45); position: relative; overflow: hidden;
+  }
+  .face-preview::before {
+    content: ""; position: absolute; inset: 12%; border: 1px solid rgba(0,0,0,.35);
+    border-radius: 2px; pointer-events: none;
+  }
+  .fp-h { font-size: 9px; letter-spacing: 0.18em; font-weight: 700; }
+  .fp-t { font-size: 42px; font-weight: 700; line-height: 0.9; margin: 6px 0 2px; }
+  .fp-n { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; }
+  .fp-m { font-size: 11px; font-weight: 600; margin-top: 2px; }
+  .fp-f { font-size: 9px; letter-spacing: 0.2em; margin-top: 8px; font-weight: 700; }
+  label { display: flex; justify-content: space-between; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #bbb; margin: 10px 0 4px; }
+  input[type=range] { width: 100%; accent-color: #FFE637; }
+  .note { margin-top: 14px; font-size: 11px; line-height: 1.45; color: var(--muted); }
+</style>
+</head>
+<body>
+  <h1>Sticky Pad</h1>
+  <div class="sub">Canvas face canary — open this for levels only. Telemetry lives on the orb.</div>
+  <div class="face-preview" aria-hidden="true">
+    <div class="fp-h">AETHERNODE</div>
+    <div class="fp-t" id="prev-t">T·</div>
+    <div class="fp-n">PAD</div>
+    <div class="fp-m">—</div>
+    <div class="fp-f">MIX</div>
+  </div>
+  <label>Level <span id="level-v">0.08</span></label>
+  <input id="level" type="range" min="0" max="1" step="0.01" value="0.08" />
+  <label>Tone <span id="tone-v">0.45</span></label>
+  <input id="tone" type="range" min="0" max="1" step="0.01" value="0.45" />
+  <p class="note">Drop on a track. The yellow sticky fills the whole circular node and shows live T# / name / timer-or-BPM from the host. No fake numbers.</p>
+<script>
+function send(id, value) {
+  try {
+    parent.postMessage({ type: 'aether:param-change', paramId: id, value: Number(value) }, '*');
+  } catch (e) {}
+}
+['level','tone'].forEach(function(id) {
+  var el = document.getElementById(id);
+  var lab = document.getElementById(id + '-v');
+  el.addEventListener('input', function() {
+    lab.textContent = Number(el.value).toFixed(2);
+    send(id, el.value);
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+{
+  "version": "3.1",
+  "type": "aether_project",
+  "name": "Fixture import",
+  "timestamp": "2026-10-05T12:00:00.000Z",
+  "masterVolume": 0.7,
+  "loudnessDb": -3,
+  "tracks": [
+    {
+      "index": 0,
+      "name": "T1",
+      "sampleName": "fixture-a660.wav",
+      "filePath": "",
+      "sampleData": "UklGRkQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSAAAAAAADkXWCjeLhMpfRh4ARHqbdgu0TzWROYP/Z8UxCa7Lg==",
+      "playlist": [
+        {
+          "name": "fixture-a440.wav",
+          "type": "audio/wav",
+          "data": "UklGRkQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSAAAAAAAOAP4R1YKAsuTC4TKf8eQRF4AYTxRuNt2EHSf9E81g=="
+        },
+        {
+          "name": "fixture-a660.wav",
+          "type": "audio/wav",
+          "data": "UklGRkQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSAAAAAAADkXWCjeLhMpfRh4ARHqbdgu0TzWROYP/Z8UxCa7Lg=="
+        }
+      ],
+      "playlistIndex": 1,
+      "isShuffle": false,
+      "isRepeat": true,
+      "isCustomNode": false,
+      "customNodeBundle": null,
+      "customNodeParams": null,
+      "customNodeZipBase64": null,
+      "isLiveIn": false,
+      "x": 0.21,
+      "y": 0.87,
+      "z": 0,
+      "isMuted": false,
+      "isSoloed": false,
+      "motionSpeed": 1,
+      "motionPath": [
+        {
+          "t": 0,
+          "x": 0.21,
+          "y": 0.87,
+          "z": 0
+        },
+        {
+          "t": 0.5,
+          "x": 0.4,
+          "y": 0.7
+        },
+        {
+          "generatedReturn": true,
+          "t": 1,
+          "x": 0.21,
+          "y": 0.87,
+          "z": 0
+        }
+      ],
+      "eq": {
+        "low": 0,
+        "mid": 0,
+        "high": 0
+      },
+      "stripGainDb": 0,
+      "isStream": false,
+      "streamUrl": ""
+    },
+    {
+      "index": 1,
+      "name": "T2",
+      "sampleName": "Fixture Pulse",
+      "filePath": "",
+      "sampleData": "UklGRkQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSAAAAAAAOAP4R1YKAsuTC4TKf8eQRF4AYTxRuNt2EHSf9E81g==",
+      "playlist": [],
+      "playlistIndex": 0,
+      "isShuffle": false,
+      "isRepeat": true,
+      "isCustomNode": true,
+      "customNodeBundle": {
+        "file_name": "fixture-pulse.aethernode",
+        "manifest_raw": "{\"id\":\"com.aether.test.fixture-pulse\",\"version\":\"0.0.1\",\"name\":\"Fixture Pulse\"}",
+        "manifest": {
+          "id": "com.aether.test.fixture-pulse",
+          "version": "0.0.1",
+          "name": "Fixture Pulse"
+        },
+        "dsp_js": "// fixture dsp\n"
+      },
+      "customNodeParams": {
+        "level": 0.5,
+        "steps": 4
+      },
+      "customNodeZipBase64": "UEsDBBQAAAAAAAAAIQAg0bn+KQEAACkBAAANAAAAbWFuaWZlc3QuanNvbnsiaWQiOiJjb20uYWV0aGVyLnRlc3QuZml4dHVyZS1wdWxzZSIsIm5hbWUiOiJGaXh0dXJlIFB1bHNlIiwidmVyc2lvbiI6IjAuMC4xIiwicm9sZSI6Imluc3RydW1lbnQiLCJpbnB1dHMiOjAsIm91dHB1dHMiOjIsImVudHJ5Ijp7ImRzcCI6ImRzcC5qcyJ9LCJpbnNwZWN0b3IiOiJob3N0IiwicGFyYW1ldGVycyI6W3siaWQiOiJsZXZlbCIsInR5cGUiOiJmbG9hdCIsIm1pbiI6MCwibWF4IjoxLCJkZWZhdWx0IjowLjV9LHsiaWQiOiJzdGVwcyIsInR5cGUiOiJpbnQiLCJtaW4iOjEsIm1heCI6OCwiZGVmYXVsdCI6NH1dfVBLAwQUAAAAAAAAACEALUb6gXkAAAB5AAAABgAAAGRzcC5qc2NsYXNzIEZpeHR1cmVQdWxzZXtjb25zdHJ1Y3Rvcigpe3RoaXMucGFyYW1zPXtsZXZlbDowLjUsc3RlcHM6NH19c2V0UGFyYW1ldGVyKGlkLHYpe3RoaXMucGFyYW1zW2lkXT12fXN0YXJ0KCl7fXN0b3AoKXt9fQpQSwECFAMUAAAAAAAAACEAING5/ikBAAApAQAADQAAAAAAAAAAAAAApAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAAAAAAIQAtRvqBeQAAAHkAAAAGAAAAAAAAAAAAAACkAVQBAABkc3AuanNQSwUGAAAAAAIAAgBvAAAA8QEAAAAA",
+      "isLiveIn": false,
+      "x": 0.25,
+      "y": 0.5,
+      "z": 0,
+      "isMuted": false,
+      "isSoloed": false,
+      "motionSpeed": 1,
+      "motionPath": [],
+      "eq": {
+        "low": 0,
+        "mid": 2,
+        "high": -1
+      },
+      "stripGainDb": -3,
+      "isStream": false,
+      "streamUrl": ""
+    },
+    {
+      "index": 2,
+      "name": "T3",
+      "sampleName": "T3",
+      "filePath": "",
+      "sampleData": null,
+      "playlist": [],
+      "playlistIndex": 0,
+      "isShuffle": false,
+      "isRepeat": true,
+      "isCustomNode": false,
+      "customNodeBundle": null,
+      "customNodeParams": null,
+      "customNodeZipBase64": null,
+      "isLiveIn": true,
+      "x": 0.5,
+      "y": 0.5,
+      "isMuted": false,
+      "isSoloed": true,
+      "motionSpeed": 1,
+      "motionPath": [],
+      "eq": {
+        "low": 0,
+        "mid": 0,
+        "high": 0
+      },
+      "stripGainDb": 0,
+      "isStream": false,
+      "streamUrl": ""
+    },
+    {
+      "index": 3,
+      "name": "T4",
+      "sampleName": "T4",
+      "filePath": "",
+      "sampleData": null,
+      "playlist": [],
+      "playlistIndex": 0,
+      "isShuffle": false,
+      "isRepeat": true,
+      "isCustomNode": false,
+      "customNodeBundle": null,
+      "customNodeParams": null,
+      "customNodeZipBase64": null,
+      "isLiveIn": false,
+      "x": 0.75,
+      "y": 0.5,
+      "z": 0,
+      "isMuted": true,
+      "isSoloed": false,
+      "motionSpeed": 1,
+      "motionPath": [],
+      "eq": {
+        "low": 0,
+        "mid": 0,
+        "high": 0
+      },
+      "stripGainDb": 0,
+      "isStream": false,
+      "streamUrl": ""
+    }
+  ]
+}

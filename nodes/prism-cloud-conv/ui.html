@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prism Cloud (Convolution)</title>
+  <style>
+    :root {
+      --bg: #f2f2f4;
+      --panel: #e5e5ea;
+      --panel-border: #d1d1d6;
+      --text: #1c1c1e;
+      --text-muted: #636366;
+      --track-bg: #d1d1d6;
+      --thumb-color: #ffffff;
+      --track-color: #ff4b4b;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .node-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 14px 18px;
+      gap: 12px;
+    }
+
+    .node-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--panel-border);
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .node-symbol {
+      font-size: 1.1rem;
+      color: var(--track-color, #ff4b4b);
+      filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.15));
+    }
+
+    .node-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .tag-badge {
+      font-size: 0.62rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #ffffff;
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px 16px;
+      background: var(--panel);
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+    }
+
+    .control-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .control-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .value-display {
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--track-bg);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--thumb-color);
+      border: 1px solid #c7c7cc;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+    }
+
+    select {
+      background: #ffffff;
+      color: var(--text);
+      border: 1px solid var(--panel-border);
+      border-radius: 5px;
+      font-size: 0.7rem;
+      padding: 4px 6px;
+      outline: none;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    select:focus {
+      border-color: #8e8e93;
+    }
+
+    .visualizer-card {
+      flex: 1;
+      min-height: 80px;
+      background: #18181b;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .visualizer-overlay {
+      position: absolute;
+      bottom: 6px;
+      right: 10px;
+      font-size: 0.58rem;
+      color: rgba(255, 255, 255, 0.4);
+      font-family: var(--font-mono);
+      letter-spacing: 0.06em;
+      pointer-events: none;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="node-container">
+  <div class="node-header">
+    <div class="title-group">
+      <span class="node-symbol">🏛</span>
+      <span class="node-title">Prism Cloud</span>
+    </div>
+    <span class="tag-badge">Convolution Hall</span>
+  </div>
+
+  <div class="controls-grid">
+    <!-- Chord Voicing -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-chord">Harmonic Voicing</label>
+      </div>
+      <select id="param-chord">
+        <option value="0">Maj9 (C-G-B-D-E-G-B)</option>
+        <option value="1">Min11 (C-Eb-G-Bb-D-F)</option>
+        <option value="2">Sus2 (C-D-G-C-D-G)</option>
+        <option value="3">Lydian Add9 (C-E-F#-G-D)</option>
+      </select>
+    </div>
+
+    <!-- Master Pitch / Root Transposition -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-rootPitch">Master Pitch</label>
+        <span class="value-display" id="val-rootPitch">0 st (C)</span>
+      </div>
+      <input type="range" id="param-rootPitch" min="-12" max="12" step="1" value="0">
+    </div>
+
+    <!-- Breathing Speed -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-swellRate">Breathing Speed</label>
+        <span class="value-display" id="val-swellRate">0.22 Hz</span>
+      </div>
+      <input type="range" id="param-swellRate" min="0.08" max="0.55" step="0.01" value="0.22">
+    </div>
+
+    <!-- Reverb Decay -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-decay">Reverb Decay</label>
+        <span class="value-display" id="val-decay">5.00 s</span>
+      </div>
+      <input type="range" id="param-decay" min="1.0" max="10.0" step="0.1" value="5.0">
+    </div>
+
+    <!-- Reverb Fur -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-fur">Reverb Fur</label>
+        <span class="value-display" id="val-fur">0.65</span>
+      </div>
+      <input type="range" id="param-fur" min="0.0" max="1.0" step="0.01" value="0.65">
+    </div>
+
+    <!-- Dry / Wet Mix -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-dryWet">Dry / Wet Mix</label>
+        <span class="value-display" id="val-dryWet">60%</span>
+      </div>
+      <input type="range" id="param-dryWet" min="0.0" max="1.0" step="0.01" value="0.60">
+    </div>
+
+    <!-- Cloud Density -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-density">Density</label>
+        <span class="value-display" id="val-density">0.45</span>
+      </div>
+      <input type="range" id="param-density" min="0.1" max="1.0" step="0.01" value="0.45">
+    </div>
+
+    <!-- Attack Time -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-attack">Grain Attack</label>
+        <span class="value-display" id="val-attack">1.20 s</span>
+      </div>
+      <input type="range" id="param-attack" min="0.4" max="3.0" step="0.05" value="1.2">
+    </div>
+
+    <!-- Release Time -->
+    <div class="control-item">
+      <div class="control-label-row">
+        <label for="param-release">Grain Release</label>
+        <span class="value-display" id="val-release">4.20 s</span>
+      </div>
+      <input type="range" id="param-release" min="1.5" max="7.0" step="0.1" value="4.2">
+    </div>
+  </div>
+
+  <div class="visualizer-card">
+    <canvas id="cloudCanvas"></canvas>
+    <div class="visualizer-overlay">Velvet-Noise IR • Convolution</div>
+  </div>
+</div>
+
+<script>
+  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+  const state = {
+    chord: 0,
+    rootPitch: 0,
+    density: 0.45,
+    swellRate: 0.22,
+    decay: 5.0,
+    fur: 0.65,
+    dryWet: 0.60,
+    attack: 1.2,
+    release: 4.2,
+    gain: 0.75
+  };
+
+  const canvas = document.getElementById('cloudCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function formatPitch(st) {
+    const noteIdx = ((Math.round(st) % 12) + 12) % 12;
+    const name = noteNames[noteIdx];
+    const sign = st > 0 ? '+' : '';
+    return `${sign}${st} st (${name})`;
+  }
+
+  function notifyHost(paramId, value) {
+    state[paramId] = value;
+
+    if (window.aetherNode && typeof window.aetherNode.setParam === 'function') {
+      window.aetherNode.setParam(paramId, value);
+    }
+    if (window.aetherNode && typeof window.aetherNode.setParameter === 'function') {
+      window.aetherNode.setParameter(paramId, value);
+    }
+
+    window.parent.postMessage({
+      type: 'aether:param-change',
+      paramId: paramId,
+      value: value
+    }, '*');
+  }
+
+  function bindSlider(id, paramKey, formatFn) {
+    const el = document.getElementById(id);
+    const valEl = document.getElementById('val-' + paramKey);
+    el.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      state[paramKey] = val;
+      if (valEl) valEl.textContent = formatFn(val);
+      notifyHost(paramKey, val);
+    });
+  }
+
+  bindSlider('param-rootPitch', 'rootPitch', v => formatPitch(v));
+  bindSlider('param-swellRate', 'swellRate', v => `${v.toFixed(2)} Hz`);
+  bindSlider('param-decay', 'decay', v => `${v.toFixed(1)} s`);
+  bindSlider('param-fur', 'fur', v => v.toFixed(2));
+  bindSlider('param-dryWet', 'dryWet', v => `${Math.round(v * 100)}%`);
+  bindSlider('param-density', 'density', v => v.toFixed(2));
+  bindSlider('param-attack', 'attack', v => `${v.toFixed(2)} s`);
+  bindSlider('param-release', 'release', v => `${v.toFixed(2)} s`);
+
+  const chordEl = document.getElementById('param-chord');
+  chordEl.addEventListener('change', (e) => {
+    const val = parseInt(e.target.value, 10);
+    state.chord = val;
+    notifyHost('chord', val);
+  });
+
+  // Inbound Host IPC Sync
+  window.addEventListener('message', (event) => {
+    if (!event.data || typeof event.data !== 'object') return;
+    if (event.data.type === 'aether:param-update') {
+      const { paramId, value } = event.data;
+      if (state[paramId] !== undefined) {
+        state[paramId] = value;
+        const input = document.getElementById('param-' + paramId);
+        if (input) input.value = value;
+        const valEl = document.getElementById('val-' + paramId);
+        if (valEl && typeof value === 'number') {
+          if (paramId === 'rootPitch') valEl.textContent = formatPitch(value);
+          else if (paramId === 'swellRate') valEl.textContent = `${value.toFixed(2)} Hz`;
+          else if (paramId === 'decay') valEl.textContent = `${value.toFixed(1)} s`;
+          else if (paramId === 'dryWet') valEl.textContent = `${Math.round(value * 100)}%`;
+          else if (paramId === 'attack' || paramId === 'release') valEl.textContent = `${value.toFixed(2)} s`;
+          else valEl.textContent = value.toFixed(2);
+        }
+      }
+    }
+  });
+
+  // Track-Color Reactive Particle Visualizer
+  let particles = [];
+  let wavePhase = 0;
+
+  function getActiveTrackColor() {
+    const rootStyle = getComputedStyle(document.documentElement);
+    const color = rootStyle.getPropertyValue('--track-color').trim();
+    return color && color.length > 2 ? color : '#ff4b4b';
+  }
+
+  function render() {
+    const w = canvas.offsetWidth;
+    const h = canvas.offsetHeight;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+
+    const trackColor = getActiveTrackColor();
+
+    ctx.fillStyle = 'rgba(24, 24, 27, 0.22)';
+    ctx.fillRect(0, 0, w, h);
+
+    wavePhase += state.swellRate * 0.05;
+
+    // Ambient breathing wave line colored with track tint
+    ctx.strokeStyle = trackColor;
+    ctx.globalAlpha = 0.35 + (state.dryWet * 0.35);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let x = 0; x < w; x += 4) {
+      const y = (h * 0.5) + Math.sin((x * 0.015) + wavePhase) * (h * 0.24 * state.dryWet);
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Spawn harmonic dust particles matching track color
+    const spawnRate = state.density * (0.3 + state.fur * 0.35);
+    if (Math.random() < spawnRate) {
+      particles.push({
+        x: Math.random() * w,
+        y: h * 0.15 + Math.random() * (h * 0.7),
+        size: Math.random() * (2.2 + state.fur * 2.0) + 1.2,
+        alpha: 0.95,
+        vx: (Math.random() - 0.5) * (0.6 + state.fur * 0.6),
+        vy: (Math.random() - 0.5) * 0.5
+      });
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha -= 0.012;
+
+      if (p.alpha <= 0 || p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      ctx.fillStyle = trackColor;
+      ctx.shadowColor = trackColor;
+      ctx.shadowBlur = 8;
+      ctx.globalAlpha = p.alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1.0;
+    requestAnimationFrame(render);
+  }
+  render();
+</script>
+
+</body>
+</html>

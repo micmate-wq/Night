@@ -1,0 +1,27 @@
+launch-weave-v01.sh failure-propagation test — 4 Oct 2026, Claude
+Where: Linux VM on Matt's Mac (Cowork sandbox), in a disposable clone outside the repo ($HOME/launcher-test).
+Stubs: node_modules/.bin/tauri (exit STUB_RC; on successful build creates the exact .app dir), open (logs, exit OPEN_RC), lsof (port free).
+Pre-existing dummy bundles: 'Aether Weave v01 Lab.app' and decoy 'AAA Decoy.app' (sorts first).
+Real git; real tauri.conf.json from the repo. No Tauri, no app launch, no audio.
+Launcher sha256: 66941af5acb2f484a58935043371100ae8d7024f5c2dd78dbce1542f68603750
+
+Fixed launcher:
+build-fails-with-old-bundle        exit=3   expected=3   tauri_calls=1 open_calls=0 PASS
+dev-fails                          exit=4   expected=4   tauri_calls=1 open_calls=0 PASS
+dev-fails-default-arg              exit=5   expected=5   tauri_calls=1 open_calls=0 PASS
+build-succeeds                     exit=0   expected=0   tauri_calls=1 open_calls=1 PASS
+      STUB open $HOME/launcher-test/repo/desktop/src-tauri/target/debug/bundle/macos/Aether Weave v01 Lab.app
+dev-succeeds                       exit=0   expected=0   tauri_calls=1 open_calls=0 PASS
+dev-succeeds-default-arg           exit=0   expected=0   tauri_calls=1 open_calls=0 PASS
+build-ok-but-open-fails            exit=7   expected=7   tauri_calls=1 open_calls=1 PASS
+      STUB open $HOME/launcher-test/repo/desktop/src-tauri/target/debug/bundle/macos/Aether Weave v01 Lab.app
+bad-arg                            exit=2   expected=2   tauri_calls=0 open_calls=0 PASS
+too-many-args                      exit=2   expected=2   tauri_calls=0 open_calls=0 PASS
+uppercase-arg                      exit=2   expected=2   tauri_calls=0 open_calls=0 PASS
+empty-string-arg                   exit=2   expected=2   tauri_calls=0 open_calls=0 PASS
+build-ok-but-exact-app-missing     exit=1   expected=1   tauri_calls=1 open_calls=0 PASS
+
+Previous launcher (regression proof, same stubs):
+OLD-build-fails-with-old-bundle    exit=0   expected=3   tauri_calls=1 open_calls=1 FAIL
+      STUB open $HOME/launcher-test/repo/desktop/src-tauri/target/debug/bundle/macos/AAA Decoy.app
+OLD-dev-fails                      exit=0   expected=4   tauri_calls=1 open_calls=0 FAIL

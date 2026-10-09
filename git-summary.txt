@@ -1,0 +1,152 @@
+================================================================
+ AETHER GIT SUMMARY — 2026-09-06 09:30:17
+================================================================
+
+----------------------------------------------------------------
+ CURRENT BRANCH
+----------------------------------------------------------------
+feature/aether-core
+
+----------------------------------------------------------------
+ REPOSITORY STATUS
+----------------------------------------------------------------
+On branch feature/aether-core
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	git-summary.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+----------------------------------------------------------------
+ BRANCH LIST
+----------------------------------------------------------------
++ 4.0                                        17dcccf Aether Desktop 4.0
+  4.2                                        2a3900b feat(assets): add custom macOS vintage radio folder icons
+  Aether-Fixed-Thorough-Check                afab6e6 feat(nodes): expand polyphonic singing bowls UI, DSP, and host wiring
+  Proper-3D-bruh                             86cea6a Aether Save Load Fixed
+  backup/2026-08-29-b-working                2dc4b09 Keepable CLC snapshot: Halo, Tick, Tick Tok, and host recovery.
+  backup/2026-08-29-working                  0252938 Snapshot of local Aether Desktop for the 9 Sept CLC demo.
+  desktop-tauri                              2588a1c [ahead 1] Working state: Native APK controller & local server architecture
+* feature/aether-core                        95d66f7 feat(aether): update skill docs, add node specs and desktop field POC
+  icecast-inbound                            1b5d545 Point Icecast ingest defaults at dontpanic.fm and the Tailscale FQDN.
+  micro-synth-nodes                          86cea6a Aether Save Load Fixed
+  sept-9-demo                                2dc4b09 Keepable CLC snapshot: Halo, Tick, Tick Tok, and host recovery.
+  v2-experiments                             2588a1c Working state: Native APK controller & local server architecture
+  remotes/origin/4.0                         17dcccf Aether Desktop 4.0
+  remotes/origin/4.1                         2a3900b feat(assets): add custom macOS vintage radio folder icons
+  remotes/origin/4.2                         2a3900b feat(assets): add custom macOS vintage radio folder icons
+  remotes/origin/backup/2026-08-29-b-working 2dc4b09 Keepable CLC snapshot: Halo, Tick, Tick Tok, and host recovery.
+  remotes/origin/backup/2026-08-29-working   0252938 Snapshot of local Aether Desktop for the 9 Sept CLC demo.
+  remotes/origin/desktop-tauri               09d7d2d Apply monochrome theme with 4-track custom palette
+  remotes/origin/sept-9-demo                 2dc4b09 Keepable CLC snapshot: Halo, Tick, Tick Tok, and host recovery.
+
+----------------------------------------------------------------
+ REMOTES
+----------------------------------------------------------------
+origin	https://github.com/micmate-wq/aether-desktop.git (fetch)
+origin	https://github.com/micmate-wq/aether-desktop.git (push)
+
+----------------------------------------------------------------
+ TAGS
+----------------------------------------------------------------
+v4.2.0
+working-2026-08-29-b
+working-2026-08-29
+checkpoint-baseline-3d
+v-spatializer-stable
+
+----------------------------------------------------------------
+ COMMIT LOG
+----------------------------------------------------------------
+95d66f7  2026-09-05 14:20  feat(aether): update skill docs, add node specs and desktop field POC
+         Author: Matt <matt@example.com>
+
+ec1a377  2026-09-03 21:00  chore(release): package Aether v4.2.1 standalone DMG and ZIP with bundled nodes
+         Author: Matt <matt@example.com>
+
+a71baaa  2026-09-02 20:24  feat(v4.2.1): bump version to 4.2.1 [v4.2.1 UI]
+         Author: Matt <matt@example.com>
+
+8bc81e5  2026-09-02 20:24  chore(backup): checkpoint v4.2.0 before v4.2.1
+         Author: Matt <matt@example.com>
+
+5b6f152  2026-09-02 18:47  feat(desktop): tap master mix to Icecast /matt
+         Author: Matt <matt@example.com>
+
+4e73cb1  2026-09-02 18:47  feat(desktop): add Icecast outbound MP3 encoder
+         Author: Matt <matt@example.com>
+
+2a3900b  2026-08-30 22:44  feat(assets): add custom macOS vintage radio folder icons
+         Author: Matt <matt@example.com>
+
+3ebc8af  2026-08-30 20:39  feat(v4.2): bump version to 4.2.0 [v4.2 UI]
+         Author: Matt <matt@example.com>
+
+d93b25d  2026-08-30 19:43  fix(nodes): refine Polar Cloud defaults, clean voicing names, and restore wash on resume
+         Author: Matt <matt@example.com>
+
+5ee5dd8  2026-08-30 18:59  feat(nodes): add prism-polar-cloud, prism-cloud-conv, prism-cloud-algo, and prism-sparkle nodes with canvas animations
+         Author: Matt <matt@example.com>
+
+2802fe0  2026-08-30 02:33  feat(v4.1): release Aether 4.1 with gapless stream spatialization and DSP nodes
+         Author: Matt <matt@example.com>
+
+17dcccf  2026-08-29 23:44  Aether Desktop 4.0
+         Author: Matt <matt@example.com>
+
+1b5d545  2026-08-29 21:55  Point Icecast ingest defaults at dontpanic.fm and the Tailscale FQDN.
+         Author: Matt <matt@example.com>
+
+6c5a591  2026-08-29 21:39  Harden Icecast ingest on the existing track stream path.
+         Author: Matt <matt@example.com>
+
+2dc4b09  2026-08-29 20:14  Keepable CLC snapshot: Halo, Tick, Tick Tok, and host recovery.
+         Author: Matt <matt@example.com>
+
+a48b136  2026-08-29 11:18  On sept-9-demo: ag-pre-sync
+         Author: Matt <matt@example.com>
+
+194568c  2026-08-29 11:18  index on sept-9-demo: 0252938 Snapshot of local Aether Desktop for the 9 Sept CLC demo.
+         Author: Matt <matt@example.com>
+
+0825aed  2026-08-29 11:18  untracked files on sept-9-demo: 0252938 Snapshot of local Aether Desktop for the 9 Sept CLC demo.
+         Author: Matt <matt@example.com>
+
+0252938  2026-08-28 21:09  Snapshot of local Aether Desktop for the 9 Sept CLC demo.
+         Author: Matt <matt@example.com>
+
+afab6e6  2026-08-28 21:03  feat(nodes): expand polyphonic singing bowls UI, DSP, and host wiring
+         Author: Matt <matt@example.com>
+
+03d197e  2026-08-27 23:36  feat(nodes): add singing-bowl and polyphonic-singing-bowls aethernodes, update granular node harmony and texture controls
+         Author: Matt <matt@example.com>
+
+adaf4bd  2026-08-27 22:01  Theme granular node inspector to match host Aether app dynamically using CSS variables and track color injection
+         Author: Matt <matt@example.com>
+
+4e24f4f  2026-08-27 21:33  docs: add aether system context and task handoff
+         Author: Matt <matt@example.com>
+
+2af732b  2026-08-27 21:33  feat(spatializer): insert routing fix, distance gain compensation, and default canvas opening layout
+         Author: Matt <matt@example.com>
+
+4291e2d  2026-08-24 23:44  checkpoint: baseline clean 3d aether desktop with working save/load
+         Author: Matt <matt@example.com>
+
+86cea6a  2026-08-24 22:04  Aether Save Load Fixed
+         Author: Matt <matt@example.com>
+
+160421b  2026-08-24 20:46  Working 2D Canvas and Drag and Drop
+         Author: Matt <matt@example.com>
+
+47c4676  2026-08-23 20:58  feat(spatializer): lock stable pan-aware wet signal spatialization
+         Author: matt kuderski <matt@matts-MacBook-Air.local>
+
+2588a1c  2026-08-22 23:45  Working state: Native APK controller & local server architecture
+         Author: matt kuderski <matt@matts-MacBook-Air.local>
+
+09d7d2d  2026-08-22 00:26  Apply monochrome theme with 4-track custom palette
+         Author: matt kuderski <matt@matts-MacBook-Air.local>
+
+2feb2a4  2026-08-21 22:25  Initialize desktop-tauri with Tauri v2 wrapper and update app name to Aether Desktop
+         Author: matt kuderski <matt@matts-MacBook-Air.local>

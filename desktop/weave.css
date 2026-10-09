@@ -1,0 +1,1024 @@
+/* ==========================================================================
+   AETHER WEAVE SYSTEM CSS (Scoped under --weave-*)
+   Based on Approved Mockup E: BUILD / PLAY Toggle & Specification v0.1
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Inter Tight';
+  src: url('fonts/it.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('fonts/gm.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+:root {
+  /* Typography */
+  --weave-font-sans: 'Inter Tight', system-ui, -apple-system, sans-serif;
+  --weave-font-mono: 'Geist Mono', ui-monospace, monospace;
+
+  /* Colors */
+  --weave-ink: #141414;
+  --weave-surface: #ffffff;
+  --weave-surface-raised: #f7f7f5;
+  --weave-surface-canvas: #fbfbfa;
+  --weave-app-bg: #ececea;
+  --weave-gutter-play-bg: #e4e4e0;
+  --weave-tint: #f3f3f0;
+  --weave-border-subtle: #dcdcd8;
+  --weave-tick-empty: #d0d0cc;
+  --weave-progress-track: #e2e2de;
+  --weave-text-muted: #8a8a86;
+
+  /* Node Track Colors (Inherit canonical Aether track colors) */
+  --weave-node-t1: var(--track-1, #f2463a);
+  --weave-node-t2: var(--track-2, #f7dc38);
+  --weave-node-t3: var(--track-3, #8f63c8);
+  --weave-node-t4: var(--track-4, #56c83a);
+  --weave-node-t2-text: #b59a00;
+
+  /* Accent & Warm surfaces */
+  --weave-playing-band: #fdf6dc;     /* Pale warm playing-scene surface */
+  --weave-playing-accent: #f6d24a;   /* Punchy yellow badge / active accent */
+  --weave-tape: #efe3a6;
+
+  /* Layout & Sizing */
+  --weave-gutter-width: 300px;
+  --weave-border-base: 1.5px;
+  --weave-border-toggle: 2px;
+  --weave-border-go: 2.5px;
+  --weave-radius-sm: 6px;
+  --weave-radius-toggle: 7px;
+  --weave-radius-md: 8px;
+  --weave-radius-panel: 10px;
+  --weave-radius-pill: 999px;
+  --weave-shadow-sheet: 3px 5px 10px rgba(20, 20, 20, 0.10);
+  --weave-switch-duration: 460ms;
+}
+
+/* Gutter containers inside performance-stage */
+.weave-gutter {
+  width: var(--weave-gutter-width);
+  height: 100%;
+  position: relative;
+  border-radius: var(--weave-radius-panel);
+  border: 1px solid var(--weave-border-subtle);
+  background: var(--weave-surface);
+  overflow: hidden;
+  box-sizing: border-box;
+  z-index: 2;
+  font-family: var(--weave-font-sans);
+  color: var(--weave-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.weave-gutter-left {
+  grid-column: 1;
+  grid-row: 1 / 3;
+}
+
+.weave-gutter-right {
+  grid-column: 3;
+  grid-row: 1 / 3;
+}
+
+/* Ensure channel strips sit on top of gutters when expanded */
+.channel-strip {
+  z-index: 10 !important;
+}
+
+/* Channel strip coexistence footnote */
+.channel-strip-weave-note {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1.5px dashed var(--weave-ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9px;
+  font-family: var(--weave-font-sans);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--weave-text-muted);
+}
+.channel-strip-weave-note .csw-range {
+  font-family: var(--weave-font-mono);
+  font-weight: 700;
+  color: var(--weave-ink);
+}
+
+/* Shared utility typography */
+.weave-mono {
+  font-family: var(--weave-font-mono);
+}
+.weave-label {
+  font-family: var(--weave-font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.weave-mute {
+  color: var(--weave-text-muted);
+}
+.weave-btn {
+  font-family: var(--weave-font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  border: var(--weave-border-base) solid var(--weave-ink);
+  border-radius: var(--weave-radius-pill);
+  padding: 5px 11px;
+  letter-spacing: 0.02em;
+  background: #ffffff;
+  color: var(--weave-ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.weave-btn.solid {
+  background: var(--weave-ink);
+  color: #ffffff;
+}
+
+/* Marquee scrolling */
+.weave-mq {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+.weave-mq > span {
+  display: inline-block;
+  animation: weave-mq-scroll var(--d, 8s) linear infinite;
+  padding-right: 2em;
+}
+@keyframes weave-mq-scroll {
+  to { transform: translateX(-50%); }
+}
+
+/* ==========================================================================
+   LEFT GUTTER: WEAVE PANEL (BUILD & PLAY MODES)
+   ========================================================================== */
+.weave-panel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--weave-surface);
+  transition: background-color var(--weave-switch-duration) ease;
+}
+.weave-panel.play {
+  background: var(--weave-gutter-play-bg);
+}
+
+/* Top Mode Toggle */
+.weave-toggle {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 12px;
+  height: 40px;
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  z-index: 5;
+}
+.weave-toggle .wt-switch {
+  flex: 1;
+  display: flex;
+  border: var(--weave-border-toggle) solid var(--weave-ink);
+  border-radius: var(--weave-radius-toggle);
+  overflow: hidden;
+  position: relative;
+  background: #ffffff;
+  isolation: isolate;
+}
+.weave-toggle .wt-switch button {
+  flex: 1;
+  font-family: var(--weave-font-sans);
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  mix-blend-mode: difference;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+.weave-toggle .wt-switch .wt-block {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  background: var(--weave-ink);
+  transform: translateX(calc(var(--p, 0) * 100%));
+  transition: transform var(--weave-switch-duration) cubic-bezier(0.45, 0, 0.55, 1);
+}
+.weave-toggle .wt-key-wrap {
+  position: relative;
+  width: 44px;
+  display: flex;
+}
+.weave-toggle .wt-key {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  border: var(--weave-border-base) solid var(--weave-ink);
+  border-bottom-width: 4px;
+  border-radius: var(--weave-radius-sm);
+  background: #ffffff;
+  color: var(--weave-ink);
+  font-family: var(--weave-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.1;
+  cursor: pointer;
+  user-select: none;
+  padding: 0;
+  outline: none;
+  box-sizing: border-box;
+  transition: transform 0.08s ease, border-bottom-width 0.08s ease, background-color 0.12s ease;
+}
+.weave-toggle .wt-key:hover {
+  background: #fbfbf9;
+}
+.weave-toggle .wt-key:active {
+  transform: translateY(1.5px);
+  border-bottom-width: 2.5px;
+  background: #f0f0ec;
+}
+.weave-toggle .wt-key .wt-key-plus {
+  font-family: var(--weave-font-sans);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+.weave-toggle .wt-key small {
+  font-family: var(--weave-font-sans);
+  font-size: 7.5px;
+  letter-spacing: 0.10em;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--weave-text-muted);
+  line-height: 1;
+}
+
+/* Delete target indicator in upper right header area */
+.weave-del-target {
+  position: absolute;
+  inset: 0;
+  border: var(--weave-border-base) solid var(--weave-ink);
+  border-bottom-width: 4px;
+  border-radius: var(--weave-radius-sm);
+  background: #FC4037;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+  transition: opacity 0.14s ease, transform 0.14s cubic-bezier(0.18, 0.9, 0.32, 1);
+  z-index: 2;
+  box-sizing: border-box;
+}
+.weave-del-target .wdt-x {
+  font-family: var(--weave-font-sans);
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
+.weave-del-target.active {
+  opacity: 1;
+  transform: scale(1);
+  box-shadow: 0 2px 8px rgba(252, 64, 55, 0.35);
+}
+
+/* Layer crossfade orchestration */
+.weave-lay {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+}
+.weave-lay-build {
+  opacity: clamp(0, calc(1.6 - var(--p, 0) * 2.2), 1);
+  pointer-events: auto;
+  transition: opacity var(--weave-switch-duration) cubic-bezier(0.45, 0, 0.55, 1);
+}
+.weave-lay-build .threads {
+  transform-origin: 217px 50%;
+  transform: scaleX(clamp(0.04, calc(1 - var(--p, 0) * 1.9), 1));
+  transition: transform var(--weave-switch-duration) cubic-bezier(0.45, 0, 0.55, 1);
+}
+.weave-lay-build .labels {
+  transform: translateX(calc(var(--p, 0) * -40px));
+  transition: transform var(--weave-switch-duration) cubic-bezier(0.45, 0, 0.55, 1);
+}
+.weave-lay-play {
+  opacity: clamp(0, calc(var(--p, 0) * 2.2 - 1.2), 1);
+  transform: translateX(calc((1 - var(--p, 0)) * 60px)) rotate(calc((1 - var(--p, 0)) * 3deg));
+  pointer-events: none;
+  transition: opacity var(--weave-switch-duration) cubic-bezier(0.45, 0, 0.55, 1),
+              transform var(--weave-switch-duration) cubic-bezier(0.45, 0, 0.55, 1);
+}
+.weave-panel.play .weave-lay-build {
+  pointer-events: none;
+}
+.weave-panel.play .weave-lay-play {
+  pointer-events: auto;
+}
+
+/* BUILD VIEW: Loom */
+.weave-loom-container {
+  position: absolute;
+  inset: 0;
+}
+.weave-loom-lanes-header {
+  position: absolute;
+  left: 0;
+  top: 56px;
+  width: 300px;
+  font-family: var(--weave-font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 3;
+}
+.weave-loom-viewport {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 72px;
+  bottom: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.weave-loom-viewport::-webkit-scrollbar {
+  display: none;
+}
+.weave-loom-scroll-nav {
+  position: absolute;
+  right: 6px;
+  top: 78px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 8;
+}
+.weave-loom-scroll-btn {
+  pointer-events: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: 1.5px solid var(--weave-ink);
+  background: #ffffff;
+  color: var(--weave-ink);
+  font-size: 8px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  transition: transform 0.08s ease, background-color 0.12s ease;
+  user-select: none;
+  padding: 0;
+}
+.weave-loom-scroll-btn:hover {
+  background: var(--weave-ink);
+  color: #ffffff;
+}
+.weave-loom-scroll-btn:active {
+  transform: scale(0.92);
+}
+
+/* Loom Swipe Row Container & Action Reveal */
+.weave-loom-row-wrap {
+  position: absolute;
+  left: 0;
+  width: 300px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.weave-loom-row-under {
+  position: absolute;
+  inset: 0;
+  background: var(--weave-surface);
+  display: flex;
+  align-items: center;
+  padding-left: 14px;
+  box-sizing: border-box;
+  user-select: none;
+  pointer-events: none;
+}
+.weave-loom-under-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.35;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.weave-loom-under-content.delete-msg {
+  display: none;
+}
+.wluc-tag {
+  font-family: var(--weave-font-sans);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--weave-border-subtle);
+  color: var(--weave-ink);
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+.wluc-tag.delete {
+  background: #FC4037;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(252, 64, 55, 0.35);
+}
+.wluc-hint {
+  font-family: var(--weave-font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--weave-text-muted);
+  letter-spacing: 0.05em;
+}
+.weave-loom-row-wrap.state-tweak .weave-loom-under-content.adjust-msg {
+  opacity: 1;
+  transform: scale(1.04);
+}
+.weave-loom-row-wrap.state-tweak .wluc-tag {
+  background: var(--weave-ink);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+.weave-loom-row-wrap.state-delete .weave-loom-under-content.adjust-msg {
+  display: none;
+}
+.weave-loom-row-wrap.state-delete .weave-loom-under-content.delete-msg {
+  display: flex;
+  opacity: 1;
+  transform: scale(1.04);
+}
+
+/* Foreground Scene Card that moves */
+.weave-loom-row-card {
+  position: absolute;
+  inset: 0;
+  user-select: none;
+  touch-action: pan-y;
+  cursor: grab;
+  will-change: transform;
+}
+.weave-loom-row-card:active {
+  cursor: grabbing;
+}
+.weave-loom-row-card.is-editing {
+  box-shadow: inset 3.5px 0 0 var(--weave-ink);
+}
+.weave-btn-done {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto !important;
+  font-family: var(--weave-font-sans);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--weave-ink);
+  color: #ffffff;
+  border: 1px solid var(--weave-ink);
+  cursor: pointer;
+  line-height: 1;
+  transition: transform 0.08s ease, background-color 0.12s ease;
+  user-select: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  margin-left: 4px;
+}
+.weave-btn-done:hover {
+  background: #333333;
+  transform: scale(1.05);
+}
+.weave-btn-done:active {
+  transform: scale(0.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weave-loom-row-card {
+    transition: none !important;
+  }
+  .weave-del-target {
+    transition: none !important;
+  }
+}
+
+/* PLAY VIEW: Set List Sheet */
+.weave-sheet {
+  position: absolute;
+  left: 14px;
+  right: 12px;
+  top: 72px;
+  bottom: 14px;
+  background: #ffffff;
+  transform: rotate(-0.8deg);
+  box-shadow: var(--weave-shadow-sheet);
+  padding: 20px 18px 16px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.weave-tape {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 96px;
+  height: 24px;
+  margin-left: -48px;
+  background: var(--weave-tape);
+  opacity: 0.9;
+  transform: rotate(2.5deg);
+}
+
+.weave-set-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 0 7px;
+  border-bottom: var(--weave-border-base) solid var(--weave-ink);
+  cursor: pointer;
+  user-select: none;
+}
+.weave-set-row .sr-no {
+  font-family: var(--weave-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+.weave-set-row .sr-title {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.weave-set-row .sr-bars {
+  font-family: var(--weave-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: right;
+}
+.weave-set-row .sr-ticks {
+  grid-column: 2 / 4;
+  display: flex;
+  gap: 3px;
+  margin-top: 3px;
+}
+.weave-set-row .sr-ticks i {
+  width: 22px;
+  height: 6px;
+  display: block;
+}
+/* Fixed order: Scenes that are not playing rest in grey, the playing one is bold black ("now"),
+   an armed GO NOW target shows its arrow until the bar line. Nothing is struck through. */
+.weave-set-row .sr-title, .weave-set-row .sr-no, .weave-set-row .sr-bars { color: var(--weave-text-muted); }
+.weave-set-row .sr-ticks { opacity: 0.45; }
+.weave-set-row.now .sr-title, .weave-set-row.now .sr-no, .weave-set-row.now .sr-bars { color: var(--weave-ink); }
+.weave-set-row.now .sr-ticks { opacity: 1; }
+.weave-set-row.now .sr-no { background: var(--weave-ink); color: var(--weave-playing-accent); padding: 1px 4px; border-radius: 3px; justify-self: start; }
+.weave-set-row.armed .sr-title::after { content: ' \2192'; color: var(--weave-ink); }
+.weave-set-row.sel {
+  background: var(--weave-ink);
+  color: #ffffff;
+  margin: 0 -8px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* Crowded layout when > 8 scenes */
+.weave-sheet.crowd .weave-set-row {
+  grid-template-columns: 24px 1fr auto auto;
+  padding: 4px 0 3px;
+}
+.weave-sheet.crowd .weave-set-row .sr-title {
+  font-size: 17px;
+}
+.weave-sheet.crowd .weave-set-row .sr-ticks {
+  grid-column: auto;
+  margin: 0;
+}
+.weave-sheet.crowd .weave-set-row .sr-ticks i {
+  width: 9px;
+  height: 9px;
+}
+
+/* ==========================================================================
+   RIGHT GUTTER: TRANSITION PANEL (BUILD & PLAY MODES)
+   ========================================================================== */
+.weave-tx-panel {
+  position: absolute;
+  inset: 0;
+  background: var(--weave-surface);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.weave-tx-panel::-webkit-scrollbar {
+  display: none;
+}
+
+.weave-tx-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+}
+
+.weave-tx-body {
+  padding: 0 16px;
+}
+.weave-tx-body h2 {
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 0.9;
+  margin: 0;
+}
+
+/* Segmented switch (JUMP / MORPH / FADE) */
+.weave-seg {
+  display: flex;
+  border: var(--weave-border-base) solid var(--weave-ink);
+  border-radius: var(--weave-radius-sm);
+  overflow: hidden;
+}
+.weave-seg button {
+  flex: 1;
+  font-family: var(--weave-font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 7px 0;
+  border: 0;
+  background: #ffffff;
+  color: var(--weave-ink);
+  cursor: pointer;
+}
+.weave-seg button[aria-pressed="true"] {
+  background: var(--weave-ink);
+  color: #ffffff;
+}
+
+/* Curve buttons */
+.weave-curves {
+  display: flex;
+  gap: 8px;
+}
+.weave-curves button {
+  width: 48px;
+  height: 36px;
+  border: var(--weave-border-base) solid var(--weave-border-subtle);
+  border-radius: var(--weave-radius-sm);
+  display: grid;
+  place-items: center;
+  background: #ffffff;
+  cursor: pointer;
+  padding: 0;
+}
+.weave-curves button[aria-pressed="true"] {
+  border-color: var(--weave-ink);
+  background: var(--weave-tint);
+}
+.weave-curves svg {
+  width: 34px;
+  height: 22px;
+  fill: none;
+  stroke: var(--weave-ink);
+  stroke-width: 2;
+}
+
+/* Length logarithmic slider */
+.weave-sl {
+  position: relative;
+  height: 26px;
+  margin-top: 4px;
+}
+.weave-sl input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+.weave-sl .track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 12px;
+  height: 2px;
+  background: var(--weave-ink);
+}
+.weave-sl .fill {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  height: 6px;
+  background: var(--weave-ink);
+}
+.weave-sl .knob {
+  position: absolute;
+  top: 4px;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  border-radius: 50%;
+  background: var(--weave-ink);
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 0 1.5px var(--weave-ink);
+}
+.weave-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--weave-font-mono);
+  font-size: 9px;
+  color: var(--weave-text-muted);
+  margin-top: 2px;
+}
+
+/* PLAY Transition Panel (Stripped Live Performance View) */
+.weave-play-tx {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 46px);
+}
+.weave-play-big-num {
+  font-family: var(--weave-font-mono);
+  font-size: 76px;
+  font-weight: 800;
+  letter-spacing: -0.07em;
+  line-height: 1;
+}
+.weave-play-beat-blocks {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin: 10px 0;
+}
+.weave-play-beat-block {
+  width: 22px;
+  height: 8px;
+  background: var(--weave-ink);
+  opacity: 0.15;
+}
+.weave-play-beat-block.active {
+  opacity: 1;
+}
+
+/* Large GO NOW & HOLD Action Buttons */
+.weave-gobtn {
+  display: block;
+  width: 100%;
+  border: var(--weave-border-go) solid var(--weave-ink);
+  border-radius: var(--weave-radius-md);
+  font-family: var(--weave-font-sans);
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  padding: 12px 0 13px;
+  text-align: center;
+  cursor: pointer;
+  line-height: 1;
+  text-transform: uppercase;
+  background: #ffffff;
+  color: var(--weave-ink);
+}
+.weave-gobtn.solid {
+  background: var(--weave-ink);
+  color: #ffffff;
+}
+.weave-gobtn.held {
+  background: var(--weave-ink);
+  color: var(--weave-playing-accent);
+  box-shadow: inset 0 0 0 3px var(--weave-playing-accent);
+}
+/* Each button answers its own pointer only: a hover lift on the hovered button, a press on the
+   pressed one; the panel waking up does not change either button's state. */
+.weave-gobtn { transition: transform 0.08s ease, box-shadow 0.08s ease; }
+.weave-gobtn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18); }
+.weave-gobtn.held:hover { box-shadow: inset 0 0 0 3px var(--weave-playing-accent), 0 3px 10px rgba(0, 0, 0, 0.18); }
+.weave-gobtn:active { transform: translateY(1px); box-shadow: none; }
+
+/* ==========================================================================
+   LAB-5 QUIET SIDE PANELS (Grok spec, Claude implementation)
+   At rest a gutter is see-through and grey so the canvas leads; hover, focus,
+   ADJUST (and PLAY for the right gutter) bring it back to full colour.
+   weave.js toggles .is-quiet / .is-engaged. Solid greys, never opacity.
+   ========================================================================== */
+@property --wv-t1 { syntax: '<color>'; inherits: true; initial-value: #FC4037; }
+@property --wv-t2 { syntax: '<color>'; inherits: true; initial-value: #FFEA00; }
+@property --wv-t3 { syntax: '<color>'; inherits: true; initial-value: #8B68B9; }
+@property --wv-t4 { syntax: '<color>'; inherits: true; initial-value: #00D600; }
+
+:root {
+  --wv-t1: var(--weave-node-t1);
+  --wv-t2: var(--weave-node-t2);
+  --wv-t3: var(--weave-node-t3);
+  --wv-t4: var(--weave-node-t4);
+}
+
+/* The canvas grid runs behind the panels: one surface, panels on top */
+.performance-stage {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%278%27%20height%3D%278%27%3E%3Cpath%20d%3D%27M1%204h6m-3-3v6%27%20stroke%3D%27%23242725%27%20stroke-opacity%3D%270.10%27%20stroke-width%3D%270.5%27%2F%3E%3C%2Fsvg%3E");
+  background-size: 8px 8px;
+  border-radius: 10px;
+}
+body.theme-dark .performance-stage { background-image: none; }
+
+.weave-gutter {
+  --wv-t1: var(--weave-node-t1);
+  --wv-t2: var(--weave-node-t2);
+  --wv-t3: var(--weave-node-t3);
+  --wv-t4: var(--weave-node-t4);
+  --wv-row-bg: #ffffff;
+  transition: --wv-t1 .2s ease, --wv-t2 .2s ease, --wv-t3 .2s ease, --wv-t4 .2s ease,
+              background-color .2s ease, border-color .2s ease, box-shadow .2s ease, color .2s ease;
+}
+.weave-gutter.is-engaged {
+  background: #ffffff;
+  border: 1px solid #d6d6d2;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .06);
+}
+
+/* ---- Rest state ---- */
+.weave-gutter.is-quiet {
+  --wv-t1: #c2c2be;
+  --wv-t2: #d8d8d4;
+  --wv-t3: #b3b3af;
+  --wv-t4: #cbcbc7;
+  --wv-row-bg: transparent;
+  --weave-playing-band: transparent;
+  --weave-surface-wake: transparent;
+  --weave-ink: #9a9a96;
+  --weave-text-muted: #b5b5b0;
+  --weave-node-t2-text: #b5b5b0;
+  --weave-tick-empty: #e6e6e2;
+  --weave-progress-track: #e6e6e2;
+  --wv-rule: #e6e6e2;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.weave-gutter.is-quiet .weave-panel,
+.weave-gutter.is-quiet .weave-tx-panel,
+.weave-gutter.is-quiet .weave-loom-row-under { background: transparent; }
+.weave-gutter.is-quiet .weave-loom-row-under > * { visibility: hidden; }
+
+/* The playing scene is the only strong mark at rest */
+.weave-gutter.is-quiet .weave-loom-row-card.is-playing { --weave-ink: #141414; --wv-rule: #141414; }
+.weave-gutter.is-quiet .weave-loom-row-card.is-playing::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: #141414; pointer-events: none;
+}
+
+/* BUILD / PLAY switch stays black; + Scene keeps a white fill so it doesn't vanish */
+.weave-gutter.is-quiet .weave-toggle { --weave-ink: #141414; }
+.weave-gutter.is-quiet .wt-key { background: #ffffff; }
+
+/* LAB-8: PLAY set list at rest - the sheet goes see-through like the Loom,
+   and what's playing now (countdown, name, progress) stays black. */
+.weave-gutter.is-quiet .weave-sheet { background: transparent; box-shadow: none; }
+.weave-gutter.is-quiet .weave-tape { background: #e6e6e2; }
+.weave-gutter.is-quiet .ws-now { --weave-ink: #141414; color: #141414; }
+
+@media (prefers-reduced-motion: reduce) {
+  .weave-gutter { transition: none; }
+}
+
+/* BUILD Scene dragging: suppress WebKit text selection, retain horizontal swipes. */
+.weave-loom-row-wrap, .weave-loom-row-wrap * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.weave-panel.is-build .weave-loom-row-card { touch-action: none; }
+/* The held card is translated out of its own row; the row's overflow clip must be lifted
+   while reordering or the card is cut off and vanishes behind its neighbours. */
+.weave-loom-row-wrap.is-reordering { z-index: 6; overflow: visible; }
+.weave-loom-row-wrap.is-reordering .weave-loom-row-under {
+  outline: 1.5px dashed var(--weave-text-muted);
+  outline-offset: -5px;
+}
+.weave-loom-row-wrap.is-reordering .weave-loom-row-card {
+  cursor: grabbing;
+  opacity: 0.88;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+.weave-loom-row-wrap.is-drop-target::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: var(--weave-ink);
+  z-index: 8;
+  pointer-events: none;
+}
+.weave-loom-row-wrap.is-reordering .weave-loom-under-content { visibility: hidden; }
+.weave-loom-row-wrap.is-drop-target.is-drop-after::after {
+  top: auto;
+  bottom: 0;
+}
+
+/* No text selection anywhere in the Weave panel (BUILD and PLAY), including WebKit, so a
+   press on the sheet or Loom background cannot sweep a highlight across Scene names, numbers
+   and set-list content. Editable fields keep it. */
+.weave-panel, .weave-panel * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.weave-panel input, .weave-panel textarea, .weave-panel [contenteditable], .weave-panel [contenteditable] * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Header controls, opt-in Weave workspace, greyscale transition inspector. */
+.weave-header-button { font-size: 10px; font-weight: 800; white-space: nowrap; padding: 6px 9px; }
+#weave-enabled[aria-pressed="true"] { background: var(--text-primary, #141414); color: var(--bg-primary, #fff); }
+#trans-gutter.is-quiet { filter: grayscale(1); }   /* greyscale at rest only; hover, focus or ADJUST wake it */
+/* WEAVE OFF hides the two gutters but keeps the stage grid exactly as it is, so the 2D canvas
+   never changes size or position when the Weave is toggled (the nodes stay where they are). */
+body.weave-off #weave-gutter, body.weave-off #trans-gutter { visibility: hidden; pointer-events: none; }
+.weave-scene-resize { position: absolute; z-index: 9; border: 0; padding: 0; background: transparent; cursor: ns-resize; touch-action: none; }
+.weave-scene-resize.side { right: 0; top: 6px; bottom: 6px; width: 16px; }
+.weave-scene-resize.boundary { left: 0; right: 0; bottom: 0; height: 10px; width: 100%; }
+.weave-scene-resize.side:hover, .is-resizing .weave-scene-resize.side { background: rgba(128,128,128,.18); }
+.weave-scene-resize.boundary:hover { background: rgba(128,128,128,.25); }
+.weave-scene-resize span { display: none; position: absolute; right: 18px; top: 8px; white-space: nowrap; padding: 4px 6px; background: var(--weave-ink); color: var(--weave-surface); font: 700 10px var(--weave-font-mono); }
+.weave-scene-resize:hover span, .is-resizing .weave-scene-resize span { display: block; }
+.weave-panel.play .weave-scene-resize { display: none; }
+.weave-loom-row-wrap.is-resizing { z-index: 7; }
+
+/* BUILD: swipe left = AUDITION (hear the Scene). The speaker tag slides out on the right, the
+   mirror of ADJUST/DELETE on the left. */
+.weave-loom-under-content.audition-msg { display: none; margin-left: auto; padding-right: 14px; }
+.weave-loom-row-wrap.is-auditioning-swipe .weave-loom-under-content.adjust-msg,
+.weave-loom-row-wrap.is-auditioning-swipe .weave-loom-under-content.delete-msg { display: none; }
+.weave-loom-row-wrap.is-auditioning-swipe .weave-loom-under-content.audition-msg { display: flex; }
+.weave-loom-row-wrap.state-audition .weave-loom-under-content.audition-msg { opacity: 1; transform: scale(1.04); }
+.wluc-tag.audition { display: inline-flex; align-items: center; gap: 5px; }
+.weave-loom-row-wrap.state-audition .wluc-tag.audition { background: var(--weave-ink); color: #ffffff; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18); }
+/* BUILD: double-click a Scene to rename it in place */
+.weave-scene-name-input { font: inherit; font-weight: 800; width: 100%; box-sizing: border-box; border: 1.5px solid var(--weave-ink); border-radius: 4px; padding: 1px 4px; background: #ffffff; color: var(--weave-ink); outline: none; -webkit-user-select: text; user-select: text; }
+
+/* Empty Weave (new project): both panels show one quiet hint until the first + SCENE. */
+.weave-empty { position: absolute; inset: 72px 16px 16px; display: flex; flex-direction: column; justify-content: center; gap: 8px; text-align: center; pointer-events: none; }
+.weave-tx-panel .weave-empty { inset: 16px; }
+.weave-empty-title { font-family: var(--weave-font-sans); font-size: 22px; font-weight: 900; letter-spacing: -0.04em; color: var(--weave-ink); }
+.weave-empty-hint { font-family: var(--weave-font-sans); font-size: 11.5px; font-weight: 600; line-height: 1.45; color: var(--weave-text-muted); }
+.weave-empty-hint b { color: var(--weave-ink); }
+
+/* GO NOW armed: fires on the next bar line */
+.weave-gobtn.armed { animation: weave-armed 0.5s steps(2, end) infinite; }
+@keyframes weave-armed { to { background: #3a3a3a; } }
+@media (prefers-reduced-motion: reduce) { .weave-gobtn.armed { animation: none; } }
+/* the playing row stays bold black even while the panel rests in grey */
+.weave-gutter.is-quiet .weave-set-row.now .sr-title, .weave-gutter.is-quiet .weave-set-row.now .sr-bars { color: #141414; }
+.weave-gutter.is-quiet .weave-set-row.now .sr-no { background: #141414; color: var(--weave-playing-accent); }
+
+/* PLAY set list: swipe left → RENAME, swipe right → DELETE (tap the revealed button) */
+.weave-set-wrap { position: relative; overflow: hidden; }
+.weave-set-wrap .weave-set-row { position: relative; background: var(--weave-surface); will-change: transform; touch-action: pan-y; }
+.weave-set-under { position: absolute; inset: 0; display: flex; align-items: stretch; justify-content: space-between; }
+.weave-set-action { width: 96px; border: 0; margin: 0; padding: 0; font-family: var(--weave-font-sans); font-size: 10px; font-weight: 900; letter-spacing: 0.08em; cursor: pointer; color: #ffffff; visibility: hidden; }
+.weave-set-action.delete { background: #FC4037; }
+.weave-set-action.delete:disabled { background: #c9c9c6; cursor: not-allowed; }
+.weave-set-action.rename { background: var(--weave-ink); }
+.weave-set-wrap.peek-rename .weave-set-action.rename, .weave-set-wrap.open-rename .weave-set-action.rename,
+.weave-set-wrap.peek-delete .weave-set-action.delete, .weave-set-wrap.open-delete .weave-set-action.delete { visibility: visible; }
+.weave-gutter.is-quiet .weave-set-wrap .weave-set-row { background: transparent; }
+.weave-gutter.is-quiet .weave-set-wrap.open-rename .weave-set-row, .weave-gutter.is-quiet .weave-set-wrap.open-delete .weave-set-row { background: var(--weave-surface); }
+.weave-set-row .sr-title .weave-scene-name-input { font-size: 18px; letter-spacing: -0.02em; text-transform: none; }
+/* undo bar after a delete */
+.weave-undo { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding: 6px 8px; border: 1.5px dashed var(--weave-ink); border-radius: 6px; font-family: var(--weave-font-sans); font-size: 11px; font-weight: 700; }
+/* GO NEXT while preparing */
+.weave-gobtn.preparing { background: #6b6b68; cursor: progress; }

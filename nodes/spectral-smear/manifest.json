@@ -1,0 +1,36 @@
+{
+  "id": "com.aether.node.spectral-smear",
+  "name": "Spectral Smear",
+  "version": "1.0.0",
+  "author": "Aether Community",
+  "description": "FFT spectral freeze and time-smearing insert effect for lush ambient textures and sustained sonic washes.",
+  "category": "Spectral / Freeze Effect",
+  "type": "effect",
+  "inputs": 2,
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "parameters": [
+    {
+      "id": "dry_wet",
+      "name": "Dry / Wet",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.5,
+      "unit": "norm"
+    },
+    {
+      "id": "smear_length",
+      "name": "Smear Amount",
+      "type": "float",
+      "min": 0.1,
+      "max": 1.0,
+      "default": 0.6,
+      "unit": "norm"
+    }
+  ],
+  "canvas_animation": "spectral_bleed"
+}

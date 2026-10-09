@@ -1,0 +1,11 @@
+{
+  "name": "aether-nodes-v2-lab-tests",
+  "private": true,
+  "description": "Offline audio tests for the v2 lab nodes (renders real audio with node-web-audio-api).",
+  "scripts": {
+    "test": "node test-granular.js && node test-bowls.js && node test-tape.js && node test-spatializer.js"
+  },
+  "devDependencies": {
+    "node-web-audio-api": "^2.2.0"
+  }
+}

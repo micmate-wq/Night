@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aether — Node Development Playground</title>
+  <link rel="stylesheet" href="harness.css">
+</head>
+<body>
+  <div class="harness-app">
+    <!-- Header -->
+    <header class="harness-header">
+      <div class="brand">
+        <span class="logo-dot"></span>
+        <h1 class="logo-title">AETHER</h1>
+        <span class="badge">NODE PLAYGROUND</span>
+      </div>
+      <div class="header-actions">
+        <button id="btn-audio-toggle" class="btn btn-primary">
+          <span class="icon">▶</span>
+          <span class="btn-text">Start Audio</span>
+        </button>
+        <button id="btn-reload-node" class="btn btn-secondary">
+          <span class="icon">↻</span>
+          <span class="btn-text">Reload Node</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="harness-main">
+      <!-- Left: Visual Canvas Stage -->
+      <section class="stage-container">
+        <div class="stage-header">
+          <div class="node-meta">
+            <span id="node-name" class="node-title">Loading node...</span>
+            <span id="node-category" class="node-category">—</span>
+          </div>
+          <div class="stage-stats">
+            <span id="fps-counter">60 FPS</span>
+          </div>
+        </div>
+        
+        <div class="canvas-wrapper" id="canvas-wrapper">
+          <canvas id="node-stage"></canvas>
+          <div id="canvas-overlay" class="canvas-overlay hidden">
+            <span>Audio Suspended</span>
+          </div>
+        </div>
+
+        <div class="stage-footer">
+          <span id="pointer-coords">X: 0 | Y: 0</span>
+          <span id="node-id-display">ID: —</span>
+        </div>
+      </section>
+
+      <!-- Right: Inspector & Parameter Controls -->
+      <aside class="inspector-panel">
+        <!-- Master Section -->
+        <div class="panel-section">
+          <div class="section-title">Master Output</div>
+          <div class="control-row">
+            <label for="master-gain">Gain</label>
+            <input type="range" id="master-gain" min="0" max="1" step="0.01" value="0.7">
+            <span id="master-gain-val" class="param-value">70%</span>
+          </div>
+          <div class="audio-state-row">
+            <span class="state-label">Audio Engine:</span>
+            <span id="audio-state-badge" class="state-badge suspended">SUSPENDED</span>
+          </div>
+        </div>
+
+        <!-- Node Parameters Section -->
+        <div class="panel-section flex-grow">
+          <div class="section-header">
+            <div class="section-title">Node Parameters</div>
+            <span class="section-subtitle" id="params-count">0 params</span>
+          </div>
+          <div id="params-container" class="params-list">
+            <div class="empty-params">Parsing manifest.json...</div>
+          </div>
+        </div>
+
+        <!-- Log / Info Section -->
+        <div class="panel-section log-section">
+          <div class="section-title">Status Log</div>
+          <div id="harness-log" class="log-container">
+            <div class="log-entry info">Playground initialized. Click "Start Audio" to begin.</div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script type="module" src="harness.js"></script>
+</body>
+</html>

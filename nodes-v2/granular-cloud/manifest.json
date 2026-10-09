@@ -1,0 +1,35 @@
+{
+  "id": "com.aether.node.granular-cloud",
+  "name": "Granular Cloud",
+  "version": "2.0.0",
+  "author": "Aether",
+  "description": "Granular atmospheric cloud. Grains are generated on the audio thread (AudioWorklet), so density holds when the app is in the background. Load a sample on the track first, then drop this node on it to granulate that sample; otherwise it uses a built-in ambient chord.",
+  "role": "instrument",
+  "timingTier": "ambient-generative",
+  "category": "Granular / Texture Generator",
+  "inputs": 1,
+  "inputNote": "inputs:1 tells the current host to hand the track's sample to injectAudioBuffer(); no live audio input is used.",
+  "outputs": 2,
+  "entry": {
+    "dsp": "dsp.js",
+    "ui": "ui.html"
+  },
+  "inspector": "host",
+  "parameters": [
+    { "id": "density",       "name": "Grain Density", "label": "Density",      "type": "float", "min": 2,    "max": 60,   "default": 18,   "unit": "grains/s", "morph": "glide" },
+    { "id": "grainSize",     "name": "Grain Duration", "label": "Grain Size",     "type": "float", "min": 0.03, "max": 0.8,  "default": 0.22, "unit": "s",        "morph": "glide" },
+    { "id": "spray",         "name": "Position Spray", "label": "Spray",     "type": "float", "min": 0,    "max": 1,    "default": 0.45, "unit": "norm",     "morph": "glide" },
+    { "id": "pitchShift",    "name": "Pitch Shift", "label": "Pitch Shift",        "type": "float", "min": -24,  "max": 24,   "default": 0,    "unit": "st",       "morph": "glide" },
+    { "id": "harmony",       "name": "Harmony", "label": "Harmony",            "type": "int",   "min": 0,    "max": 5,    "default": 0,    "unit": "mode",     "morph": "step",
+      "options": ["Free", "Octaves", "5ths/Oct", "Sus2", "Maj7", "Min9"] },
+    { "id": "reverseChance", "name": "Reverse Chance", "label": "Reverse Chance",     "type": "float", "min": 0,    "max": 100,  "default": 0,    "unit": "%",        "morph": "glide" },
+    { "id": "texture",       "name": "Texture", "label": "Texture",            "type": "int",   "min": 0,    "max": 1,    "default": 0,    "unit": "mode",     "morph": "step",
+      "options": ["cloud", "pluck"] },
+    { "id": "feedback",      "name": "Diffusion Feedback", "label": "Feedback", "type": "float", "min": 0,    "max": 0.95, "default": 0.55, "unit": "norm",     "morph": "glide" },
+    { "id": "freeze",        "name": "Freeze Buffer", "label": "Freeze",      "type": "bool",  "min": 0,    "max": 1,    "default": 0,    "unit": "on/off",   "morph": "step" },
+    { "id": "mix",           "name": "Mix", "label": "Mix",                "type": "float", "min": 0,    "max": 1,    "default": 1,    "unit": "norm",     "morph": "glide" }
+  ],
+  "canvas_animation": {
+    "type": "ripple"
+  }
+}

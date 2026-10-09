@@ -1,0 +1,14 @@
+fixture errors: []
+badHash          rejected: asset bytes sha256:d63057c6b23c9a0498300dc7bd17a081c6092d47733b7c4e339a66f9c07ccaba
+missingAsset     rejected: missing asset sha256:7fbf14ebd62962a158b788f56b9f785103dab5c4691aab350164b8e4d4a04b6a
+orderMissing     rejected: order→missing scene sc_00000000-0000-4000-8000-000000000000
+dupSlot          rejected: duplicate slot
+kindMix          rejected: source kind exclusivity node
+nonAdjacentEdge  rejected: edge not adjacent ed_2e6b9f40-5d18-4c7a-9a3e-8f1c64b07d25
+zeroDuration     rejected: duration beats
+sourceMode       rejected: scene sc_4f2a8c61-9e3b-4d70-a5c8-1b6e09f7d322: duration mode source unsupported in v1
+badX             rejected: spatial
+tooNew           rejected: schemaVersion
+badId            rejected: doc.id
+unknownThread    rejected: unknown thread th_00000000-0000-4000-8000-000000000000
+playlistIdx      rejected: playlist index

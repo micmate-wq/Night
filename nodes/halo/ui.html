@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Halo</title>
+  <style>
+    :root {
+      --bg: var(--aether-bg, var(--bg-main, #0A0A0A));
+      --panel: var(--aether-panel, var(--bg-card, #141414));
+      --accent: var(--track-color, var(--aether-accent, #FFFFFF));
+      --text: var(--aether-text, var(--text-main, #FFFFFF));
+      --muted: var(--aether-text-muted, var(--text-muted, #888));
+      --border: var(--aether-border, var(--border-light, #333));
+      --font-h: var(--aether-font-heading, 'Space Grotesk', sans-serif);
+      --font-m: var(--aether-font-mono, 'JetBrains Mono', monospace);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--font-h); font-size: 11px;
+      width: 100vw; height: 100vh; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    header {
+      padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .title { font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; font-size: 11px; }
+    .badge { font-family: var(--font-m); font-size: 9px; opacity: 0.6; letter-spacing: 0.08em; }
+    .steps { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; padding: 10px 12px; align-items: end; }
+    .dot { height: 10px; border-radius: 1px; background: rgba(255,255,255,0.08); }
+    .dot.on { background: var(--accent); opacity: 0.85; height: 10px; }
+    .dot.near { background: var(--accent); opacity: 0.32; height: 7px; }
+    .dot.now { box-shadow: 0 0 8px var(--accent); opacity: 1; }
+    .grid { padding: 8px 12px 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+    label { display: flex; flex-direction: column; gap: 4px; }
+    .row { display: flex; justify-content: space-between; color: var(--muted); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .val { font-family: var(--font-m); color: var(--text); }
+    input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: #222; border: 1px solid var(--border); outline: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--text); cursor: pointer; }
+    .hold-wrap { padding: 4px 12px 12px; }
+    .hold-btn {
+      width: 100%; border: 1px solid var(--border); background: transparent;
+      color: var(--muted); font-family: var(--font-m); font-size: 10px;
+      letter-spacing: 0.16em; text-transform: uppercase; padding: 8px 12px; cursor: pointer;
+    }
+    .hold-btn.on { color: var(--text); background: rgba(255,255,255,0.08); border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">Halo</div>
+    <div class="badge" id="bpm-badge">120 BPM</div>
+  </header>
+  <div class="steps" id="steps"></div>
+  <div class="grid">
+    <label><div class="row"><span>Rate</span><span class="val" id="v-rate">0.18</span></div>
+      <input id="rate" type="range" min="0" max="1" step="0.01" value="0.12"></label>
+    <label><div class="row"><span>Zone</span><span class="val" id="v-zone">0.00</span></div>
+      <input id="zone" type="range" min="0" max="1" step="0.01" value="0"></label>
+    <label><div class="row"><span>Repeats</span><span class="val" id="v-repeats">0.55</span></div>
+      <input id="repeats" type="range" min="0" max="1" step="0.01" value="0.55"></label>
+    <label><div class="row"><span>Color</span><span class="val" id="v-color">0.40</span></div>
+      <input id="color" type="range" min="0" max="1" step="0.01" value="0.4"></label>
+    <label><div class="row"><span>Mix</span><span class="val" id="v-mix">0.62</span></div>
+      <input id="mix" type="range" min="0" max="1" step="0.01" value="0.62"></label>
+  </div>
+  <div class="hold-wrap">
+    <button type="button" class="hold-btn" id="hold-btn">Hold</button>
+  </div>
+  <script>
+    const stepsEl = document.getElementById('steps');
+    const dots = [];
+    for (let i = 0; i < 8; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot';
+      stepsEl.appendChild(d);
+      dots.push(d);
+    }
+    const state = { rate: 0.12, zone: 0, repeats: 0.55, color: 0.4, mix: 0.62, hold: 0, bpm: 120 };
+    const bpmBadge = document.getElementById('bpm-badge');
+    const holdBtn = document.getElementById('hold-btn');
+
+    function liveBpm() {
+      let b = state.bpm || 120;
+      try {
+        const p = window.parent && window.parent.__aetherClockBpm;
+        if (p != null && Number(p) > 0) b = Number(p);
+      } catch (e) {}
+      return Math.max(40, Math.min(240, b));
+    }
+
+    function paintDots(nowOn) {
+      const z = Math.max(0, Math.min(1, state.zone)) * 7;
+      const i0 = Math.floor(z);
+      const i1 = Math.min(7, i0 + 1);
+      dots.forEach((d, i) => {
+        d.classList.toggle('on', i === i0);
+        d.classList.toggle('near', i === i1 && i1 !== i0);
+        d.classList.toggle('now', !!nowOn && i === i0);
+      });
+    }
+
+    function notify(id, value) {
+      window.parent.postMessage({ type: 'aether:param-change', paramId: id, value: value }, '*');
+    }
+
+    function fmtVal(n) {
+      return Number(n).toFixed(2);
+    }
+
+    function paintBadge() {
+      if (state.hold > 0.5) bpmBadge.textContent = 'HOLD';
+      else bpmBadge.textContent = Math.round(liveBpm()) + ' BPM';
+    }
+
+    function paintHold() {
+      holdBtn.classList.toggle('on', state.hold > 0.5);
+      holdBtn.textContent = state.hold > 0.5 ? 'Holding' : 'Hold';
+      paintBadge();
+    }
+
+    function bind(id) {
+      const el = document.getElementById(id);
+      const v = document.getElementById('v-' + id);
+      el.addEventListener('input', () => {
+        const n = parseFloat(el.value);
+        state[id] = n;
+        v.textContent = fmtVal(n);
+        if (id === 'zone') paintDots(false);
+        notify(id, n);
+      });
+    }
+    ['rate', 'zone', 'repeats', 'color', 'mix'].forEach(bind);
+
+    holdBtn.addEventListener('click', () => {
+      state.hold = state.hold > 0.5 ? 0 : 1;
+      paintHold();
+      notify('hold', state.hold);
+    });
+
+    paintDots(false);
+    paintHold();
+
+    let flash = false;
+    let last = performance.now();
+    function loop(now) {
+      const bpm = liveBpm();
+      state.bpm = bpm;
+      paintBadge();
+      const dt = 60000 / Math.max(40, bpm) / 4;
+      if (now - last >= dt) {
+        last = now;
+        flash = !flash;
+        paintDots(flash);
+      }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    window.addEventListener('message', (event) => {
+      if (!event.data || event.data.type !== 'aether:param-update') return;
+      const { paramId, value } = event.data;
+      if (state[paramId] === undefined) return;
+      state[paramId] = value;
+      if (paramId === 'hold') {
+        paintHold();
+        return;
+      }
+      const el = document.getElementById(paramId);
+      const v = document.getElementById('v-' + paramId);
+      if (el) el.value = value;
+      if (v) v.textContent = fmtVal(Number(value));
+      if (paramId === 'bpm') paintBadge();
+      if (paramId === 'zone') paintDots(flash);
+    });
+  </script>
+</body>
+</html>

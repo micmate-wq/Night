@@ -1,0 +1,153 @@
+{
+  "label": "before",
+  "pageErrors": [],
+  "idsBefore": [
+    "sc_caab9aaa-b47d-4b06-8028-a47184735c81",
+    "sc_b30c1901-b075-4bc6-85fd-6c47ba87ffae",
+    "sc_4f4139ea-05c3-429b-a572-e8099a454cb1",
+    "sc_72027f86-8fea-49ec-b0fe-e336cabbd401",
+    "sc_89f52b17-5fbd-4fee-97d5-194d004ba657"
+  ],
+  "heldClass": "weave-loom-row-wrap is-reordering",
+  "samples": [
+    {
+      "y": 467,
+      "cardTop": 427,
+      "transform": "translateY(-23.0022px)",
+      "hitCenter": true,
+      "hitTL": false,
+      "hitBR": true,
+      "dropIdx": 3,
+      "dropAfter": true
+    },
+    {
+      "y": 444,
+      "cardTop": 404,
+      "transform": "translateY(-46.0044px)",
+      "hitCenter": false,
+      "hitTL": false,
+      "hitBR": true,
+      "dropIdx": 3,
+      "dropAfter": true
+    },
+    {
+      "y": 421,
+      "cardTop": 381,
+      "transform": "translateY(-69.0066px)",
+      "hitCenter": false,
+      "hitTL": false,
+      "hitBR": true,
+      "dropIdx": 3,
+      "dropAfter": true
+    },
+    {
+      "y": 398,
+      "cardTop": 358,
+      "transform": "translateY(-92.0088px)",
+      "hitCenter": false,
+      "hitTL": false,
+      "hitBR": false,
+      "dropIdx": 3,
+      "dropAfter": false
+    },
+    {
+      "y": 375,
+      "cardTop": 335,
+      "transform": "translateY(-115.011px)",
+      "hitCenter": false,
+      "hitTL": false,
+      "hitBR": false,
+      "dropIdx": 3,
+      "dropAfter": false
+    },
+    {
+      "y": 352,
+      "cardTop": 312,
+      "transform": "translateY(-138.013px)",
+      "hitCenter": false,
+      "hitTL": false,
+      "hitBR": false,
+      "dropIdx": 3,
+      "dropAfter": false
+    },
+    {
+      "y": 329,
+      "cardTop": 289,
+      "transform": "translateY(-161.015px)",
+      "hitCenter": false,
+      "hitTL": false,
+      "hitBR": false,
+      "dropIdx": 2,
+      "dropAfter": false
+    },
+    {
+      "y": 306,
+      "cardTop": 266,
+      "transform": "translateY(-184.018px)",
+      "hitCenter": false,
+      "hitTL": false,
+      "hitBR": false,
+      "dropIdx": 2,
+      "dropAfter": false
+    },
+    {
+      "y": 283,
+      "cardTop": 243,
+      "transform": "translateY(-207.02px)",
+      "hitCenter": false,
+      "hitTL": false,
+      "hitBR": false,
+      "dropIdx": 2,
+      "dropAfter": false
+    },
+    {
+      "y": 260,
+      "cardTop": 220,
+      "transform": "translateY(-230.022px)",
+      "hitCenter": false,
+      "hitTL": false,
+      "hitBR": false,
+      "dropIdx": 2,
+      "dropAfter": false
+    },
+    {
+      "y": 237,
+      "cardTop": 196,
+      "transform": "translateY(-253.024px)",
+      "hitCenter": false,
+      "hitTL": false,
+      "hitBR": false,
+      "dropIdx": 1,
+      "dropAfter": false
+    },
+    {
+      "y": 214,
+      "cardTop": 173,
+      "transform": "translateY(-276.026px)",
+      "hitCenter": false,
+      "hitTL": false,
+      "hitBR": false,
+      "dropIdx": 1,
+      "dropAfter": false
+    }
+  ],
+  "styles": {
+    "wrapOverflow": "hidden",
+    "wrapZ": "6",
+    "wrapPos": "absolute",
+    "vpOverflowY": "auto",
+    "vpOverflowX": "hidden"
+  },
+  "idsAfter": [
+    "sc_caab9aaa-b47d-4b06-8028-a47184735c81",
+    "sc_89f52b17-5fbd-4fee-97d5-194d004ba657",
+    "sc_b30c1901-b075-4bc6-85fd-6c47ba87ffae",
+    "sc_4f4139ea-05c3-429b-a572-e8099a454cb1",
+    "sc_72027f86-8fea-49ec-b0fe-e336cabbd401"
+  ],
+  "movedTo2": true,
+  "playSel": "",
+  "playSelFromHeader": "SET · 5 SCENES\n80 BARS\n00:32.0\nTILL 02 · MORPH 8 BARS\n01\nSCENE 01  ·  SCENE 01  ·  \n02\nSCENE 05\n16\n03\nSCENE 02\n16\n04\nSCENE 03\n16\n05\nSCENE 04\n16\n+100% VOLUME0% VOLUME100% LEFT100% RIGHT\nDrop Audio File(s) to Assign Track\n",
+  "buildSel": "T1T2T3T4\nADJUST\nRelease to edit\n01\n16b\nScene 01  ·  Scene 01  ·  \n-00:32.0 → 02\nADJUST\nRelease to edit\n02\n16b\nScene 05\nADJUST\nRelease to edit\n03\n16b\nScene 02\nADJUST\nRelease to edit\n04\n16b\nScene 03\nADJUST\nRelease to edit\n05\n16b\nScene 04\n",
+  "editableUserSelect": "auto"
+}

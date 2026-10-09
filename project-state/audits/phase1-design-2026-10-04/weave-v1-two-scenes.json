@@ -1,0 +1,294 @@
+{
+  "type": "aether_weave",
+  "schemaVersion": 1,
+  "id": "wv_0b6f2c1e-7d4a-4e8b-9c31-5a2f8e6d4b10",
+  "name": "Fixture two-Scene Weave",
+  "createdAt": "2026-10-05T19:00:00.000Z",
+  "modifiedAt": "2026-10-05T19:10:00.000Z",
+  "writer": {
+    "app": "Aether Weave v0.1 Lab",
+    "version": "weave-model/1"
+  },
+  "tempo": {
+    "bpm": 120,
+    "beatsPerBar": 4,
+    "source": "host-fixed"
+  },
+  "master": {
+    "volume": 0.8,
+    "loudnessDb": 0
+  },
+  "assets": {
+    "sha256:d63057c6b23c9a0498300dc7bd17a081c6092d47733b7c4e339a66f9c07ccaba": {
+      "kind": "audio",
+      "name": "fixture-a440.wav",
+      "mime": "audio/wav",
+      "bytes": 76,
+      "origin": "original-file",
+      "storage": {
+        "kind": "inline-base64",
+        "data": "UklGRkQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSAAAAAAAOAP4R1YKAsuTC4TKf8eQRF4AYTxRuNt2EHSf9E81g=="
+      }
+    },
+    "sha256:b522adc47b2becae2e0c6b427028c4d5b9fcc390762a3983eb91a9b10d34f367": {
+      "kind": "audio",
+      "name": "fixture-a660.wav",
+      "mime": "audio/wav",
+      "bytes": 76,
+      "origin": "original-file",
+      "storage": {
+        "kind": "inline-base64",
+        "data": "UklGRkQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSAAAAAAADkXWCjeLhMpfRh4ARHqbdgu0TzWROYP/Z8UxCa7Lg=="
+      }
+    },
+    "sha256:7fbf14ebd62962a158b788f56b9f785103dab5c4691aab350164b8e4d4a04b6a": {
+      "kind": "node-bundle",
+      "name": "Fixture Pulse",
+      "mime": "application/zip",
+      "bytes": 630,
+      "origin": "aethernode-zip",
+      "manifestId": "com.aether.test.fixture-pulse",
+      "version": "0.0.1",
+      "storage": {
+        "kind": "inline-base64",
+        "data": "UEsDBBQAAAAAAAAAIQAg0bn+KQEAACkBAAANAAAAbWFuaWZlc3QuanNvbnsiaWQiOiJjb20uYWV0aGVyLnRlc3QuZml4dHVyZS1wdWxzZSIsIm5hbWUiOiJGaXh0dXJlIFB1bHNlIiwidmVyc2lvbiI6IjAuMC4xIiwicm9sZSI6Imluc3RydW1lbnQiLCJpbnB1dHMiOjAsIm91dHB1dHMiOjIsImVudHJ5Ijp7ImRzcCI6ImRzcC5qcyJ9LCJpbnNwZWN0b3IiOiJob3N0IiwicGFyYW1ldGVycyI6W3siaWQiOiJsZXZlbCIsInR5cGUiOiJmbG9hdCIsIm1pbiI6MCwibWF4IjoxLCJkZWZhdWx0IjowLjV9LHsiaWQiOiJzdGVwcyIsInR5cGUiOiJpbnQiLCJtaW4iOjEsIm1heCI6OCwiZGVmYXVsdCI6NH1dfVBLAwQUAAAAAAAAACEALUb6gXkAAAB5AAAABgAAAGRzcC5qc2NsYXNzIEZpeHR1cmVQdWxzZXtjb25zdHJ1Y3Rvcigpe3RoaXMucGFyYW1zPXtsZXZlbDowLjUsc3RlcHM6NH19c2V0UGFyYW1ldGVyKGlkLHYpe3RoaXMucGFyYW1zW2lkXT12fXN0YXJ0KCl7fXN0b3AoKXt9fQpQSwECFAMUAAAAAAAAACEAING5/ikBAAApAQAADQAAAAAAAAAAAAAApAEAAAAAbWFuaWZlc3QuanNvblBLAQIUAxQAAAAAAAAAIQAtRvqBeQAAAHkAAAAGAAAAAAAAAAAAAACkAVQBAABkc3AuanNQSwUGAAAAAAIAAgBvAAAA8QEAAAAA"
+      }
+    }
+  },
+  "threads": [
+    {
+      "id": "th_3c9e1a52-8f04-4b7d-a6e2-91d05c7f3b28",
+      "label": "T1",
+      "color": "track-1"
+    },
+    {
+      "id": "th_7a14d6e0-2b9c-4f53-8e71-c4a8b3f2d690",
+      "label": "T2",
+      "color": "track-2"
+    },
+    {
+      "id": "th_c5e82f17-4a63-4d09-b1f8-6e2a97d3c541",
+      "label": "T3",
+      "color": "track-3"
+    },
+    {
+      "id": "th_e91b4d38-6c27-4a85-9f0e-3d7c52a1b864",
+      "label": "T4",
+      "color": "track-4"
+    }
+  ],
+  "scenes": {
+    "sc_4f2a8c61-9e3b-4d70-a5c8-1b6e09f7d322": {
+      "id": "sc_4f2a8c61-9e3b-4d70-a5c8-1b6e09f7d322",
+      "name": "Open water",
+      "duration": {
+        "mode": "beats",
+        "beats": 64
+      },
+      "createdAt": "2026-10-05T19:02:00.000Z",
+      "modifiedAt": "2026-10-05T19:02:00.000Z",
+      "provenance": {
+        "kind": "capture",
+        "capturedAt": "2026-10-05T19:02:00.000Z"
+      },
+      "completeness": {
+        "status": "complete",
+        "reasons": []
+      },
+      "threadStates": {
+        "th_3c9e1a52-8f04-4b7d-a6e2-91d05c7f3b28": {
+          "slot": 0,
+          "source": {
+            "kind": "playlist",
+            "playlist": {
+              "items": [
+                "sha256:d63057c6b23c9a0498300dc7bd17a081c6092d47733b7c4e339a66f9c07ccaba",
+                "sha256:b522adc47b2becae2e0c6b427028c4d5b9fcc390762a3983eb91a9b10d34f367"
+              ],
+              "index": 0,
+              "shuffle": false,
+              "repeat": true
+            }
+          },
+          "channel": {
+            "gainDb": 0,
+            "eq": {
+              "low": 0,
+              "mid": 0,
+              "high": 0
+            },
+            "mute": false,
+            "solo": false
+          },
+          "spatial": {
+            "x": 0.21,
+            "y": 0.87,
+            "z": 0
+          },
+          "motion": {
+            "points": [
+              {
+                "t": 0,
+                "x": 0.21,
+                "y": 0.87,
+                "z": 0
+              },
+              {
+                "t": 0.5,
+                "x": 0.4,
+                "y": 0.7,
+                "z": 0
+              },
+              {
+                "t": 1.0,
+                "x": 0.21,
+                "y": 0.87,
+                "z": 0,
+                "generatedReturn": true
+              }
+            ],
+            "timeBase": "seconds-free",
+            "speed": 1,
+            "playing": true,
+            "captureBpm": 120
+          },
+          "unsupported": []
+        },
+        "th_7a14d6e0-2b9c-4f53-8e71-c4a8b3f2d690": {
+          "slot": 1,
+          "source": {
+            "kind": "node",
+            "node": {
+              "bundleAssetId": "sha256:7fbf14ebd62962a158b788f56b9f785103dab5c4691aab350164b8e4d4a04b6a",
+              "manifestId": "com.aether.test.fixture-pulse",
+              "version": "0.0.1",
+              "params": {
+                "level": 0.5,
+                "steps": 4
+              }
+            }
+          },
+          "channel": {
+            "gainDb": -3,
+            "eq": {
+              "low": 0,
+              "mid": 2,
+              "high": -1
+            },
+            "mute": false,
+            "solo": false
+          },
+          "spatial": {
+            "x": 0.25,
+            "y": 0.5,
+            "z": 0
+          },
+          "motion": null,
+          "unsupported": [
+            "node-private-state"
+          ]
+        }
+      }
+    },
+    "sc_8d17e3b5-0c42-4a96-b8f1-7e5c2a3d9064": {
+      "id": "sc_8d17e3b5-0c42-4a96-b8f1-7e5c2a3d9064",
+      "name": "Afterglow",
+      "duration": {
+        "mode": "beats",
+        "beats": 32
+      },
+      "createdAt": "2026-10-05T19:08:00.000Z",
+      "modifiedAt": "2026-10-05T19:10:00.000Z",
+      "provenance": {
+        "kind": "capture",
+        "capturedAt": "2026-10-05T19:08:00.000Z"
+      },
+      "completeness": {
+        "status": "complete",
+        "reasons": []
+      },
+      "threadStates": {
+        "th_3c9e1a52-8f04-4b7d-a6e2-91d05c7f3b28": {
+          "slot": 0,
+          "source": {
+            "kind": "playlist",
+            "playlist": {
+              "items": [
+                "sha256:d63057c6b23c9a0498300dc7bd17a081c6092d47733b7c4e339a66f9c07ccaba",
+                "sha256:b522adc47b2becae2e0c6b427028c4d5b9fcc390762a3983eb91a9b10d34f367"
+              ],
+              "index": 1,
+              "shuffle": false,
+              "repeat": true
+            }
+          },
+          "channel": {
+            "gainDb": -2,
+            "eq": {
+              "low": 1,
+              "mid": 0,
+              "high": -2
+            },
+            "mute": false,
+            "solo": false
+          },
+          "spatial": {
+            "x": 0.5,
+            "y": 0.3,
+            "z": 4
+          },
+          "motion": null,
+          "unsupported": []
+        },
+        "th_e91b4d38-6c27-4a85-9f0e-3d7c52a1b864": {
+          "slot": 3,
+          "source": {
+            "kind": "node",
+            "node": {
+              "bundleAssetId": "sha256:7fbf14ebd62962a158b788f56b9f785103dab5c4691aab350164b8e4d4a04b6a",
+              "manifestId": "com.aether.test.fixture-pulse",
+              "version": "0.0.1",
+              "params": {
+                "level": 0.8,
+                "steps": 6
+              }
+            }
+          },
+          "channel": {
+            "gainDb": 0,
+            "eq": {
+              "low": 0,
+              "mid": 0,
+              "high": 0
+            },
+            "mute": false,
+            "solo": false
+          },
+          "spatial": {
+            "x": 0.75,
+            "y": 0.4
+          },
+          "motion": null,
+          "unsupported": [
+            "node-private-state"
+          ]
+        }
+      }
+    }
+  },
+  "order": [
+    "sc_4f2a8c61-9e3b-4d70-a5c8-1b6e09f7d322",
+    "sc_8d17e3b5-0c42-4a96-b8f1-7e5c2a3d9064"
+  ],
+  "edges": [
+    {
+      "id": "ed_2e6b9f40-5d18-4c7a-9a3e-8f1c64b07d25",
+      "from": "sc_4f2a8c61-9e3b-4d70-a5c8-1b6e09f7d322",
+      "to": "sc_8d17e3b5-0c42-4a96-b8f1-7e5c2a3d9064",
+      "overlapBeats": 32,
+      "curve": "ease",
+      "mode": "morph"
+    }
+  ],
+  "ending": null
+}

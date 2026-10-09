@@ -1,0 +1,17 @@
+✔ H1. _noteSourceReplaced bumps the revision, clears the origin proof and invalidates a pending loader token
+✔ H2. clearSource (real) bumps once and clears the origin; cleanupSources itself does not bump
+✔ H3. connectLiveInput (real) replaces the source: revision bumped, origin cleared, live flags set
+✔ H4. loadStreamUrl (real) replaces the source: revision bumped, origin cleared, buffer nulled, stream flags set
+✔ H5. _loadAudioFile (real) sets a decoded-item origin bound to this revision, buffer and file; a cancelled load sets nothing
+✔ H6. loadDemoStems (real) marks every track replaced with a synthetic origin
+✔ H7. stopNodeOnly/play/stop are transport paths and do not touch the revision (sampled via stopNodeOnly on the real prototype)
+✔ H8. _applySession wrapper: token issued, released on success with replaced:true and failures; released on throw with replaced:false
+✔ H9. real _applySessionCore: failed preflight throws before touching tracks (replaced:false); successful load restores buffers with a session origin (replaced:true)
+✔ H9b. real _applySessionCore throwing after track cleanup (Codex review 2): replaced:true is reported and the token released; a per-track failure is a partial load
+✔ H10. rebuildAudioGraph wrapper + real core: early return reports replaced:false; a real rebuild bumps every track, marks restored buffers rebuilt and releases
+✔ H11. overlapping operations hold distinct tokens; releasing one does not release the other
+✔ H12. script order: S1, S2, S3 are loaded before weave.js; no other markup changed
+✔ H14. real transport freezes XYZ automation on Pause/Stop, preserves path, and restarts motion on Play
+✔ H15. Space exclusively toggles transport for every focus target; repeats and keyup never activate controls
+
+15 passed, 0 failed

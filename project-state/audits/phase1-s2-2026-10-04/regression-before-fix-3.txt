@@ -1,0 +1,47 @@
+# S2 third-review regressions BEFORE fix — 2026-10-05T10:31:02Z — node v22.23.2
+# weave-assets.js sha256 94cc6b1a9dc50462… (as reviewed by Codex, after the second correction)
+$ node tests/test-weave-assets.js
+✔ sha256: known vectors through WebCrypto and Node engines
+✔ sha256: typed-array views hash exactly their offset/length, not the backing buffer
+✔ toBytes: rejects non-binary inputs with a clear error
+✔ base64: canonical encode/decode round-trips and matches Node for lengths 0–40
+✔ base64: rejects every non-canonical form
+✔ verifyAssets: the fixture table passes, every payload hashes to its key
+✔ verifyAssets: wrong hash, wrong length and corrupt base64 are each rejected
+✔ verifyAssets: malformed containers and metadata are reported, never thrown
+✔ verifyAssets: empty payloads are refused (S2 policy)
+✔ measureAssets: counts unique stored bytes and base64 text without decoding
+✔ limits: invalid limit objects are rejected before anything else
+✔ limits: exact boundaries pass and one unit over fails, per limit
+    (preflight rejection of a 4 MB payload took 1.6 ms; digest calls: 0)
+✔ limits: an over-budget table is refused before any payload is decoded or hashed
+✔ addAssetBytes: limits are checked from the byte length before hashing or encoding
+✔ addAssetBytes: new bytes produce a verifiable entry and leave the input untouched
+✔ addAssetBytes: identical bytes deduplicate to the existing entry whatever the name
+✔ addAssetBytes: same name with different bytes stays two assets
+✔ addAssetBytes: incompatible kind or bundle identity for identical bytes is rejected
+✔ addAssetBytes: metadata and container validation
+✔ derived override: a rendered buffer with different bytes is kept as its own asset, never merged
+✔ S1 boundary: S1 accepts a structurally valid table with wrong bytes; S2 is what catches it
+✔ review 1: re-adding identical bytes at each exact limit succeeds and charges nothing
+✔ review 2: a matching key is not trusted — the stored payload must equal the new bytes
+✔ review 3: input bytes and metadata changed while the promise is pending do not reach the stored asset
+✔ review 4: an already-over-budget table is refused even for a duplicate, before any hashing
+✘ review 5: entries added to the live table while the promise is pending cannot bypass the limits
+    AssertionError [ERR_ASSERTION]: returned table is the snapshot too, not the live table with the corrupt payload
+    + actual - expected
+    ... Skipped lines
+
+✘ review 6 (duplicate path): live-table changes while hashing do not reach the returned table
+    AssertionError [ERR_ASSERTION]: dup/payload-swap: result table must verify: [{"path":"assets[\"sha256:b522adc47b2becae2e0c6b427028c4d5b9fcc390762a3983eb91a9b10d34f367\"].bytes","message":"declares 1 bytes but the base64 encodes 3","code":"length"}]
+
+    false !== true
+
+✘ review 7 (new-entry path): live-table changes while hashing do not reach the returned table
+    AssertionError [ERR_ASSERTION]: new/payload-swap: result table must verify: [{"path":"assets[\"sha256:b522adc47b2becae2e0c6b427028c4d5b9fcc390762a3983eb91a9b10d34f367\"].bytes","message":"declares 1 bytes but the base64 encodes 3","code":"length"},{"path":"assets[\"sha256:7fbf14ebd62962a158b788f56b9f785103dab5c4691aab350164b8e4d4a04b6a\"].storage.kind","message":"must be inline-base64","code":"storage"},{"path":"assets[\"sha256:7fbf14ebd62962a158b788f56b9f785103dab5c4691aab350164b8e4d4a04b6a\"].storage.data","message":"must be a base64 string","code":"storage"}]
+
+    false !== true
+
+
+25 passed, 3 failed
+exit=1
